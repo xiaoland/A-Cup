@@ -58,6 +58,16 @@ interface Route {
 
 export class Router {
   private routes: Route[] = [];
+  private pathPrefix: string = '';
+
+  constructor(pathPrefix: string = '') {
+    this.pathPrefix = pathPrefix.replace(/\/$/, ''); // Remove trailing slash
+  }
+
+  // Set or update the path prefix
+  setPathPrefix(prefix: string): void {
+    this.pathPrefix = prefix.replace(/\/$/, ''); // Remove trailing slash
+  }
 
   // Add a route with method, URL pattern, handler, and optional config
   add<
@@ -69,10 +79,13 @@ export class Router {
     handler: RouteHandler<z.infer<PathParamsT>, z.infer<QueryParamsT>, z.infer<BodyT>>, 
     config: RouteConfig<PathParamsT, QueryParamsT, BodyT> = {}
   ): void {
+    // Apply path prefix to the pattern
+    const fullPattern = this.pathPrefix + pattern;
+    
     const paramNames: string[] = [];
     
     // Convert URL pattern to regex, extracting parameter names
-    const regexPattern = pattern.replace(/:([^/]+)/g, (match, paramName) => {
+    const regexPattern = fullPattern.replace(/:([^/]+)/g, (match, paramName) => {
       paramNames.push(paramName);
       return '([^/]+)';
     });
@@ -81,12 +94,38 @@ export class Router {
     
     this.routes.push({
       method: method.toUpperCase(),
-      pattern,
+      pattern: fullPattern,
       handler,
       config,
       regex,
       paramNames
     });
+  }
+
+  // Merge routes from another router
+  merge(otherRouter: Router): void {    
+    for (const route of otherRouter.routes) {
+      // Apply merge prefix to the existing route pattern
+      const mergedPattern = this.pathPrefix + route.pattern;
+      
+      // Create new param names array and regex for the merged pattern
+      const paramNames: string[] = [];
+      const regexPattern = mergedPattern.replace(/:([^/]+)/g, (match, paramName) => {
+        paramNames.push(paramName);
+        return '([^/]+)';
+      });
+      
+      const regex = new RegExp(`^${regexPattern}$`);
+      
+      this.routes.push({
+        method: route.method,
+        pattern: mergedPattern,
+        handler: route.handler,
+        config: route.config,
+        regex,
+        paramNames
+      });
+    }
   }
 
   // Handle incoming request
@@ -177,5 +216,5 @@ export class Router {
 // });
 
 
-export const api_router = new Router();
+export const api_router = new Router('/api');
 // Register routes to this router.

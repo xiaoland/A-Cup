@@ -1,7 +1,11 @@
 import { z } from "zod";
-import { api_router } from "../fund/router";
+import { Router } from "../fund/router";
 import { Outbounds } from "../db/schema";
 import { and, eq, or } from "drizzle-orm";
+
+
+export const OUTBOUNDS_ROUTER = new Router('/outbounds');
+
 
 const CreateOutboundBody = z.object({
   share: z.boolean().default(false),
@@ -21,7 +25,7 @@ const CreateOutboundBody = z.object({
   tls: z.any().optional(),
 });
 
-api_router.add("post", "/outbounds", async ({
+OUTBOUNDS_ROUTER.add("post", "", async ({
     db, token_payload, body
 }) => {
     const user_id = parseInt(token_payload?.sub || '0');
@@ -41,7 +45,7 @@ const EditOutboundBody = CreateOutboundBody.partial()
 const IDPathParamSchema = z.object({
   id: z.string().transform(val => parseInt(val))
 });
-api_router.add("put", "/outbounds/:id", async ({
+OUTBOUNDS_ROUTER.add("put", "/:id", async ({
     body, db, path_params, token_payload
 }) => {
     const user_id = parseInt(token_payload?.sub || '0');
@@ -63,7 +67,7 @@ api_router.add("put", "/outbounds/:id", async ({
 const GetOutboundExportQuery = z.object({
   type: z.enum(['sing-box']).default('sing-box')
 })
-api_router.add("get", "/outbounds/:id/export", async ({
+OUTBOUNDS_ROUTER.add("get", "/:id/export", async ({
     token_payload, db, path_params, query_params
 }) => {
     const user_id = parseInt(token_payload?.sub || '0');
@@ -110,7 +114,7 @@ api_router.add("get", "/outbounds/:id/export", async ({
 
 
 // Delete outbound
-api_router.add('DELETE', '/outbounds/:id', async ({ 
+OUTBOUNDS_ROUTER.add('DELETE', '/:id', async ({ 
     path_params, db, token_payload 
 }) => {
   const user_id = parseInt(token_payload?.sub || '0');

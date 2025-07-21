@@ -1,4 +1,7 @@
+import { OUTBOUNDS_ROUTER } from "./apis/outbound";
 import { api_router } from "./fund/router";
+
+api_router.merge(OUTBOUNDS_ROUTER);
 
 export default {
 	async fetch(request, env) {

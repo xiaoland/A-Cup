@@ -57,22 +57,42 @@ Type of outbound, can be following values:
 
 ## API
 
+Module root path: `/outbounds`
+
+### Get By ID
+
+- method `GET`, path `/:id`
+- User must has role `authenticated`.
+- Query a row in outbounds table by id.
+
+### Get all
+
+- method `GET`, path `/all`
+- Get all outbounds that current user can access
+  - shared outbounds
+  - outbounds owned by current user
+
 ### Create
 
+- method `POST`, path ``
 - User must has role `authenticated`.
 - `owner` is the current user.
 
 ### Edit
 
+- method `PUT`, path `/:id`
 - User must has role `authenticated`.
 - Only `owner` can edit.
 - `id`, `owner` is not editable.
 
 ### Export
 
+- method `GET`, path `/:id/export`
 - Export to proxy profile.
 - User must has role `authenticated`.
-- - User must be `owner` or this outbound is shared.
+- User must be `owner` or this outbound is shared.
+- Set export type use query parameter `type`, can be following values
+  - `sing-box`
 
 #### Sing-Box
 
@@ -93,6 +113,13 @@ Type of outbound, can be following values:
   "tls": <tls>,
 }
 ```
+
+## Interface
+
+### Editor
+
+- Create and edit an outbound
+- Request API.Create, API.Edit
 
 ## References
 

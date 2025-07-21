@@ -1,4 +1,4 @@
-import { eq, and， or } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { z } from "zod";
 import { api_router } from "../fund/router";
 import { EndpointWireguards } from "../db/schema";

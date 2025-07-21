@@ -6,6 +6,9 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "a-cup",
 	"compatibility_date": "2025-07-12",
+  	"compatibility_flags": [
+    	"nodejs_compat"
+  	],
 	"main": "server/index.ts",
 	"assets": {
 		"not_found_handling": "single-page-application"
