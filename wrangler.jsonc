@@ -49,7 +49,7 @@
 	 */
 	"vars": { 
 		"JWT_SECRET": "production_value",
-		"OSS_PUBLIC_DOMAIN": "pub-795e064431694c348f58db09544f032a.r2.dev"
+		"OSS_PUBLIC_DOMAIN": "xxx.r2.dev"
 	},
 
 	/**
