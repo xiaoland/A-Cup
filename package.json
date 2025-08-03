@@ -9,7 +9,7 @@
 		"preview": "pnpm run build && wrangler dev",
 		"build-only": "vite build",
 		"type-check": "vue-tsc --build",
-		"deploy": "pnpm run build && wrangler d1 migrations apply $DATABASE_NAME --local && wrangler deploy",
+		"deploy": "pnpm run build && wrangler deploy",
 		"cf-typegen": "wrangler types",
 		"orm-mig-gen": "drizzle-kit generate"
 	},
