@@ -32,15 +32,15 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "hadream-a-cup",
-			"database_id": "780c4af6-750c-4fc0-9c21-837e08a56358",
+			"database_name": "db-name",
+			"database_id": "08960812-dcb3-44d2-84a9-109b566257c3",
 			"migrations_dir": "drizzle/migrations"
 		}
 	],
 	"r2_buckets": [
 		{
 			"binding": "OSS",
-			"bucket_name": "hadream-a-cup",
+			"bucket_name": "bucket-name",
 		}
 	],
 
@@ -49,8 +49,8 @@
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
 	"vars": { 
-		"JWT_SECRET": "production_value",
-		"OSS_PUBLIC_DOMAIN": "xxx.r2.dev"
+		"JWT_SECRET": "your_jwt_secret",
+		"OSS_PUBLIC_DOMAIN": "your_bucket_public_domain.r2.dev"
 	},
 
 	/**
