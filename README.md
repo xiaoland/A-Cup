@@ -35,6 +35,13 @@
 
 目前初始化没有配置用户，你可以到查询台运行：
 ```sql
+
+## Developer Manual
+
+### Tech Stacks
+- 后端：手搓Router + DrizzleORM + Zod
+- 前端：Vue3 + TS + Vite + Vuetify
+
 INSERT INTO users (username, password, roles) VALUES ('admin', '21232f297a57a5a743894a0e4a801fc3', '["admin"]');
 ```
 
