@@ -32,15 +32,12 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "db-name",
-			"database_id": "08960812-dcb3-44d2-84a9-109b566257c3",
 			"migrations_dir": "drizzle/migrations"
 		}
 	],
 	"r2_buckets": [
 		{
 			"binding": "OSS",
-			"bucket_name": "bucket-name",
 		}
 	],
 
