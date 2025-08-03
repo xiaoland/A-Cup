@@ -39,27 +39,33 @@ An array of Peer object. Peer object has following properties:
 
 ## API
 
+Basic path: `/endpoints`
+
 ### Create
 
+- Method `POST`, Path `/:type`
 - User must has role `authenticated`.
 - `owner` is the current user.
 
 ### Edit
 
+- Method `PATCH`, Path `/:type/:id`
 - User must be `owner`.
 - `id`, `owner` is not editable.
 
+## Private Method
+
 ### Export
 
-- Export to proxy profile.
-- User must has role `authenticated`.
-- User must be `owner` or this endpoint is shared.
+- Export to the format that proxy client can understand.
+- Takes a parameters `type`, can be
+  - `sing-box`
 
 #### Sing-Box
 
 ```json
 {
-  "type": "wireguard",
+  "type": "<type>",
   "tag": "wg.<name>",
   "system": "<system>",
   "name": "<name>",
@@ -69,6 +75,18 @@ An array of Peer object. Peer object has following properties:
   "private_key": "<private_key>"
 }
 ```
+
+## Interface
+
+### Wireguard Endpoint Editor
+
+- A component for editing (creating) a wireguard endpoint.
+  - Request to API.Edit(API.Create if not created)
+
+### List
+
+- List all types of endpoints owned (or shared) to current user.
+- Click list item to edit.
 
 ## References
 

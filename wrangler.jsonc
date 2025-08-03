@@ -36,13 +36,20 @@
 			"migrations_dir": "drizzle/migrations"
 		}
 	],
+	"r2_buckets": [
+		{
+			"binding": "OSS",
+			"bucket_name": "hadream-a-cup",
+		}
+	],
 
 	/**
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
 	"vars": { 
-		"JWT_SECRET": "production_value" 
+		"JWT_SECRET": "production_value",
+		"OSS_PUBLIC_DOMAIN": "pub-795e064431694c348f58db09544f032a.r2.dev"
 	},
 
 	/**

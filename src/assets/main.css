@@ -22,14 +22,10 @@ a,
 }
 
 @media (min-width: 1024px) {
-  body {
+  nav {
+    padding: 24px 12px;
+    font-size: 16px;
     display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+    gap: 12px;
   }
 }

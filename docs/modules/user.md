@@ -35,7 +35,7 @@ Root path is `/users`.
     - `iat`: timestamp of now
     - `exp`: after `iat` 1h
     - `roles`: user.roles
-  - Requests to other APIs requires this token and `payload.exp` will be the current user.
+  - Requests to other APIs requires this token and `payload.sub` will be the logged in user's ID.
 - If not, returns 401 Forbidden.
 
 ### Create
@@ -44,3 +44,13 @@ Root path is `/users`.
 - Only user with `admin` role can use.
 - Insert a row in user table.
   - Username, password and roles can be configured through body.
+
+## Interface
+
+### Login-Form
+
+- Log in a user using username and password.
+- Show when not logged in.
+- Request to API.Login.
+- Token should be managed through state management module `user` and persisted in local storage.
+- Provide a high-level function of `fetch` to request API with authorization header set.

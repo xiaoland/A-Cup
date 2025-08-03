@@ -1,11 +1,65 @@
 import { eq, and, or } from "drizzle-orm";
 import { z } from "zod";
-import { api_router } from "../fund/router";
+import { Router } from "../fund/router";
 import { EndpointWireguards } from "../db/schema";
+import { DrizzleD1Database } from 'drizzle-orm/d1';
+import { WireguardEndpointInSingBoxSchema, type WireguardEndpointInSingBox } from '../schemas/export';
+
+export const ENDPOINT_ROUTER = new Router('/endpoints');
+
+// Export function for WireGuard endpoints to sing-box format
+export async function exportWireguardEndpoint(db: DrizzleD1Database, id: number, type: "sing-box" = "sing-box"): Promise<WireguardEndpointInSingBox | null> {
+  const endpoints = await db.select().from(EndpointWireguards).where(eq(EndpointWireguards.id, id)).limit(1);
+  if (endpoints.length === 0) return null;
+  
+  const endpoint = endpoints[0];
+  
+  // Build peers with referenced endpoint data
+  const peers = [];
+  for (const peer of endpoint.peers as any[]) {
+    const peerData: any = {
+      server: peer.address,
+      server_port: peer.port,
+      allowed_ips: peer.allowed_ips
+    };
+
+    // If peer has an id reference, fetch the public key and preshared key
+    if (peer.id) {
+      const referencedEndpoints = await db.select().from(EndpointWireguards)
+        .where(eq(EndpointWireguards.id, peer.id))
+        .limit(1);
+      
+      if (referencedEndpoints.length > 0) {
+        peerData.public_key = referencedEndpoints[0].public_key;
+        if (referencedEndpoints[0].preshared_key) {
+          peerData.pre_shared_key = referencedEndpoints[0].preshared_key;
+        }
+      }
+    }
+
+    peers.push(peerData);
+  }
+
+  const config: WireguardEndpointInSingBox = {
+    type: "wireguard",
+    tag: `wg.${endpoint.name || endpoint.id}`,
+    system_interface: endpoint.system,
+    interface_name: endpoint.name,
+    local_address: endpoint.addresses as string[],
+    private_key: endpoint.private_key,
+    peers: peers
+  };
+
+  if (endpoint.mtu) config.mtu = endpoint.mtu;
+  if (endpoint.preshared_key) config.pre_shared_key = endpoint.preshared_key;
+
+  // Validate result with Zod schema
+  return WireguardEndpointInSingBoxSchema.parse(config);
+}
 
 // Schemas for validation
 const Peer = z.object({
-  id: z.number(),
+  id: z.number().optional(),
   address: z.string(),
   port: z.number(),
   allowed_ips: z.array(z.string())
@@ -27,20 +81,19 @@ const IdPathParamsSchema = z.object({
   id: z.string().transform(val => parseInt(val))
 });
 
-
 // Create endpoint
-api_router.add(
-  "POST", "/endpoints/wireguard",
+ENDPOINT_ROUTER.add(
+  "POST", "/wireguard",
   async ({ body, db, token_payload }) => {
     const endpoint = await db.insert(EndpointWireguards).values({
-      owner: parseInt(token_payload?.sub || '0'),
+      owner: parseInt((token_payload?.sub || '0').toString()),
       name: body.name,
       system: body.system,
-      addresses: JSON.stringify(body.addresses),
+      addresses: body.addresses,
       private_key: body.private_key,
       public_key: body.public_key,
       preshared_key: body.preshared_key,
-      peers: JSON.stringify(body.peers),
+      peers: body.peers,
       mtu: body.mtu,
       share: body.share
     }).returning();
@@ -53,26 +106,28 @@ api_router.add(
   }
 );
 
-// Get all endpoints for current user
-api_router.add(
-  "GET", "/endpoints/wireguard",
+// Get all endpoints for current user (including shared ones)
+ENDPOINT_ROUTER.add(
+  "GET", "",
   async ({ db, token_payload }) => {
-    const user_id = parseInt(token_payload?.sub || '0');
+    const user_id = parseInt((token_payload?.sub || '0').toString());
     const endpoints = await db
       .select()
       .from(EndpointWireguards)
       .where(
-        eq(EndpointWireguards.owner, user_id)
+        or(
+          eq(EndpointWireguards.owner, user_id),
+          eq(EndpointWireguards.share, true)
+        )
       );
 
-    // Parse JSON fields
-    const parsedEndpoints = endpoints.map(endpoint => ({
+    // Add type information for frontend
+    const typedEndpoints = endpoints.map(endpoint => ({
       ...endpoint,
-      addresses: JSON.parse(endpoint.addresses as string),
-      peers: JSON.parse(endpoint.peers as string)
+      type: 'wireguard'
     }));
 
-    return Response.json(parsedEndpoints);
+    return Response.json(typedEndpoints);
   },
   {
     allowedRoles: ["authenticated"]
@@ -80,11 +135,11 @@ api_router.add(
 );
 
 // Get specific endpoint by ID
-api_router.add(
-  "GET", "/endpoints/wireguard/:id",
+ENDPOINT_ROUTER.add(
+  "GET", "/wireguard/:id",
   async ({ path_params, db, token_payload }) => {
-    const user_id = parseInt(token_payload?.sub || '0');
-    const endpoint = await db
+    const user_id = parseInt((token_payload?.sub || '0').toString());
+    const endpoints = await db
       .select()
       .from(EndpointWireguards)
       .where(
@@ -93,20 +148,13 @@ api_router.add(
           eq(EndpointWireguards.owner, user_id)
         )
       )
-      .get();
+      .limit(1);
 
-    if (!endpoint) {
+    if (endpoints.length === 0) {
       return new Response("Endpoint not found", { status: 404 });
     }
 
-    // Parse JSON fields
-    const parsedEndpoint = {
-      ...endpoint,
-      addresses: JSON.parse(endpoint.addresses as string),
-      peers: JSON.parse(endpoint.peers as string)
-    };
-
-    return Response.json(parsedEndpoint);
+    return Response.json(endpoints[0]);
   },
   {
     pathParamsSchema: IdPathParamsSchema,
@@ -116,19 +164,27 @@ api_router.add(
 
 // Update endpoint
 const UpdateWireguardBody = CreateWireguardBody.partial();
-api_router.add(
-  "PUT", "/endpoints/wireguard/:id",
+ENDPOINT_ROUTER.add(
+  "PATCH", "/wireguard/:id",
   async ({ path_params, body, db, token_payload }) => {
-    const user_id = parseInt(token_payload?.sub || '0');
+    const user_id = parseInt((token_payload?.sub || '0').toString());
 
-    const updated = await db.update(EndpointWireguards).set({
-        ...body
-    }).where(
-        and(
-            eq(EndpointWireguards.id, path_params.id),
-            eq(EndpointWireguards.owner, user_id)
-        )
-    ).returning();
+    // Check ownership first
+    const existing = await db.select().from(EndpointWireguards).where(
+      and(
+        eq(EndpointWireguards.id, path_params.id),
+        eq(EndpointWireguards.owner, user_id)
+      )
+    ).limit(1);
+
+    if (existing.length === 0) {
+      return new Response("Endpoint not found", { status: 404 });
+    }
+
+    const updated = await db.update(EndpointWireguards)
+      .set(body)
+      .where(eq(EndpointWireguards.id, path_params.id))
+      .returning();
 
     return Response.json(updated[0]);
   },
@@ -140,10 +196,22 @@ api_router.add(
 );
 
 // Delete endpoint
-api_router.add(
-  "DELETE", "/api/endpoints/wireguard/:id",
+ENDPOINT_ROUTER.add(
+  "DELETE", "/wireguard/:id",
   async ({ path_params, db, token_payload }) => {
-    const user_Id = parseInt(token_payload?.sub || '0');
+    const user_id = parseInt((token_payload?.sub || '0').toString());
+
+    // Check ownership first
+    const existing = await db.select().from(EndpointWireguards).where(
+      and(
+        eq(EndpointWireguards.id, path_params.id),
+        eq(EndpointWireguards.owner, user_id)
+      )
+    ).limit(1);
+
+    if (existing.length === 0) {
+      return new Response("Endpoint not found", { status: 404 });
+    }
 
     await db.delete(EndpointWireguards).where(eq(EndpointWireguards.id, path_params.id));
 
@@ -154,58 +222,3 @@ api_router.add(
     allowedRoles: ["authenticated"]
   }
 );
-
-// Export endpoint to Sing-Box format
-const GetEndpointExportQuery = z.object({
-  type: z.enum(['sing-box']).default('sing-box')
-})
-api_router.add(
-  "GET", "/api/endpoints/wireguard/:id/export",
-  async ({ path_params, db, token_payload, query_params }) => {
-    const user_id = parseInt(token_payload?.sub || '0');
-    
-    // Get endpoint - user must be owner or endpoint must be shared
-    const endpoint = await db
-      .select()
-      .from(EndpointWireguards)
-      .where(
-        and(
-            eq(EndpointWireguards.id, path_params.id),
-            or(
-                eq(EndpointWireguards.owner, user_id),
-                eq(EndpointWireguards.share, true)
-            )
-        )
-      )
-      .get();
-    if (!endpoint) {
-      return new Response("Endpoint not found", { status: 404 });
-    }
-
-    // Parse JSON fields
-    const addresses = JSON.parse(endpoint.addresses as string);
-    const peers = JSON.parse(endpoint.peers as string);
-
-    // Build Sing-Box configuration
-    if (query_params.type === 'sing-box') {
-        return Response.json({
-            type: "wireguard",
-            tag: `wg.${endpoint.name}`,
-            system: endpoint.system,
-            name: endpoint.name,
-            mtu: endpoint.mtu,
-            address: addresses,
-            peers: peers,
-            private_key: endpoint.private_key
-        })
-    }
-    else {
-        return new Response("Unsupported export type", { status: 400 });
-    }
-  },
-  {
-    pathParamsSchema: IdPathParamsSchema,
-    queryParamsSchema: GetEndpointExportQuery,
-    allowedRoles: ["authenticated"],
-});
-

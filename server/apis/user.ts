@@ -1,16 +1,19 @@
 import { Users } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import { api_router } from '../fund/router';
+import { Router } from "../fund/router";
 import jwt from 'jsonwebtoken';
 import * as z from "zod";
 import { hash } from 'crypto';
+
+
+export const USERS_ROUTER = new Router('/users');
 
 
 const UserLoginBody = z.object({
     password: z.string().min(1, "Password is required"),
 })
 
-api_router.add('put', '/users/:username', async ({
+USERS_ROUTER.add('put', '/:username', async ({
     path_params, body, db, env
 }): Promise<Response> => {
     const { password: password_raw } = body;
@@ -41,7 +44,8 @@ api_router.add('put', '/users/:username', async ({
     bodySchema: UserLoginBody,
     pathParamsSchema: z.object({
         username: z.string().min(1, "Username is required")
-    })
+    }),
+    skipAuth: true,
 });
 
 
@@ -51,7 +55,7 @@ const CreateUserBody = z.object({
     roles: z.array(z.string()).default(["authenticated"])
 });
 
-api_router.add('post', '/users', async ({
+USERS_ROUTER.add('post', '', async ({
     body, db
 }): Promise<Response> => {
     const { username, password, roles } = body;

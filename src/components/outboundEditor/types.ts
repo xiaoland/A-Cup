@@ -2,6 +2,7 @@ export interface Outbound {
   id?: number
   owner?: number
   share: boolean
+  name?: string
   type: string
   outbounds: number[]
   region?: string
@@ -59,4 +60,16 @@ export const regionOptions: SelectOption[] = [
 export const networkOptions: SelectOption[] = [
   { title: 'TCP', value: 'tcp' },
   { title: 'UDP', value: 'udp' }
+]
+
+// Export type options
+export type ExportType = 'sing-box'
+
+export interface ExportTypeOption {
+  title: string
+  value: ExportType
+}
+
+export const exportTypes: ExportTypeOption[] = [
+  { title: 'Sing-Box', value: 'sing-box' }
 ]

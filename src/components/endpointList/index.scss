@@ -1,0 +1,16 @@
+@use 'sass:map';
+@use '../../assets/base.css';
+
+.endpoint-list {
+  // Keep any endpoint-specific styles here if needed
+  
+  .v-list-item-subtitle {
+    .text-caption {
+      color: rgba(var(--v-theme-on-surface), 0.7);
+    }
+  }
+  
+  .shared-indicator {
+    color: rgba(var(--v-theme-success), 1);
+  }
+}

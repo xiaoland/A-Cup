@@ -16,6 +16,7 @@ Stores in relational database's table `outbounds`.
 | id              | serial | PK,U           |         |                     |
 | owner           | int    | FK`users.id`   |         |                     |
 | share           | bool   |                | false   | can other user see  |
+| name            | text   |                | 1       | friendly name       |
 | type            | text   |                |         |                     |
 | outbounds       | int[]  | N              |         | FK`outbounds.id`    |
 | region          | text   | N              |         |                     |
@@ -67,7 +68,7 @@ Module root path: `/outbounds`
 
 ### Get all
 
-- method `GET`, path `/all`
+- method `GET`, path ``
 - Get all outbounds that current user can access
   - shared outbounds
   - outbounds owned by current user
@@ -85,21 +86,29 @@ Module root path: `/outbounds`
 - Only `owner` can edit.
 - `id`, `owner` is not editable.
 
-### Export
+### Export API
 
 - method `GET`, path `/:id/export`
-- Export to proxy profile.
 - User must has role `authenticated`.
-- User must be `owner` or this outbound is shared.
-- Set export type use query parameter `type`, can be following values
+- Export outbound to sing-box format.
+- User can access outbounds they own or that are shared.
+- Recursively exports nested outbounds and includes their tags.
+
+## Private Methods
+
+### Export
+
+- Export to the format that proxy client can understand.
+- Takes a parameters `type`, can be
   - `sing-box`
+- For nested outbounds (when `outbounds` field contains IDs), recursively exports each referenced outbound and includes their tags in the `outbounds` array.
 
 #### Sing-Box
 
 ```json
 {
   "type": "<type>",
-  "tag": "<type>.<region>",
+  "tag": "out.<type>.<region>.<name>",
   "server": "<address>",
   "server_port": <port>,
   "uuid": "<uuid>",
@@ -111,6 +120,7 @@ Module root path: `/outbounds`
   "flow": "<flow>",
   "transport": <transport>,
   "tls": <tls>,
+  "outbounds": ["<tag1>", "<tag2>", "..."]
 }
 ```
 
@@ -120,6 +130,12 @@ Module root path: `/outbounds`
 
 - Create and edit an outbound
 - Request API.Create, API.Edit
+
+### List
+
+- Show all outbounds that current account can access in a list.
+- Click list item to edit the outbound in Editor.
+- Request API.GetAll
 
 ## References
 

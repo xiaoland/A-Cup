@@ -1,0 +1,153 @@
+@use 'sass:color';
+
+.outbound-list {
+  .outbound-item {
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(var(--v-theme-on-surface), 0.04);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .v-list-item-title {
+      font-weight: 600;
+      color: rgb(var(--v-theme-on-surface));
+    }
+
+    .v-list-item-subtitle {
+      opacity: 0.7;
+    }
+
+    .v-avatar {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  .v-skeleton-loader {
+    border-radius: 8px;
+  }
+
+  .v-empty-state {
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  .v-card-title {
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  }
+
+  .v-card-text {
+    padding: 16px 24px;
+  }
+
+  .v-list {
+    padding: 0;
+    background: transparent;
+  }
+
+  .v-list-item {
+    padding: 16px 24px;
+    min-height: 80px;
+    margin: 8px 0;
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+    border-radius: 8px;
+    background: rgb(var(--v-theme-surface));
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .v-chip {
+    font-size: 0.75rem;
+    height: 24px;
+  }
+
+  .v-menu {
+    .v-list-item {
+      border: none;
+      border-radius: 0;
+      margin: 0;
+      min-height: 40px;
+      background: transparent;
+
+      &:hover {
+        background-color: rgba(var(--v-theme-primary), 0.08);
+      }
+
+      &.text-error:hover {
+        background-color: rgba(var(--v-theme-error), 0.08);
+      }
+    }
+  }
+}
+
+// Dialog specific styles
+.v-dialog {
+  .v-card {
+    border-radius: 12px;
+  }
+
+  .v-card-title {
+    padding: 20px 24px 16px;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .v-card-text {
+    padding: 0 24px 16px;
+  }
+
+  .v-card-actions {
+    padding: 16px 24px 20px;
+    gap: 8px;
+  }
+
+  .v-textarea {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .outbound-list {
+    .v-card-title {
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch !important;
+
+      .v-btn {
+        width: 100%;
+      }
+    }
+
+    .v-list-item {
+      padding: 12px 16px;
+      min-height: 70px;
+
+      .v-list-item-subtitle {
+        font-size: 0.8rem;
+      }
+
+      .v-avatar {
+        width: 36px;
+        height: 36px;
+      }
+    }
+
+    .v-card-text {
+      padding: 12px 16px;
+    }
+  }
+}

@@ -14,6 +14,14 @@
             <v-card-text>
               <v-row>
                 <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.name"
+                    label="Name"
+                    placeholder="Friendly name for this outbound"
+                    variant="outlined"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
                   <v-select
                     v-model="formData.type"
                     :items="typeOptions"
@@ -203,7 +211,7 @@
         <v-spacer />
         <v-btn
           variant="outlined"
-          @click="$emit('cancel')"
+          @click="handleCancel"
         >
           Cancel
         </v-btn>
@@ -221,8 +229,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import type { Outbound, Props, OutboundSelectItem } from './types'
 import { typeOptions, regionOptions, networkOptions } from './types'
+import { useUserStore } from '@/stores/user'
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'create'
@@ -233,9 +243,14 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
+// Store and router
+const userStore = useUserStore()
+const router = useRouter()
+
 // Form data
 const formData = ref<Outbound>({
   share: false,
+  name: '',
   type: '',
   outbounds: [],
   region: '',
@@ -268,7 +283,7 @@ const isEditing = computed(() => props.mode === 'edit')
 
 const outboundItems = computed(() => {
   return availableOutbounds.value.map(outbound => ({
-    title: `${outbound.type}.${outbound.region} (${outbound.address})`,
+    title: outbound.name || `${outbound.type}.${outbound.region} (${outbound.address})`,
     value: outbound.id
   }))
 })
@@ -302,7 +317,7 @@ const initializeForm = () => {
 const loadAvailableOutbounds = async () => {
   loadingOutbounds.value = true
   try {
-    const response = await fetch('/api/outbounds')
+    const response = await userStore.authorizedFetch('/api/outbounds')
     if (response.ok) {
       availableOutbounds.value = await response.json()
     }
@@ -339,13 +354,13 @@ const cleanFormData = (data: Outbound): Outbound => {
   
   // Clean string fields
   const stringFields: (keyof Outbound)[] = [
-    'region', 'address', 'network', 'encryption', 'packet_encoding', 
+    'name', 'region', 'address', 'network', 'encryption', 'packet_encoding', 
     'uuid', 'password', 'flow'
   ]
   
   stringFields.forEach(field => {
     if (cleaned[field] === '') {
-      cleaned[field] = undefined
+      (cleaned as any)[field] = undefined
     }
   })
   
@@ -374,7 +389,7 @@ const saveOutbound = async () => {
     
     const cleanedData = cleanFormData(formData.value)
     
-    const response = await fetch(url, {
+    const response = await userStore.authorizedFetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json'
@@ -385,6 +400,8 @@ const saveOutbound = async () => {
     if (response.ok) {
       const savedOutbound = await response.json()
       emit('save', savedOutbound)
+      // Navigate back to list on success
+      router.push('/outbounds')
     } else {
       const error = await response.text()
       console.error('Failed to save outbound:', error)
@@ -396,6 +413,12 @@ const saveOutbound = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Handle cancel action
+const handleCancel = () => {
+  emit('cancel')
+  router.push('/outbounds')
 }
 
 // Watch for JSON changes

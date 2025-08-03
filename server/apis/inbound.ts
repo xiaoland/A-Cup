@@ -1,9 +1,42 @@
 import { z } from 'zod';
 import { Router } from '../fund/router';
-import { Inbounds, Users } from '../db/schema';
+import { Inbounds } from '../db/schema';
 import { eq, and, or } from 'drizzle-orm';
-import { api_router } from '../fund/router';
+import { DrizzleD1Database } from 'drizzle-orm/d1';
+import { InboundInSingBoxSchema, type InboundInSingBox } from '../schemas/export';
 
+export const INBOUND_ROUTER = new Router('/inbounds');
+
+// Export function for sing-box format
+export async function exportInbound(db: DrizzleD1Database, id: number, type: "sing-box" = "sing-box"): Promise<InboundInSingBox | null> {
+  const inbounds = await db.select().from(Inbounds).where(eq(Inbounds.id, id)).limit(1);
+  if (inbounds.length === 0) return null;
+  
+  const inbound = inbounds[0];
+  const config: InboundInSingBox = {
+    type: inbound.type,
+    tag: `in.${inbound.type}`
+  };
+
+  if (inbound.address) {
+    config.listen = inbound.address;
+  }
+
+  if (inbound.port) {
+    config.listen_port = inbound.port;
+  }
+
+  if (inbound.type === 'tun') {
+    if (inbound.stack) config.stack = inbound.stack;
+    if (inbound.mtu) config.mtu = inbound.mtu;
+    config.auto_route = true;
+    config.auto_redirect = true;
+    config.strict_route = true;
+  }
+
+  // Validate result with Zod schema
+  return InboundInSingBoxSchema.parse(config);
+}
 
 const CreateInboundSchema = z.object({
   type: z.enum(['mixed', 'tun']),
@@ -19,9 +52,9 @@ const IDPathParamSchema = z.object({
 });
 
 // Create inbound
-api_router.add('POST', '/inbounds', async ({ body, db, token_payload }) => {
+INBOUND_ROUTER.add('POST', '', async ({ body, db, token_payload }) => {
   const result = await db.insert(Inbounds).values({
-    owner: parseInt(token_payload?.sub || '0'),
+    owner: parseInt((token_payload?.sub || '0').toString()),
     type: body.type,
     address: body.address,
     port: body.port,
@@ -38,8 +71,8 @@ api_router.add('POST', '/inbounds', async ({ body, db, token_payload }) => {
 
 // Edit inbound
 const EditInboundSchema = CreateInboundSchema.partial();
-api_router.add('PUT', '/inbounds/:id', async ({ path_params, body, db, token_payload }) => {
-  const current_user = parseInt(token_payload?.sub || '0');
+INBOUND_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload }) => {
+  const current_user = parseInt((token_payload?.sub || '0').toString());
   const inbound_id = path_params.id;
 
   // Check ownership
@@ -63,68 +96,9 @@ api_router.add('PUT', '/inbounds/:id', async ({ path_params, body, db, token_pay
   allowedRoles: ['authenticated']
 });
 
-// Export inbound to sing-box format
-const GetInboundExportQuery = z.object({
-  type: z.enum(['sing-box']).default('sing-box')
-})
-api_router.add('GET', '/inbounds/:id/export', async ({ 
-  path_params, query_params, db, token_payload 
-}) => {
-  const user_id = parseInt(token_payload?.sub || '0');
-  const inbound_id = path_params.id;
-
-  // Check access (owner or shared)
-  const inbounds = await db.select().from(Inbounds).where(
-    and(
-      eq(Inbounds.id, inbound_id),
-      or(
-        eq(Inbounds.owner, user_id),
-        eq(Inbounds.share, true)
-      )
-    )
-  ).limit(1);
-  if (inbounds.length === 0) {
-    return new Response('Inbound not found', { status: 404 });
-  }
-  const inbound = inbounds[0];
-
-  // Generate sing-box config
-  if (query_params.type === 'sing-box') {
-    const config: any = {
-      type: inbound.type,
-      tag: `in-${inbound.type}`
-    };
-
-    if (inbound.address) {
-      config.listen = inbound.address;
-    }
-
-    if (inbound.port) {
-      config.listen_port = inbound.port;
-    }
-
-    if (inbound.type === 'tun') {
-      config.stack = inbound.stack;
-      config.mtu = inbound.mtu;
-      config.auto_route = true;
-      config.auto_redirect = true;
-      config.strict_route = true;
-    }
-
-    return Response.json(config);
-  }
-
-  return new Response('Unsupported export type', { status: 400 });
-}, {
-  pathParamsSchema: IDPathParamSchema,
-  queryParamsSchema: GetInboundExportQuery,
-  allowedRoles: ['authenticated']
-});
-
-
 // Get inbound
-api_router.add('GET', '/inbounds/:id', async ({ path_params, db, token_payload }) => {
-  const user_id = parseInt(token_payload?.sub || '0');
+INBOUND_ROUTER.add('GET', '/:id', async ({ path_params, db, token_payload }) => {
+  const user_id = parseInt((token_payload?.sub || '0').toString());
   const inbound_id = path_params.id;
 
   // Check access (owner or shared)
@@ -145,8 +119,8 @@ api_router.add('GET', '/inbounds/:id', async ({ path_params, db, token_payload }
 });
 
 // List inbounds (owned or shared)
-api_router.add('GET', '/', async ({ db, token_payload }) => {
-  const userId = parseInt(token_payload?.sub || '0');
+INBOUND_ROUTER.add('GET', '', async ({ db, token_payload }) => {
+  const userId = parseInt((token_payload?.sub || '0').toString());
 
   const result = await db.select()
     .from(Inbounds)
@@ -163,8 +137,8 @@ api_router.add('GET', '/', async ({ db, token_payload }) => {
 });
 
 // Delete inbound
-api_router.add('DELETE', '/inbounds/:id', async ({ path_params, db, token_payload }) => {
-  const user_id = parseInt(token_payload?.sub || '0');
+INBOUND_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload }) => {
+  const user_id = parseInt((token_payload?.sub || '0').toString());
   const inbound_id = path_params.id;
 
   // Check ownership

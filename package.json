@@ -1,6 +1,6 @@
 {
 	"name": "a-cup",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -10,11 +10,13 @@
 		"build-only": "vite build",
 		"type-check": "vue-tsc --build",
 		"deploy": "pnpm run build && wrangler deploy",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"orm-mig-gen": "drizzle-kit generate"
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.44.2",
 		"jsonwebtoken": "^9.0.2",
+		"pinia": "^3.0.3",
 		"vue": "^3.5.17",
 		"vue-router": "^4.5.1",
 		"vuetify": "^3.9.2",
@@ -22,6 +24,7 @@
 	},
 	"devDependencies": {
 		"@cloudflare/vite-plugin": "^1.9.4",
+		"@mdi/font": "^7.4.47",
 		"@tsconfig/node22": "^22.0.2",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^22.15.32",

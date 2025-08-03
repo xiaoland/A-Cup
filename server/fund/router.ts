@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 
 export const JWTPayload = z.object({
     iss: z.string(),
-    sub: z.string(),
+    sub: z.number(),
     iat: z.number(),
     exp: z.number(),
     roles: z.array(z.string())
@@ -45,13 +45,14 @@ interface RouteConfig<
   pathParamsSchema?: PathParamsT;
   queryParamsSchema?: QueryParamsT;
   allowedRoles?: string[];
+  skipAuth?: boolean; // Skip authentication for this route
 }
 
 interface Route {
   method: string;
   pattern: string;
-  handler: RouteHandler;
-  config: RouteConfig;
+  handler: RouteHandler<any, any, any>;
+  config: RouteConfig<any, any, any>;
   regex: RegExp;
   paramNames: string[];
 }
@@ -156,30 +157,32 @@ export class Router {
             const body = route.config.bodySchema?.parse(await request.json());
             
             // Verify JWT token if authorization header is present
-            const authorization = request.headers.get('authorization');
-            const access_token = authorization?.split(' ')[1];
             let token_payload: z.infer<typeof JWTPayload> | undefined;
-            token_payload = JWTPayload.parse(jwt.verify(access_token || '', env.JWT_SECRET));
-            
-            // Check role-based access control
-            if (route.config.allowedRoles && route.config.allowedRoles.length > 0) {
-              if (!token_payload) {
-                return new Response('Unauthorized: No token provided', { status: 401 });
-              }
-              
-              const { roles: user_roles } = token_payload;
+            if (!route.config.skipAuth) {
+              const authorization = request.headers.get('authorization');
+              const access_token = authorization?.split(' ')[1];              
+              token_payload = JWTPayload.parse(jwt.verify(access_token || '', env.JWT_SECRET));
 
-              if (!user_roles.includes('admin')) {
-                const has_permission = route.config.allowedRoles.some(
-                  role => user_roles.includes(role)
-                );
+              // Check role-based access control
+              if (route.config.allowedRoles && route.config.allowedRoles.length > 0) {
+                if (!token_payload) {
+                  return new Response('Unauthorized: No token provided', { status: 401 });
+                }
                 
-                if (!has_permission) {
-                  return new Response('Forbidden: Insufficient permissions', { status: 403 });
+                const { roles: user_roles } = token_payload;
+
+                if (!user_roles.includes('admin')) {
+                  const has_permission = route.config.allowedRoles.some(
+                    role => user_roles.includes(role)
+                  );
+                  
+                  if (!has_permission) {
+                    return new Response('Forbidden: Insufficient permissions', { status: 403 });
+                  }
                 }
               }
             }
-            
+
             // Get drizzle database instance to D1 database
             const db = drizzle(env.DB);
             

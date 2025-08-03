@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import OutboundEditor from '@/components/outboundEditor/outboundEditor.vue';
-
+import OutboundList from '@/components/outboundList/outboundList.vue';
 </script>
 
 <template>
-  <OutboundEditor />
+  <OutboundList />
 </template>
 
 <style>

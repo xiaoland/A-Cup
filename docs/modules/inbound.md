@@ -52,18 +52,33 @@ Basic path: `/inbounds`.
 - User must be `owner`.
 - `id`, `owner` is not editable.
 
+### Get By ID
+
+- method `GET`, path `/:id`
+- User must has role `authenticated`.
+- Query a row in inbounds table by id.
+
+### Get all
+
+- method `GET`, path ``
+- Get all inbounds that current user can access
+  - shared inbounds
+  - inbounds owned by current user
+
+## Private Method
+
 ### Export
 
-- Export to proxy profile.
-- User must has role `authenticated`.
-- User must be `owner` or this inbound is shared.
+- Export to the format that proxy client can understand.
+- Takes a parameters `type`, can be
+  - `sing-box`
 
 #### Sing-Box
 
 ```json
 {
   "type": "<type>",
-  "tag": "in-<type>",
+  "tag": "in.<type>",
   "listen": "<address>",
   "listen_port": "<port>",
   "stack": "<stack>",  
@@ -74,6 +89,19 @@ Basic path: `/inbounds`.
   "strict_route": true
 }
 ```
+
+## Interface
+
+### Editor
+
+- Create and edit inbound.
+- Request to API.Create, API.Edit.
+
+### List
+
+- List all inbounds current user can access in a list.
+- Click list item to edit the inbound.
+- Request to API.GetAll
 
 ## References
 
