@@ -4,6 +4,8 @@
 
 小型机场指的是非经营目的的，几个人一起A钱自建的机场。
 
+[体验demo](https://a-cup.lanzhijiang.workers.dev)，账号admin，密码admin
+
 ## Features
 - 多用户
 - 导出与托管配置文件
