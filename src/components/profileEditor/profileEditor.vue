@@ -320,46 +320,118 @@
     <!-- Selection Dialog -->
     <v-dialog
       v-model="selectionDialog.show"
-      max-width="600px"
+      :max-width="selectionDialog.showEmbeddedEditor ? '800px' : '600px'"
       scrollable
     >
       <v-card class="selection-dialog">
-        <v-card-title>
-          Select {{ selectionDialog.title }}
+        <v-card-title class="d-flex align-center justify-space-between">
+          <span>{{ selectionDialog.showEmbeddedEditor ? `Create New ${selectionDialog.title.slice(0, -1)}` : `Select ${selectionDialog.title}` }}</span>
+          <v-btn
+            v-if="!selectionDialog.showEmbeddedEditor"
+            color="primary"
+            variant="outlined"
+            size="small"
+            @click="openEmbeddedEditor"
+            prepend-icon="mdi-plus"
+          >
+            Create New
+          </v-btn>
         </v-card-title>
         
         <v-card-text>
-          <v-text-field
-            v-model="selectionDialog.search"
-            label="Search"
-            variant="outlined"
-            prepend-inner-icon="mdi-magnify"
-            clearable
-            class="search-field"
-          />
+          <!-- Selection View -->
+          <div v-if="!selectionDialog.showEmbeddedEditor">
+            <v-text-field
+              v-model="selectionDialog.search"
+              label="Search"
+              variant="outlined"
+              prepend-inner-icon="mdi-magnify"
+              clearable
+              class="search-field"
+            />
+            
+            <v-list class="item-list">
+              <v-list-item
+                v-for="item in filteredSelectionItems"
+                :key="item.id"
+                :title="getItemTitle(item)"
+                :subtitle="getItemSubtitle(item)"
+                :active="isItemSelected(item)"
+                :color="isItemSelected(item) ? 'primary' : undefined"
+                @click="toggleSelection(item)"
+              >
+                <template #prepend>
+                  <v-checkbox
+                    :model-value="isItemSelected(item)"
+                    color="primary"
+                    hide-details
+                  />
+                </template>
+              </v-list-item>
+            </v-list>
+          </div>
           
-          <v-list class="item-list">
-            <v-list-item
-              v-for="item in filteredSelectionItems"
-              :key="item.id"
-              :title="getItemTitle(item)"
-              :subtitle="getItemSubtitle(item)"
-              :active="isItemSelected(item)"
-              :color="isItemSelected(item) ? 'primary' : undefined"
-              @click="toggleSelection(item)"
-            >
-              <template #prepend>
-                <v-checkbox
-                  :model-value="isItemSelected(item)"
-                  color="primary"
-                  hide-details
-                />
-              </template>
-            </v-list-item>
-          </v-list>
+          <!-- Embedded Editor View -->
+          <div v-else>
+            <!-- Inbound Editor -->
+            <InboundEditor
+              v-if="selectionDialog.type === 'inbounds'"
+              :mode="selectionDialog.embeddedEditorMode"
+              @save="handleEmbeddedEditorSave"
+              @cancel="closeEmbeddedEditor"
+            />
+            
+            <!-- Outbound Editor -->
+            <OutboundEditor
+              v-else-if="selectionDialog.type === 'outbounds'"
+              :mode="selectionDialog.embeddedEditorMode"
+              @save="handleEmbeddedEditorSave"
+              @cancel="closeEmbeddedEditor"
+            />
+            
+            <!-- DNS Server Editor -->
+            <DNSServerEditor
+              v-else-if="selectionDialog.type === 'dns'"
+              :mode="selectionDialog.embeddedEditorMode"
+              @save="handleEmbeddedEditorSave"
+              @cancel="closeEmbeddedEditor"
+            />
+            
+            <!-- WireGuard Endpoint Editor -->
+            <WireguardEndpointEditor
+              v-else-if="selectionDialog.type === 'wg_endpoints'"
+              :mode="selectionDialog.embeddedEditorMode"
+              @save="handleEmbeddedEditorSave"
+              @cancel="closeEmbeddedEditor"
+            />
+            
+            <!-- Route Rule Editor -->
+            <RouteRuleEditor
+              v-else-if="selectionDialog.type === 'rules'"
+              :mode="selectionDialog.embeddedEditorMode"
+              @save="handleEmbeddedEditorSave"
+              @cancel="closeEmbeddedEditor"
+            />
+            
+            <!-- Rule Set Editor -->
+            <RuleSetEditor
+              v-else-if="selectionDialog.type === 'rule_sets'"
+              :mode="selectionDialog.embeddedEditorMode"
+              @save="handleEmbeddedEditorSave"
+              @cancel="closeEmbeddedEditor"
+            />
+            
+            <!-- DNS Rule Editor -->
+            <DNSRuleEditor
+              v-else-if="selectionDialog.type === 'dns_rules'"
+              :mode="selectionDialog.embeddedEditorMode"
+              @save="handleEmbeddedEditorSave"
+              @cancel="closeEmbeddedEditor"
+            />
+          </div>
         </v-card-text>
         
-        <v-card-actions>
+        <v-card-actions v-if="!selectionDialog.showEmbeddedEditor">
           <v-spacer />
           <v-btn
             variant="outlined"
@@ -395,6 +467,15 @@ import type {
   DNSServer
 } from './types'
 import { profileTagOptions } from './types'
+
+// Import editor components
+import InboundEditor from '@/components/inboundEditor/inboundEditor.vue'
+import OutboundEditor from '@/components/outboundEditor/outboundEditor.vue'
+import DNSServerEditor from '@/components/dnsServerEditor/dnsServerEditor.vue'
+import WireguardEndpointEditor from '@/components/wireguardEndpointEditor/wireguardEndpointEditor.vue'
+import RouteRuleEditor from '@/components/routeRuleEditor/routeRuleEditor.vue'
+import RuleSetEditor from '@/components/ruleSetEditor/ruleSetEditor.vue'
+import DNSRuleEditor from '@/components/dnsRuleEditor/dnsRuleEditor.vue'
 
 // Props
 const props = withDefaults(defineProps<Props>(), {
@@ -441,7 +522,9 @@ const selectionDialog = ref({
   type: '' as keyof Profile,
   title: '',
   search: '',
-  selectedItems: [] as any[]
+  selectedItems: [] as any[],
+  showEmbeddedEditor: false,
+  embeddedEditorMode: 'create' as 'create' | 'edit'
 })
 
 // Computed
@@ -525,7 +608,9 @@ const openSelectionDialog = (type: keyof Profile) => {
     type,
     title: titles[type] || '',
     search: '',
-    selectedItems: [...(formData.value[type] as number[])]
+    selectedItems: [...(formData.value[type] as number[])],
+    showEmbeddedEditor: false,
+    embeddedEditorMode: 'create'
   }
 }
 
@@ -590,6 +675,76 @@ const removeDnsRule = (id: number) => {
 
 const removeDnsServer = (id: number) => {
   formData.value.dns = formData.value.dns.filter(i => i !== id)
+}
+
+// Embedded editor methods
+const openEmbeddedEditor = () => {
+  selectionDialog.value.showEmbeddedEditor = true
+  selectionDialog.value.embeddedEditorMode = 'create'
+}
+
+const closeEmbeddedEditor = () => {
+  selectionDialog.value.showEmbeddedEditor = false
+}
+
+const handleEmbeddedEditorSave = async (newItem: any) => {
+  // Refresh the relevant list based on dialog type
+  await refreshAvailableList(selectionDialog.value.type)
+  
+  // Auto-select the newly created item
+  if (newItem && newItem.id) {
+    if (!selectionDialog.value.selectedItems.includes(newItem.id)) {
+      selectionDialog.value.selectedItems.push(newItem.id)
+    }
+  }
+  
+  // Close the embedded editor
+  closeEmbeddedEditor()
+}
+
+const refreshAvailableList = async (type: keyof Profile) => {
+  try {
+    const endpoints: Record<string, string> = {
+      inbounds: '/api/inbounds',
+      outbounds: '/api/outbounds',
+      wg_endpoints: '/api/endpoints',
+      rules: '/api/route_rules',
+      rule_sets: '/api/rule_sets',
+      dns_rules: '/api/dns_rules',
+      dns: '/api/dns_servers'
+    }
+    
+    const response = await userStore.authorizedFetch(endpoints[type])
+    if (response.ok) {
+      const data = await response.json()
+      
+      switch (type) {
+        case 'inbounds':
+          availableInbounds.value = data
+          break
+        case 'outbounds':
+          availableOutbounds.value = data
+          break
+        case 'wg_endpoints':
+          availableWgEndpoints.value = data
+          break
+        case 'rules':
+          availableRules.value = data
+          break
+        case 'rule_sets':
+          availableRuleSets.value = data
+          break
+        case 'dns_rules':
+          availableDnsRules.value = data
+          break
+        case 'dns':
+          availableDnsServers.value = data
+          break
+      }
+    }
+  } catch (error) {
+    console.error(`Error refreshing ${type}:`, error)
+  }
 }
 
 const saveProfile = async () => {
