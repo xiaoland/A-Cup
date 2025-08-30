@@ -56,6 +56,7 @@
                 size="small"
                 @click="openSelectionDialog('inbounds')"
                 prepend-icon="mdi-plus"
+                data-testid="select-inbounds"
               >
                 Select Inbounds
               </v-btn>
@@ -333,6 +334,7 @@
             size="small"
             @click="openEmbeddedEditor"
             prepend-icon="mdi-plus"
+            data-testid="create-new-embedded"
           >
             Create New
           </v-btn>
