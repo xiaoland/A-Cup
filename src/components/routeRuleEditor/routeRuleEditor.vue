@@ -55,7 +55,17 @@
                     required
                     variant="outlined"
                     :loading="loadingOutbounds"
-                  />
+                  >
+                    <template #append-item>
+                      <v-divider />
+                      <v-list-item @click="showCreateOutboundDialog = true">
+                        <template #prepend>
+                          <v-icon>mdi-plus</v-icon>
+                        </template>
+                        <v-list-item-title>Create New Outbound</v-list-item-title>
+                      </v-list-item>
+                    </template>
+                  </v-select>
                 </v-col>
               </v-row>
             </v-card-text>
@@ -118,17 +128,28 @@
                   />
                 </v-col>
                 <v-col cols="12" md="6">
-                  <v-combobox
+                  <v-select
                     v-model="formData.rule_sets"
-                    label="Rule Set IDs"
-                    placeholder="1"
+                    :items="ruleSetItems"
+                    label="Rule Sets"
+                    placeholder="Select rule sets"
                     variant="outlined"
                     multiple
                     chips
                     closable-chips
                     clearable
-                    type="number"
-                  />
+                    :loading="loadingRuleSets"
+                  >
+                    <template #append-item>
+                      <v-divider />
+                      <v-list-item @click="showCreateRuleSetDialog = true">
+                        <template #prepend>
+                          <v-icon>mdi-plus</v-icon>
+                        </template>
+                        <v-list-item-title>Create New Rule Set</v-list-item-title>
+                      </v-list-item>
+                    </template>
+                  </v-select>
                 </v-col>
               </v-row>
             </v-card-text>
@@ -156,6 +177,24 @@
         </v-btn>
       </v-card-actions>
     </v-card>
+
+    <!-- Create Rule Set Dialog -->
+    <v-dialog v-model="showCreateRuleSetDialog" max-width="800px" persistent scrollable>
+      <RuleSetEditor 
+        mode="create" 
+        @save="handleRuleSetCreated" 
+        @cancel="showCreateRuleSetDialog = false" 
+      />
+    </v-dialog>
+
+    <!-- Create Outbound Dialog -->
+    <v-dialog v-model="showCreateOutboundDialog" max-width="800px" persistent scrollable>
+      <OutboundEditor 
+        mode="create" 
+        @save="handleOutboundCreated" 
+        @cancel="showCreateOutboundDialog = false" 
+      />
+    </v-dialog>
   </v-container>
 </template>
 
@@ -166,6 +205,9 @@ import type { RouteRule, Props, OutboundSelectItem } from './types'
 import { actionOptions } from './types'
 import { useUserStore } from '@/stores/user'
 import type { Outbound } from '@/components/outboundEditor/types'
+import type { RuleSet } from '@/components/ruleSetEditor/types'
+import RuleSetEditor from '@/components/ruleSetEditor/ruleSetEditor.vue'
+import OutboundEditor from '@/components/outboundEditor/outboundEditor.vue'
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'create'
@@ -196,7 +238,11 @@ const formData = ref<RouteRule>({
 // State
 const loading = ref(false)
 const loadingOutbounds = ref(false)
+const loadingRuleSets = ref(false)
 const availableOutbounds = ref<Outbound[]>([])
+const availableRuleSets = ref<RuleSet[]>([])
+const showCreateRuleSetDialog = ref(false)
+const showCreateOutboundDialog = ref(false)
 
 // Computed properties
 const isEditing = computed(() => props.mode === 'edit')
@@ -207,6 +253,13 @@ const outboundItems = computed(() => {
       ? `${outbound.type}.${outbound.region} (${outbound.address || 'N/A'})`
       : `${outbound.type} (${outbound.address || 'N/A'})`),
     value: outbound.id
+  }))
+})
+
+const ruleSetItems = computed(() => {
+  return availableRuleSets.value.map(ruleSet => ({
+    title: ruleSet.name,
+    value: ruleSet.id
   }))
 })
 
@@ -251,6 +304,21 @@ const loadAvailableOutbounds = async () => {
     console.error('Failed to load outbounds:', error)
   } finally {
     loadingOutbounds.value = false
+  }
+}
+
+// Load available rule sets for selector
+const loadAvailableRuleSets = async () => {
+  loadingRuleSets.value = true
+  try {
+    const response = await userStore.authorizedFetch('/api/rule_sets')
+    if (response.ok) {
+      availableRuleSets.value = await response.json()
+    }
+  } catch (error) {
+    console.error('Failed to load rule sets:', error)
+  } finally {
+    loadingRuleSets.value = false
   }
 }
 
@@ -324,10 +392,36 @@ const handleCancel = () => {
   router.push('/route-rules')
 }
 
+// Handle RuleSet creation
+const handleRuleSetCreated = async (newRuleSet: RuleSet) => {
+  showCreateRuleSetDialog.value = false
+  // Reload rule sets to include the new one
+  await loadAvailableRuleSets()
+  // Automatically select the new rule set
+  if (newRuleSet.id) {
+    if (!formData.value.rule_sets) {
+      formData.value.rule_sets = []
+    }
+    formData.value.rule_sets.push(newRuleSet.id)
+  }
+}
+
+// Handle Outbound creation
+const handleOutboundCreated = async (newOutbound: Outbound) => {
+  showCreateOutboundDialog.value = false
+  // Reload outbounds to include the new one
+  await loadAvailableOutbounds()
+  // Automatically select the new outbound
+  if (newOutbound.id) {
+    formData.value.outbound = newOutbound.id
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   initializeForm()
   loadAvailableOutbounds()
+  loadAvailableRuleSets()
 })
 </script>
 

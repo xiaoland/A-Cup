@@ -206,6 +206,65 @@
         </v-form>
       </v-card-text>
 
+      <!-- Related Rules Section (only in edit mode) -->
+      <v-card-text v-if="isEditing && formData.id" class="pt-0">
+        <v-card variant="outlined" class="mb-6">
+          <v-card-title class="text-h6">
+            <v-icon class="me-2">mdi-routes</v-icon>
+            Related Route Rules
+          </v-card-title>
+          <v-card-text>
+            <!-- Loading state -->
+            <v-skeleton-loader
+              v-if="loadingRelatedRules"
+              type="list-item@3"
+            />
+            
+            <!-- Empty state -->
+            <v-empty-state
+              v-else-if="relatedRules.length === 0"
+              headline="No related rules"
+              title="This outbound is not used by any route rules"
+              text="Route rules that use this outbound will appear here."
+              icon="mdi-routes"
+            />
+            
+            <!-- Related rules list -->
+            <v-list v-else density="compact">
+              <v-list-item
+                v-for="rule in relatedRules"
+                :key="rule.id"
+                @click="navigateToRule(rule.id)"
+                class="cursor-pointer"
+              >
+                <template #prepend>
+                  <v-avatar color="blue-lighten-1" size="small">
+                    <v-icon size="small">mdi-routes</v-icon>
+                  </v-avatar>
+                </template>
+                
+                <v-list-item-title>{{ rule.name }}</v-list-item-title>
+                <v-list-item-subtitle>
+                  Action: {{ rule.action }}
+                  <v-chip v-if="rule.share" size="x-small" color="green" class="ms-2">
+                    Shared
+                  </v-chip>
+                </v-list-item-subtitle>
+                
+                <template #append>
+                  <v-btn
+                    icon="mdi-pencil"
+                    variant="text"
+                    size="small"
+                    @click.stop="navigateToRule(rule.id)"
+                  />
+                </template>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
+      </v-card-text>
+
       <!-- Form Actions -->
       <v-card-actions class="px-6 pb-6">
         <v-spacer />
@@ -233,6 +292,7 @@ import { useRouter } from 'vue-router'
 import type { Outbound, Props, OutboundSelectItem } from './types'
 import { typeOptions, regionOptions, networkOptions } from './types'
 import { useUserStore } from '@/stores/user'
+import type { RouteRule } from '@/components/routeRuleEditor/types'
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'create'
@@ -276,7 +336,9 @@ const tlsError = ref('')
 // State
 const loading = ref(false)
 const loadingOutbounds = ref(false)
+const loadingRelatedRules = ref(false)
 const availableOutbounds = ref<Outbound[]>([])
+const relatedRules = ref<RouteRule[]>([])
 
 // Computed properties
 const isEditing = computed(() => props.mode === 'edit')
@@ -325,6 +387,32 @@ const loadAvailableOutbounds = async () => {
     console.error('Failed to load outbounds:', error)
   } finally {
     loadingOutbounds.value = false
+  }
+}
+
+// Load route rules that use this outbound
+const loadRelatedRules = async () => {
+  if (!formData.value.id) return
+  
+  loadingRelatedRules.value = true
+  try {
+    const response = await userStore.authorizedFetch('/api/route-rules')
+    if (response.ok) {
+      const allRules: RouteRule[] = await response.json()
+      // Filter rules that use this outbound
+      relatedRules.value = allRules.filter(rule => rule.outbound === formData.value.id)
+    }
+  } catch (error) {
+    console.error('Failed to load related rules:', error)
+  } finally {
+    loadingRelatedRules.value = false
+  }
+}
+
+// Navigate to rule editor
+const navigateToRule = (ruleId: number | undefined) => {
+  if (ruleId) {
+    router.push(`/route-rules/edit/${ruleId}`)
   }
 }
 
@@ -431,6 +519,10 @@ watch([transportJson, tlsJson], () => {
 onMounted(() => {
   initializeForm()
   loadAvailableOutbounds()
+  // Load related rules if editing existing outbound
+  if (isEditing.value && formData.value.id) {
+    loadRelatedRules()
+  }
 })
 </script>
 
