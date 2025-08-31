@@ -6,13 +6,13 @@ import type { DNSRule } from '@/components/dnsRuleEditor/types'
 const router = useRouter()
 
 const handleSave = (dnsRule: DNSRule) => {
-  // Navigate back to DNS rules list after successful save
-  router.push('/dns-rules')
+  // Navigate back to DNS view after successful save
+  router.push('/dns')
 }
 
 const handleCancel = () => {
-  // Navigate back to DNS rules list
-  router.push('/dns-rules')
+  // Navigate back to DNS view
+  router.push('/dns')
 }
 </script>
 

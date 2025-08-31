@@ -14,8 +14,7 @@ const navItems = [
   { title: 'Endpoints', to: '/endpoints' },
   { title: 'Route Rules', to: '/route-rules' },
   { title: 'Rule Sets', to: '/rule-sets' },
-  { title: 'DNS Servers', to: '/dns-servers' },
-  { title: 'DNS Rules', to: '/dns-rules' }
+  { title: 'DNS', to: '/dns' }
 ]
 </script>
 
@@ -50,8 +49,7 @@ const navItems = [
                 <RouterLink to="/endpoints">Endpoints</RouterLink>
                 <RouterLink to="/route-rules">Route Rules</RouterLink>
                 <RouterLink to="/rule-sets">Rule Sets</RouterLink>
-                <RouterLink to="/dns-servers">DNS Servers</RouterLink>
-                <RouterLink to="/dns-rules">DNS Rules</RouterLink>
+                <RouterLink to="/dns">DNS</RouterLink>
               </nav>
             </v-col>
             

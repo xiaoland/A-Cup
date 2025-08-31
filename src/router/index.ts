@@ -70,37 +70,58 @@ const router = createRouter({
       component: () => import('../views/RuleSetsEditView.vue'),
       props: true
     },
+    // Unified DNS Management
     {
-      path: '/dns-servers',
-      name: 'DNSServers',
-      component: () => import('../views/DNSServersView.vue'),
+      path: '/dns',
+      name: 'DNS',
+      component: () => import('../views/DNSView.vue'),
     },
     {
-      path: '/dns-servers/create',
+      path: '/dns/servers/create',
       name: 'DNSServersCreate',
       component: () => import('../views/DNSServersCreateView.vue'),
     },
     {
-      path: '/dns-servers/:id/edit',
+      path: '/dns/servers/:id/edit',
       name: 'DNSServersEdit',
       component: () => import('../views/DNSServersEditView.vue'),
       props: true
     },
     {
-      path: '/dns-rules',
-      name: 'DNSRules',
-      component: () => import('../views/DNSRulesView.vue'),
-    },
-    {
-      path: '/dns-rules/create',
+      path: '/dns/rules/create',
       name: 'DNSRulesCreate',
       component: () => import('../views/DNSRulesCreateView.vue'),
     },
     {
-      path: '/dns-rules/:id/edit',
+      path: '/dns/rules/:id/edit',
       name: 'DNSRulesEdit',
       component: () => import('../views/DNSRulesEditView.vue'),
       props: true
+    },
+    // Legacy redirects for backward compatibility
+    {
+      path: '/dns-servers',
+      redirect: '/dns'
+    },
+    {
+      path: '/dns-rules',
+      redirect: '/dns'
+    },
+    {
+      path: '/dns-servers/create',
+      redirect: '/dns/servers/create'
+    },
+    {
+      path: '/dns-servers/:id/edit',
+      redirect: to => `/dns/servers/${to.params.id}/edit`
+    },
+    {
+      path: '/dns-rules/create',
+      redirect: '/dns/rules/create'
+    },
+    {
+      path: '/dns-rules/:id/edit',
+      redirect: to => `/dns/rules/${to.params.id}/edit`
     },
     {
       path: '/endpoints',

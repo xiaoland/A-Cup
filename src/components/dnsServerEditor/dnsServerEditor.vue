@@ -194,6 +194,99 @@
             </v-expansion-panel>
           </v-expansion-panels>
 
+          <!-- Related DNS Rules (only in edit mode) -->
+          <v-card v-if="isEditing && props.dnsServer?.id" variant="outlined" class="form-section">
+            <v-card-title class="text-h6 d-flex align-center justify-space-between">
+              <span>
+                <v-icon class="me-2">mdi-dns-outline</v-icon>
+                Related DNS Rules
+              </span>
+              <v-btn
+                color="primary"
+                variant="outlined"
+                size="small"
+                prepend-icon="mdi-plus"
+                @click="showCreateRuleDialog = true"
+              >
+                Create Rule
+              </v-btn>
+            </v-card-title>
+            <v-card-text>
+              <!-- Loading State -->
+              <v-skeleton-loader
+                v-if="loadingRelatedRules"
+                type="list-item-three-line@3"
+                class="mb-4"
+              />
+
+              <!-- Empty State -->
+              <v-empty-state
+                v-else-if="!loadingRelatedRules && relatedRules.length === 0"
+                headline="No DNS rules found"
+                title="No rules are using this DNS server"
+                text="Create rules to control how domain names are resolved using this server."
+              >
+                <template #actions>
+                  <v-btn
+                    color="primary"
+                    variant="elevated"
+                    @click="showCreateRuleDialog = true"
+                    prepend-icon="mdi-plus"
+                  >
+                    Create First Rule
+                  </v-btn>
+                </template>
+              </v-empty-state>
+
+              <!-- DNS Rules List -->
+              <v-list v-else>
+                <v-list-item
+                  v-for="rule in relatedRules"
+                  :key="rule.id"
+                  class="related-rule-item"
+                  @click="editRule(rule)"
+                >
+                  <template #prepend>
+                    <v-icon color="primary">mdi-dns-outline</v-icon>
+                  </template>
+
+                  <v-list-item-title>{{ rule.name }}</v-list-item-title>
+                  
+                  <v-list-item-subtitle>
+                    <v-chip
+                      v-if="rule.action"
+                      size="x-small"
+                      class="me-2"
+                    >
+                      {{ rule.action }}
+                    </v-chip>
+                    <span v-if="rule.domains && rule.domains.length > 0">
+                      Domains: {{ rule.domains.slice(0, 2).join(', ') }}
+                      <span v-if="rule.domains.length > 2">...</span>
+                    </span>
+                    <span v-else-if="rule.domain_suffixes && rule.domain_suffixes.length > 0">
+                      Suffixes: {{ rule.domain_suffixes.slice(0, 2).join(', ') }}
+                      <span v-if="rule.domain_suffixes.length > 2">...</span>
+                    </span>
+                    <span v-else-if="rule.domain_keywords && rule.domain_keywords.length > 0">
+                      Keywords: {{ rule.domain_keywords.slice(0, 2).join(', ') }}
+                      <span v-if="rule.domain_keywords.length > 2">...</span>
+                    </span>
+                  </v-list-item-subtitle>
+
+                  <template #append>
+                    <v-btn
+                      icon="mdi-pencil"
+                      size="small"
+                      variant="text"
+                      @click.stop="editRule(rule)"
+                    />
+                  </template>
+                </v-list-item>
+              </v-list>
+            </v-card-text>
+          </v-card>
+
           <!-- Action Buttons -->
           <div class="action-buttons">
             <v-btn
@@ -213,13 +306,33 @@
         </v-form>
       </v-card-text>
     </v-card>
+
+    <!-- Create/Edit DNS Rule Dialog -->
+    <v-dialog v-model="showRuleDialog" max-width="800px">
+      <v-card>
+        <v-card-title>
+          <v-icon class="me-2">mdi-dns-outline</v-icon>
+          {{ editingRule ? 'Edit DNS Rule' : 'Create DNS Rule' }}
+        </v-card-title>
+        <v-card-text class="pa-0">
+          <DNSRuleEditor
+            :mode="editingRule ? 'edit' : 'create'"
+            :dns-rule="editingRule || undefined"
+            @save="handleRuleSaved"
+            @cancel="closeRuleDialog"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import DNSRuleEditor from '@/components/dnsRuleEditor/dnsRuleEditor.vue'
 import type { DNSServer, Props, SelectOption, TLSOptions, HTTPSOptions } from './types'
+import type { DNSRule } from '@/components/dnsRuleEditor/types'
 import { typeOptions, DEFAULT_PORTS } from './types'
 
 // Props and emits
@@ -241,6 +354,11 @@ const loadingOutbounds = ref(false)
 const outboundOptions = ref<SelectOption[]>([])
 const loadingWgEndpoints = ref(false)
 const wgEndpointOptions = ref<SelectOption[]>([])
+const loadingRelatedRules = ref(false)
+const relatedRules = ref<DNSRule[]>([])
+const showRuleDialog = ref(false)
+const showCreateRuleDialog = ref(false)
+const editingRule = ref<DNSRule | null>(null)
 
 // Form data
 const formData = ref<DNSServer>({
@@ -445,10 +563,76 @@ const saveDNSServer = async () => {
   }
 }
 
+// Related DNS Rules functionality
+const loadRelatedRules = async () => {
+  if (!props.dnsServer?.id) return
+  
+  try {
+    loadingRelatedRules.value = true
+    const response = await fetch(`/api/dns_rules?server=${props.dnsServer.id}`, {
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      }
+    })
+    
+    if (response.ok) {
+      relatedRules.value = await response.json()
+    } else {
+      console.error('Failed to load related DNS rules')
+    }
+  } catch (error) {
+    console.error('Error loading related DNS rules:', error)
+  } finally {
+    loadingRelatedRules.value = false
+  }
+}
+
+const editRule = (rule: DNSRule) => {
+  editingRule.value = rule
+  showRuleDialog.value = true
+}
+
+const handleRuleSaved = (rule: DNSRule) => {
+  // Update or add the rule in the related rules list
+  const existingIndex = relatedRules.value.findIndex(r => r.id === rule.id)
+  if (existingIndex >= 0) {
+    relatedRules.value[existingIndex] = rule
+  } else {
+    relatedRules.value.push(rule)
+  }
+  
+  closeRuleDialog()
+}
+
+const closeRuleDialog = () => {
+  showRuleDialog.value = false
+  showCreateRuleDialog.value = false
+  editingRule.value = null
+}
+
+// Watch for dialog state changes
+watch(showCreateRuleDialog, (newVal) => {
+  if (newVal) {
+    editingRule.value = { 
+      share: false, 
+      name: '', 
+      server: props.dnsServer?.id || 0,
+      domains: [],
+      domain_suffixes: [],
+      domain_keywords: [],
+      rule_sets: []
+    }
+    showRuleDialog.value = true
+  }
+})
+
 // Lifecycle
 onMounted(() => {
   loadOutbounds()
   loadWgEndpoints()
+  if (isEditing.value && props.dnsServer?.id) {
+    loadRelatedRules()
+  }
 })
 </script>
 

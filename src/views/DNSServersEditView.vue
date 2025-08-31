@@ -29,24 +29,24 @@ const loadDNSServer = async () => {
       dnsServer.value = await response.json()
     } else {
       console.error('Failed to load DNS server')
-      router.push('/dns-servers') // Redirect to list if not found
+      router.push('/dns') // Redirect to unified view if not found
     }
   } catch (error) {
     console.error('Failed to load DNS server:', error)
-    router.push('/dns-servers') // Redirect to list on error
+    router.push('/dns') // Redirect to unified view on error
   } finally {
     loading.value = false
   }
 }
 
 const handleSave = (updatedDNSServer: DNSServer) => {
-  // Navigate back to DNS servers list after successful save
-  router.push('/dns-servers')
+  // Navigate back to DNS view after successful save
+  router.push('/dns')
 }
 
 const handleCancel = () => {
-  // Navigate back to DNS servers list
-  router.push('/dns-servers')
+  // Navigate back to DNS view
+  router.push('/dns')
 }
 
 onMounted(() => {

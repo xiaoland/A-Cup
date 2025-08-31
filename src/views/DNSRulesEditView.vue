@@ -29,24 +29,24 @@ const loadDNSRule = async () => {
       dnsRule.value = await response.json()
     } else {
       console.error('Failed to load DNS rule')
-      router.push('/dns-rules') // Redirect to list if not found
+      router.push('/dns') // Redirect to unified view if not found
     }
   } catch (error) {
     console.error('Failed to load DNS rule:', error)
-    router.push('/dns-rules') // Redirect to list on error
+    router.push('/dns') // Redirect to unified view on error
   } finally {
     loading.value = false
   }
 }
 
 const handleSave = (updatedDNSRule: DNSRule) => {
-  // Navigate back to DNS rules list after successful save
-  router.push('/dns-rules')
+  // Navigate back to DNS view after successful save
+  router.push('/dns')
 }
 
 const handleCancel = () => {
-  // Navigate back to DNS rules list
-  router.push('/dns-rules')
+  // Navigate back to DNS view
+  router.push('/dns')
 }
 
 onMounted(() => {

@@ -30,7 +30,7 @@ export interface Props {
 
 export interface SelectOption {
   title: string
-  value: string
+  value: string | number
 }
 
 // Type options for DNS server types

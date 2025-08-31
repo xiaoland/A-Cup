@@ -62,7 +62,16 @@
                     hint="DNS server to route requests to"
                     persistent-hint
                     :loading="loadingDNSServers"
-                  />
+                  >
+                    <template #append-item>
+                      <v-divider />
+                      <v-list-item
+                        prepend-icon="mdi-plus"
+                        title="Create New DNS Server"
+                        @click="showCreateServerDialog = true"
+                      />
+                    </template>
+                  </v-select>
                 </v-col>
               </v-row>
             </v-card-text>
@@ -228,13 +237,32 @@
         </v-form>
       </v-card-text>
     </v-card>
+    
+    <!-- Create DNS Server Dialog -->
+    <v-dialog v-model="showCreateServerDialog" max-width="800px">
+      <v-card>
+        <v-card-title>
+          <v-icon class="me-2">mdi-dns</v-icon>
+          Create New DNS Server
+        </v-card-title>
+        <v-card-text class="pa-0">
+          <DNSServerEditor
+            mode="create"
+            @save="handleServerCreated"
+            @cancel="showCreateServerDialog = false"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import DNSServerEditor from '@/components/dnsServerEditor/dnsServerEditor.vue'
 import type { DNSRule, Props, SelectOption } from './types'
+import type { DNSServer } from '@/components/dnsServerEditor/types'
 import { actionOptions } from './types'
 
 // Props and emits
@@ -254,6 +282,7 @@ const userStore = useUserStore()
 const saving = ref(false)
 const loadingDNSServers = ref(false)
 const loadingRuleSets = ref(false)
+const showCreateServerDialog = ref(false)
 const dnsServerOptions = ref<SelectOption[]>([])
 const ruleSetOptions = ref<SelectOption[]>([])
 
@@ -417,6 +446,23 @@ const removeDomainKeyword = (index: number) => {
   if (formData.value.domain_keywords) {
     formData.value.domain_keywords.splice(index, 1)
   }
+}
+
+// DNS Server creation handler
+const handleServerCreated = (newServer: DNSServer) => {
+  // Add the new server to the options list (ensure id exists)
+  if (newServer.id) {
+    dnsServerOptions.value.push({
+      title: newServer.name,
+      value: newServer.id
+    })
+    
+    // Select the newly created server
+    formData.value.server = newServer.id
+  }
+  
+  // Close the dialog
+  showCreateServerDialog.value = false
 }
 
 // Lifecycle

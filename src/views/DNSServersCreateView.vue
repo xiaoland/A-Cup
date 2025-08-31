@@ -6,13 +6,13 @@ import type { DNSServer } from '@/components/dnsServerEditor/types'
 const router = useRouter()
 
 const handleSave = (dnsServer: DNSServer) => {
-  // Navigate back to DNS servers list after successful save
-  router.push('/dns-servers')
+  // Navigate back to DNS view after successful save
+  router.push('/dns')
 }
 
 const handleCancel = () => {
-  // Navigate back to DNS servers list
-  router.push('/dns-servers')
+  // Navigate back to DNS view
+  router.push('/dns')
 }
 </script>
 

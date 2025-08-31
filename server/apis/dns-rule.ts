@@ -253,17 +253,26 @@ DNS_RULE_ROUTER.add('GET', '/:id', async ({ path_params, db, token_payload }) =>
 });
 
 // List DNS Rules (owned or shared)
-DNS_RULE_ROUTER.add('GET', '', async ({ db, token_payload }) => {
+DNS_RULE_ROUTER.add('GET', '', async ({ db, token_payload, query_params }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
+  const server_id = query_params.server ? parseInt(query_params.server.toString()) : null;
+
+  let whereCondition = or(
+    eq(DNSRules.owner, user_id),
+    eq(DNSRules.share, true)
+  );
+
+  // If server_id is provided, add it to the where condition
+  if (server_id) {
+    whereCondition = and(
+      whereCondition,
+      eq(DNSRules.server, server_id)
+    );
+  }
 
   const result = await db.select()
     .from(DNSRules)
-    .where(
-      or(
-        eq(DNSRules.owner, user_id),
-        eq(DNSRules.share, true)
-      )
-    );
+    .where(whereCondition);
 
   // Parse JSON fields for each DNS rule
   const parsedResult = result.map(rule => parseDNSRuleFields(rule));
