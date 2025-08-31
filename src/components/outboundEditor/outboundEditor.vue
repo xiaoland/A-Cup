@@ -133,12 +133,24 @@
             <v-card-title class="text-h6">Encryption</v-card-title>
             <v-card-text>
               <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.encryption"
+                <v-col cols="12" md="6" v-if="formData.type === 'ss'">
+                  <v-select
+                    v-model="formData.method"
+                    :items="methodOptions"
                     label="Encryption Method"
-                    placeholder="aes-256-gcm"
                     variant="outlined"
+                    hint="Encryption algorithm for Shadowsocks"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12" md="6" v-if="formData.type === 'vmess' || formData.type === 'vless'">
+                  <v-select
+                    v-model="formData.security"
+                    :items="securityOptions"
+                    label="Security"
+                    variant="outlined"
+                    hint="Security/encryption type for VMess/VLESS"
+                    persistent-hint
                   />
                 </v-col>
                 <v-col cols="12" md="6" v-if="formData.network === 'udp'">
@@ -146,6 +158,8 @@
                     v-model="formData.packet_encoding"
                     label="Packet Encoding"
                     variant="outlined"
+                    hint="UDP packet encoding method"
+                    persistent-hint
                   />
                 </v-col>
               </v-row>
@@ -231,7 +245,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Outbound, Props, OutboundSelectItem } from './types'
-import { typeOptions, regionOptions, networkOptions } from './types'
+import { typeOptions, regionOptions, networkOptions, methodOptions, securityOptions } from './types'
 import { useUserStore } from '@/stores/user'
 
 const props = withDefaults(defineProps<Props>(), {
@@ -257,7 +271,9 @@ const formData = ref<Outbound>({
   address: '',
   port: undefined,
   network: '',
-  encryption: '',
+  encryption: '',  // Legacy field
+  method: '',      // SingBox method field
+  security: '',    // SingBox security field
   packet_encoding: '',
   uuid: '',
   password: '',
@@ -354,8 +370,8 @@ const cleanFormData = (data: Outbound): Outbound => {
   
   // Clean string fields
   const stringFields: (keyof Outbound)[] = [
-    'name', 'region', 'address', 'network', 'encryption', 'packet_encoding', 
-    'uuid', 'password', 'flow'
+    'name', 'region', 'address', 'network', 'encryption', 'method', 'security',
+    'packet_encoding', 'uuid', 'password', 'flow'
   ]
   
   stringFields.forEach(field => {

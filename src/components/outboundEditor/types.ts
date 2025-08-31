@@ -9,7 +9,9 @@ export interface Outbound {
   address?: string
   port?: number
   network?: string
-  encryption?: string
+  encryption?: string  // Legacy field for backward compatibility
+  method?: string      // SingBox encryption method
+  security?: string    // SingBox security/encryption type
   packet_encoding?: string
   uuid?: string
   password?: string
@@ -60,6 +62,27 @@ export const regionOptions: SelectOption[] = [
 export const networkOptions: SelectOption[] = [
   { title: 'TCP', value: 'tcp' },
   { title: 'UDP', value: 'udp' }
+]
+
+// SingBox encryption method options
+export const methodOptions: SelectOption[] = [
+  { title: 'AES-128-GCM', value: 'aes-128-gcm' },
+  { title: 'AES-256-GCM', value: 'aes-256-gcm' },
+  { title: 'ChaCha20-Poly1305', value: 'chacha20-poly1305' },
+  { title: 'XChaCha20-Poly1305', value: 'xchacha20-poly1305' },
+  { title: '2022-Blake3-AES-128-GCM', value: '2022-blake3-aes-128-gcm' },
+  { title: '2022-Blake3-AES-256-GCM', value: '2022-blake3-aes-256-gcm' },
+  { title: '2022-Blake3-ChaCha20-Poly1305', value: '2022-blake3-chacha20-poly1305' }
+]
+
+// SingBox security type options
+export const securityOptions: SelectOption[] = [
+  { title: 'None', value: 'none' },
+  { title: 'Auto', value: 'auto' },
+  { title: 'AES-128-GCM', value: 'aes-128-gcm' },
+  { title: 'AES-128-CFB', value: 'aes-128-cfb' },
+  { title: 'ChaCha20-Poly1305', value: 'chacha20-poly1305' },
+  { title: 'Zero', value: 'zero' }
 ]
 
 // Export type options

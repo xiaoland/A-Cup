@@ -29,9 +29,10 @@ export async function exportInbound(db: DrizzleD1Database, id: number, type: "si
   if (inbound.type === 'tun') {
     if (inbound.stack) config.stack = inbound.stack;
     if (inbound.mtu) config.mtu = inbound.mtu;
-    config.auto_route = true;
-    config.auto_redirect = true;
-    config.strict_route = true;
+    // Use explicit routing settings if available, otherwise use defaults
+    config.auto_route = inbound.auto_route !== null && inbound.auto_route !== undefined ? inbound.auto_route : true;
+    config.auto_redirect = inbound.auto_redirect !== null && inbound.auto_redirect !== undefined ? inbound.auto_redirect : true;
+    config.strict_route = inbound.strict_route !== null && inbound.strict_route !== undefined ? inbound.strict_route : true;
   }
 
   // Validate result with Zod schema
@@ -44,6 +45,9 @@ const CreateInboundSchema = z.object({
   port: z.number().int().optional(),
   stack: z.enum(['system', 'gvisor', 'mixed']).optional(),
   mtu: z.number().int().optional(),
+  auto_route: z.boolean().optional(),
+  auto_redirect: z.boolean().optional(),
+  strict_route: z.boolean().optional(),
   share: z.boolean().default(false)
 });
 

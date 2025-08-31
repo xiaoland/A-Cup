@@ -23,8 +23,19 @@ export async function exportOutbound(db: DrizzleD1Database, id: number, type: "s
   if (outbound.uuid) config.uuid = outbound.uuid;
   if (outbound.password) config.password = outbound.password;
   if (outbound.alter_id) config.alter_id = outbound.alter_id;
-  if (outbound.encryption) {
+  
+  // Handle encryption with backward compatibility
+  if (outbound.method) {
+    config.method = outbound.method;
+  } else if (outbound.encryption) {
+    // Backward compatibility: use encryption for method if method is not set
     config.method = outbound.encryption;
+  }
+  
+  if (outbound.security) {
+    config.security = outbound.security;
+  } else if (outbound.encryption) {
+    // Backward compatibility: use encryption for security if security is not set
     config.security = outbound.encryption;
   }
   if (outbound.network) config.network = outbound.network;
@@ -62,7 +73,9 @@ const CreateOutboundBody = z.object({
   address: z.string().optional(),
   port: z.number().optional(),
   network: z.enum(["udp", "tcp"]).optional(),
-  encryption: z.string().optional(),
+  encryption: z.string().optional(),  // Legacy field for backward compatibility
+  method: z.string().optional(),      // SingBox encryption method
+  security: z.string().optional(),    // SingBox security/encryption type
   packet_encoding: z.string().optional(),
   uuid: z.string().optional(),
   password: z.string().optional(),

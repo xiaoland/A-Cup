@@ -99,6 +99,42 @@
             </v-card-text>
           </v-card>
 
+          <!-- TUN Routing Configuration -->
+          <v-card variant="outlined" class="mb-6" v-if="formData.type === 'tun'">
+            <v-card-title class="text-h6">Routing Configuration</v-card-title>
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" md="4">
+                  <v-switch
+                    v-model="formData.auto_route"
+                    label="Auto Route"
+                    color="primary"
+                    hint="Automatically configure routing table"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-switch
+                    v-model="formData.auto_redirect"
+                    label="Auto Redirect"
+                    color="primary"
+                    hint="Automatically redirect traffic"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-switch
+                    v-model="formData.strict_route"
+                    label="Strict Route"
+                    color="primary"
+                    hint="Enable strict routing mode"
+                    persistent-hint
+                  />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+
         </v-form>
       </v-card-text>
 
@@ -147,7 +183,10 @@ const formData = ref<Inbound>({
   address: '',
   port: undefined,
   stack: 'mixed',
-  mtu: 9000
+  mtu: 9000,
+  auto_route: true,
+  auto_redirect: true,
+  strict_route: true
 })
 
 // State
@@ -179,6 +218,8 @@ const cleanFormData = (data: Inbound): Inbound => {
   if (cleaned.mtu === 0 || cleaned.mtu === null) {
     cleaned.mtu = undefined
   }
+  
+  // Boolean fields are kept as-is (true/false)
   
   return cleaned
 }

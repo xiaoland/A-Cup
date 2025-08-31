@@ -7,6 +7,9 @@ export interface Inbound {
   port?: number
   stack?: string
   mtu?: number
+  auto_route?: boolean
+  auto_redirect?: boolean
+  strict_route?: boolean
 }
 
 export interface Props {

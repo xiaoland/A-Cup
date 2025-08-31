@@ -16,6 +16,9 @@ export const Inbounds = sqliteTable("inbounds", {
   port: int(),
   stack: text().default("mixed"),
   mtu: int().default(9000),
+  auto_route: int({ mode: "boolean" }).default(true),
+  auto_redirect: int({ mode: "boolean" }).default(true),
+  strict_route: int({ mode: "boolean" }).default(true),
 });
 
 export const Outbounds = sqliteTable("outbounds", {
@@ -31,7 +34,9 @@ export const Outbounds = sqliteTable("outbounds", {
   address: text("address"),
   port: int("port"),
   network: text("network"), // 'udp' or 'tcp'
-  encryption: text("encryption"),
+  encryption: text("encryption"), // Legacy field for backward compatibility
+  method: text("method"), // SingBox encryption method
+  security: text("security"), // SingBox security/encryption type
   packet_encoding: text("packet_encoding"),
   uuid: text("uuid"),
   password: text("password"),
