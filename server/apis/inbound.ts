@@ -40,7 +40,7 @@ export async function exportInbound(db: DrizzleD1Database, id: number, type: "si
 }
 
 const CreateInboundSchema = z.object({
-  type: z.enum(['mixed', 'tun']),
+  type: z.enum(['mixed', 'socks', 'http', 'tun', 'redirect', 'tproxy']),
   address: z.string().optional(),
   port: z.number().int().optional(),
   stack: z.enum(['system', 'gvisor', 'mixed']).optional(),

@@ -39,12 +39,18 @@ export interface OutboundSelectItem {
 // Type options for outbound types
 export const typeOptions: SelectOption[] = [
   { title: 'Direct', value: 'direct' },
+  { title: 'Block', value: 'block' },
+  { title: 'DNS', value: 'dns' },
   { title: 'URL Test', value: 'urltest' },
   { title: 'Selector', value: 'selector' },
   { title: 'VMess', value: 'vmess' },
   { title: 'VLESS', value: 'vless' },
+  { title: 'Trojan', value: 'trojan' },
   { title: 'Shadowsocks', value: 'ss' },
-  { title: 'Hysteria2', value: 'hysteria2' }
+  { title: 'ShadowTLS', value: 'shadowtls' },
+  { title: 'Hysteria', value: 'hysteria' },
+  { title: 'Hysteria2', value: 'hysteria2' },
+  { title: 'WireGuard', value: 'wireguard' }
 ]
 
 // Region options for server locations
@@ -79,6 +85,8 @@ export const methodOptions: SelectOption[] = [
 export const securityOptions: SelectOption[] = [
   { title: 'None', value: 'none' },
   { title: 'Auto', value: 'auto' },
+  { title: 'TLS', value: 'tls' },
+  { title: 'Reality', value: 'reality' },
   { title: 'AES-128-GCM', value: 'aes-128-gcm' },
   { title: 'AES-128-CFB', value: 'aes-128-cfb' },
   { title: 'ChaCha20-Poly1305', value: 'chacha20-poly1305' },

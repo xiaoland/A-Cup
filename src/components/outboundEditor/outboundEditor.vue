@@ -97,14 +97,18 @@
                     label="UUID"
                     placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
                     variant="outlined"
+                    hint="User ID for VMess/VLESS protocol"
+                    persistent-hint
                   />
                 </v-col>
-                <v-col cols="12" v-if="formData.type === 'ss' || formData.type === 'hysteria2'">
+                <v-col cols="12" v-if="['trojan', 'ss', 'shadowtls', 'hysteria', 'hysteria2'].includes(formData.type)">
                   <v-text-field
                     v-model="formData.password"
                     label="Password"
                     type="password"
                     variant="outlined"
+                    :hint="getPasswordHint(formData.type)"
+                    persistent-hint
                   />
                 </v-col>
                 <v-col cols="12" md="6" v-if="formData.type === 'vmess'">
@@ -114,6 +118,8 @@
                     type="number"
                     min="0"
                     variant="outlined"
+                    hint="Alternative ID for VMess (usually 0)"
+                    persistent-hint
                   />
                 </v-col>
                 <v-col cols="12" md="6" v-if="formData.type === 'vless'">
@@ -122,6 +128,8 @@
                     label="Flow"
                     placeholder="xtls-rprx-vision"
                     variant="outlined"
+                    hint="Flow control for VLESS protocol"
+                    persistent-hint
                   />
                 </v-col>
               </v-row>
@@ -143,13 +151,23 @@
                     persistent-hint
                   />
                 </v-col>
-                <v-col cols="12" md="6" v-if="formData.type === 'vmess' || formData.type === 'vless'">
+                <v-col cols="12" md="6" v-if="formData.type === 'vmess'">
                   <v-select
                     v-model="formData.security"
                     :items="securityOptions"
                     label="Security"
                     variant="outlined"
-                    hint="Security/encryption type for VMess/VLESS"
+                    hint="Security/encryption type for VMess"
+                    persistent-hint
+                  />
+                </v-col>
+                <v-col cols="12" md="6" v-if="formData.type === 'vless'">
+                  <v-select
+                    v-model="formData.security"
+                    :items="securityOptions.filter(opt => ['none', 'tls', 'reality'].includes(opt.value))"
+                    label="Security"
+                    variant="outlined"
+                    hint="Security type for VLESS (none/tls/reality)"
                     persistent-hint
                   />
                 </v-col>
@@ -305,19 +323,19 @@ const outboundItems = computed(() => {
 })
 
 const needsServerConfig = computed(() => {
-  return ['vmess', 'vless', 'ss', 'hysteria2'].includes(formData.value.type)
+  return ['vmess', 'vless', 'trojan', 'ss', 'shadowtls', 'hysteria', 'hysteria2', 'wireguard'].includes(formData.value.type)
 })
 
 const needsAuth = computed(() => {
-  return ['vmess', 'vless', 'ss', 'hysteria2'].includes(formData.value.type)
+  return ['vmess', 'vless', 'trojan', 'ss', 'shadowtls', 'hysteria', 'hysteria2'].includes(formData.value.type)
 })
 
 const needsEncryption = computed(() => {
-  return ['vmess', 'vless', 'ss', 'hysteria2'].includes(formData.value.type)
+  return ['vmess', 'vless', 'trojan', 'ss', 'shadowtls', 'hysteria', 'hysteria2'].includes(formData.value.type)
 })
 
 const needsAdvanced = computed(() => {
-  return ['vmess', 'vless', 'ss', 'hysteria2'].includes(formData.value.type)
+  return ['vmess', 'vless', 'trojan', 'ss', 'shadowtls', 'hysteria', 'hysteria2'].includes(formData.value.type)
 })
 
 // Initialize form data
@@ -435,6 +453,23 @@ const saveOutbound = async () => {
 const handleCancel = () => {
   emit('cancel')
   router.push('/outbounds')
+}
+
+// Get password hint based on protocol type
+const getPasswordHint = (type: string): string => {
+  switch (type) {
+    case 'trojan':
+      return 'Trojan password for authentication'
+    case 'ss':
+      return 'Shadowsocks password/PSK'
+    case 'shadowtls':
+      return 'ShadowTLS password'
+    case 'hysteria':
+    case 'hysteria2':
+      return 'Hysteria authentication password'
+    default:
+      return 'Password for authentication'
+  }
 }
 
 // Watch for JSON changes

@@ -24,8 +24,12 @@ export interface SelectOption {
 
 // Type options for inbound types
 export const typeOptions: SelectOption[] = [
-  { title: 'Mixed', value: 'mixed' },
-  { title: 'TUN', value: 'tun' }
+  { title: 'Mixed (SOCKS5 + HTTP)', value: 'mixed' },
+  { title: 'SOCKS5', value: 'socks' },
+  { title: 'HTTP', value: 'http' },
+  { title: 'TUN', value: 'tun' },
+  { title: 'Redirect', value: 'redirect' },
+  { title: 'TProxy', value: 'tproxy' }
 ]
 
 // Stack options for TUN inbounds

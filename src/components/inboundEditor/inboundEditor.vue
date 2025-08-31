@@ -20,7 +20,7 @@
                     label="Type *"
                     required
                     variant="outlined"
-                    hint="Mixed: proxy socks5/http traffic on port, TUN: virtual NIC for transport proxy"
+                    hint="Protocol type: Mixed (SOCKS5+HTTP), TUN (virtual interface), etc."
                     persistent-hint
                   />
                 </v-col>
