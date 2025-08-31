@@ -107,9 +107,11 @@ Basic path:
 ### Get all
 
 - method `GET`, path ``
-- Get all DNS Servers that current user can access
-  - shared DNS Servers
-  - DNS Servers owned by current user
+- Get all DNS Rules that current user can access
+  - shared DNS Rules
+  - DNS Rules owned by current user
+- Optional query parameter `server` to filter by DNS Server ID
+  - Example: `GET /dns_rules?server=123` returns only rules using server ID 123
 
 ## Private Method
 
@@ -152,16 +154,30 @@ Basic path:
 
 ## Interface
 
-### Editor
+### Unified DNS Management View
 
-- Create and edit DNS Server / DNS Rule.
+- Combined view for managing both DNS Servers and DNS Rules in a tabbed interface.
+- Create and edit DNS Server / DNS Rule with integrated workflows.
 - Request to API.Create, API.Edit.
+
+### DNS Server Editor
+
+- Create and edit DNS Servers.
+- View related DNS Rules that use this server.
+- Edit related DNS Rules via inline dialogs.
+- Create new DNS Rules pre-configured for this server.
+
+### DNS Rule Editor
+
+- Create and edit DNS Rules.
+- Create new DNS Servers directly from the server selection dropdown.
+- Automatic selection of newly created servers.
 
 ### List
 
-- List all DNS Servers / DNS Rules current user can access in a list.
-  - Request to API.GetAll
-- Click list item to edit the DNS Server / DNS Rule.
+- Unified list view showing DNS Servers and DNS Rules in separate tabs.
+- Click list items to edit DNS Servers / DNS Rules.
+- Request to API.GetAll
 
 ## References
 
