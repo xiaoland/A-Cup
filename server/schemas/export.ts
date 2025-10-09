@@ -1,18 +1,5 @@
 import { z } from 'zod';
 
-// Zod schema for Inbound export result
-export const InboundInSingBoxSchema = z.object({
-  type: z.string(),
-  tag: z.string(),
-  listen: z.string().optional(),
-  listen_port: z.number().optional(),
-  stack: z.string().optional(),
-  mtu: z.number().optional(),
-  auto_route: z.boolean().optional(),
-  auto_redirect: z.boolean().optional(),
-  strict_route: z.boolean().optional(),
-});
-
 // Zod schema for Outbound export result
 export const OutboundInSingBoxSchema = z.object({
   type: z.string(),
@@ -31,59 +18,12 @@ export const OutboundInSingBoxSchema = z.object({
   outbounds: z.array(z.string()).optional(),
 });
 
-// Zod schema for WireGuard Endpoint export result
-export const WireguardEndpointInSingBoxSchema = z.object({
-  type: z.literal("wireguard"),
-  tag: z.string(),
-  system_interface: z.boolean(),
-  interface_name: z.string(),
-  local_address: z.array(z.string()),
-  private_key: z.string(),
-  peers: z.array(z.object({
-    server: z.string(),
-    server_port: z.number(),
-    allowed_ips: z.array(z.string()),
-    public_key: z.string().optional(),
-    pre_shared_key: z.string().optional(),
-  })),
-  mtu: z.number().optional(),
-  pre_shared_key: z.string().optional(),
-});
-
-// Zod schema for Route Rule export result
-export const RouteRuleInSingBoxSchema = z.object({
-  domain: z.array(z.string()).optional(),
-  domain_suffix: z.array(z.string()).optional(),
-  domain_keyword: z.array(z.string()).optional(),
-  domain_regex: z.array(z.string()).optional(),
-  rule_set: z.array(z.string()).optional(),
-  outbound: z.string().optional(),
-  action: z.string().optional(),
-});
-
 // Zod schema for Rule Set export result
 export const RuleSetInSingBoxSchema = z.object({
   tag: z.string(),
   type: z.string(),
   url: z.string().optional(),
   rules: z.array(z.any()).optional(),
-});
-
-// Zod schema for DNS Rule export result
-export const DNSRuleInSingBoxSchema = z.object({
-  domain: z.array(z.string()).optional(),
-  domain_suffix: z.array(z.string()).optional(),
-  domain_keyword: z.array(z.string()).optional(),
-  rule_set: z.array(z.string()).optional(),
-  server: z.string().optional(),
-  disable_cache: z.boolean().optional(),
-});
-
-// Zod schema for DNS Server export result
-export const DNSServerInSingBoxSchema = z.object({
-  tag: z.string(),
-  address: z.string(),
-  detour: z.string().optional(),
 });
 
 // Zod schema for the complete Sing-Box profile configuration
@@ -99,21 +39,11 @@ export const SingBoxProfileSchema = z.object({
       store_rdrc: z.boolean(),
     }),
   }),
-  inbounds: z.array(InboundInSingBoxSchema),
   outbounds: z.array(OutboundInSingBoxSchema),
-  endpoints: z.array(WireguardEndpointInSingBoxSchema),
   route: z.object({
     rule_set: z.array(RuleSetInSingBoxSchema),
-    rules: z.array(RouteRuleInSingBoxSchema),
     final: z.string(),
     auto_detect_interface: z.boolean(),
-  }),
-  dns: z.object({
-    disable_cache: z.boolean(),
-    disable_expire: z.boolean(),
-    independent_cache: z.boolean(),
-    servers: z.array(DNSServerInSingBoxSchema),
-    rules: z.array(DNSRuleInSingBoxSchema),
   }),
 });
 
@@ -136,12 +66,7 @@ export const ProfileExportResponseSchema = z.union([
 ]);
 
 // Type exports for backwards compatibility
-export type InboundInSingBox = z.infer<typeof InboundInSingBoxSchema>;
 export type OutboundInSingBox = z.infer<typeof OutboundInSingBoxSchema>;
-export type WireguardEndpointInSingBox = z.infer<typeof WireguardEndpointInSingBoxSchema>;
-export type RouteRuleInSingBox = z.infer<typeof RouteRuleInSingBoxSchema>;
 export type RuleSetInSingBox = z.infer<typeof RuleSetInSingBoxSchema>;
-export type DNSRuleInSingBox = z.infer<typeof DNSRuleInSingBoxSchema>;
-export type DNSServerInSingBox = z.infer<typeof DNSServerInSingBoxSchema>;
 export type SingBoxProfile = z.infer<typeof SingBoxProfileSchema>;
 export type ProfileExportResponse = z.infer<typeof ProfileExportResponseSchema>;
