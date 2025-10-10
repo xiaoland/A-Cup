@@ -64,7 +64,6 @@ export const RuleSets = sqliteTable("rule_sets", {
   name: text("name").notNull(),
   type: text("type").notNull(), // "remote" | "inline"
   format: text("format").notNull(), // e.g. "source" | "binary"
-  path: text("path"), // optional local cache path for remote type
   content: text("content").notNull(),
 
   // Access control lists (JSON arrays of userId: int)

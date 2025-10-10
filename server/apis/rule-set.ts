@@ -40,7 +40,6 @@ const CreateRuleSetSchema = z.object({
   type: z.enum(['inline', 'remote']),
   format: z.string().min(1), // e.g. source/binary
   content: z.string().default(''),
-  path: z.string().optional(),
   readableBy: z.array(z.number().int()).optional(),
   writeableBy: z.array(z.number().int()).optional(),
   download_detour: z.string().optional(),
@@ -62,7 +61,6 @@ RULE_SET_ROUTER.add('POST', '', async ({ body, db, token_payload }) => {
     type: body.type,
     format: body.format,
     content: body.content ?? '',
-    path: body.path,
     readableBy: JSON.stringify(readableBy) as unknown as any,
     writeableBy: JSON.stringify(writeableBy) as unknown as any,
     download_detour: body.download_detour,
@@ -95,7 +93,6 @@ RULE_SET_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload
   if (body.type !== undefined) updateData.type = body.type;
   if (body.format !== undefined) updateData.format = body.format;
   if (body.content !== undefined) updateData.content = body.content;
-  if (body.path !== undefined) updateData.path = body.path;
   if (body.readableBy !== undefined) updateData.readableBy = JSON.stringify(body.readableBy) as unknown as any;
   if (body.writeableBy !== undefined) updateData.writeableBy = JSON.stringify(body.writeableBy) as unknown as any;
   if (body.download_detour !== undefined) updateData.download_detour = body.download_detour;
