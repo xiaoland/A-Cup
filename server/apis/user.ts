@@ -32,7 +32,7 @@ USERS_ROUTER.add('put', '/:username', async ({
             "sub": users[0].id,
             "iat": Math.floor(Date.now() / 1000),
             "exp": Math.floor(Date.now() / 1000) + 60 * 60,
-            "roles": users[0].roles
+            "roles": ["authenticated"]
         }, env.JWT_SECRET);
         return Response.json(users[0], {
             headers: {
@@ -52,22 +52,19 @@ USERS_ROUTER.add('put', '/:username', async ({
 const CreateUserBody = z.object({
     username: z.string().min(1, "Username is required"),
     password: z.string().min(1, "Password is required"),
-    roles: z.array(z.string()).default(["authenticated"])
 });
 
 USERS_ROUTER.add('post', '', async ({
     body, db
 }): Promise<Response> => {
-    const { username, password, roles } = body;
+    const { username, password } = body;
     const password_hashed = hash("md5", password).toString();
     
     const user = await db.insert(Users).values({
         username,
         password: password_hashed,
-        roles
     }).returning();
     return Response.json(user[0], { status: 201 });
 }, {
     bodySchema: CreateUserBody,
-    allowedRoles: ['admin']
 });

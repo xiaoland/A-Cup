@@ -38,7 +38,6 @@ export const useUserStore = defineStore('user', () => {
         user.value = {
           id: parseInt(payload.sub),
           username: '', // We don't store username in JWT
-          roles: payload.roles
         }
       }
     } else {

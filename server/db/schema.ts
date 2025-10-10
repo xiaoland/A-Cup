@@ -5,7 +5,6 @@ export const Users = sqliteTable("users", {
   id: int().primaryKey({ autoIncrement: true }),
   username: text().notNull(),
   password: text().notNull(),
-  roles: text("roles", {mode: "json"}).notNull().default("[]"), 
 });
 
 export const Outbounds = sqliteTable("outbounds", {
