@@ -9,7 +9,6 @@ export const JWTPayload = z.object({
     sub: z.number(),
     iat: z.number(),
     exp: z.number(),
-    roles: z.array(z.string())
 })
 
 interface RouteHandler<
@@ -44,7 +43,7 @@ interface RouteConfig<
   bodySchema?: BodyT;
   pathParamsSchema?: PathParamsT;
   queryParamsSchema?: QueryParamsT;
-  allowedRoles?: string[];
+  allowedRoles?: string[]; // when provided, simply requires a valid JWT (no role matching)
   skipAuth?: boolean; // Skip authentication for this route
 }
 
@@ -160,25 +159,13 @@ export class Router {
             let token_payload: z.infer<typeof JWTPayload> | undefined;
             if (!route.config.skipAuth) {
               const authorization = request.headers.get('authorization');
-              const access_token = authorization?.split(' ')[1];              
+              const access_token = authorization?.split(' ')[1];
               token_payload = JWTPayload.parse(jwt.verify(access_token || '', env.JWT_SECRET));
 
-              // Check role-based access control
+              // If route declares allowedRoles, treat it as "authentication required"
               if (route.config.allowedRoles && route.config.allowedRoles.length > 0) {
                 if (!token_payload) {
                   return new Response('Unauthorized: No token provided', { status: 401 });
-                }
-                
-                const { roles: user_roles } = token_payload;
-
-                if (!user_roles.includes('admin')) {
-                  const has_permission = route.config.allowedRoles.some(
-                    role => user_roles.includes(role)
-                  );
-                  
-                  if (!has_permission) {
-                    return new Response('Forbidden: Insufficient permissions', { status: 403 });
-                  }
                 }
               }
             }
