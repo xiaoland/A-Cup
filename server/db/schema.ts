@@ -63,23 +63,17 @@ export const RuleSets = sqliteTable("rule_sets", {
   id: int("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   type: text("type").notNull(), // "remote" | "inline"
-  format: text("format").notNull().default(sql`'source'`), // e.g. "source" | "binary"
+  format: text("format").notNull(), // e.g. "source" | "binary"
   path: text("path"), // optional local cache path for remote type
-  content: text("content").notNull().default(sql`''`),
+  content: text("content").notNull(),
 
   // Access control lists (JSON arrays of userId: int)
-  readable_by: text("readable_by", { mode: "json" }).notNull().default(sql`'[]'`),
-  writeable_by: text("writeable_by", { mode: "json" }).notNull().default(sql`'[]'`),
+  readableBy: text("readable_by", { mode: "json" }).notNull(),
+  writeableBy: text("writeable_by", { mode: "json" }).notNull(),
 
   // Optional fields for remote updates
   download_detour: text("download_detour"),
   update_interval: text("update_interval"),
-
-  // Deprecated fields kept for backward compatibility
-  owner: int("owner").references(() => Users.id),
-  share: int("share", { mode: "boolean" }).default(false),
-  rules: text("rules", { mode: "json" }), // array of headless rule objects
-  url: text("url"),
 });
 
 export const Profiles = sqliteTable("profiles", {
