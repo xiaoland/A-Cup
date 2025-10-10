@@ -59,13 +59,20 @@ export const Outbounds = sqliteTable("outbounds", {
 });
 
 export const RuleSets = sqliteTable("rule_sets", {
-  id: int().primaryKey({ autoIncrement: true }),
-  owner: int().notNull().references(() => Users.id),
-  share: int({ mode: "boolean" }).notNull().default(false),
-  type: text().notNull().default("remote"),
-  name: text().notNull(),
-  rules: text({ mode: "json" }), // array of headless rule objects
-  url: text(),
+  // Core fields
+  id: int("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // "remote" | "inline"
+  format: text("format").notNull(), // e.g. "source" | "binary"
+  content: text("content").notNull(),
+
+  // Access control lists (JSON arrays of userId: int)
+  readableBy: text("readable_by", { mode: "json" }).notNull(),
+  writeableBy: text("writeable_by", { mode: "json" }).notNull(),
+
+  // Optional fields for remote updates
+  download_detour: text("download_detour"),
+  update_interval: text("update_interval"),
 });
 
 export const Profiles = sqliteTable("profiles", {
