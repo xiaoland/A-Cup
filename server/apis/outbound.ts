@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Router } from "../fund/router";
 import { Outbounds } from "../db/schema";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { DrizzleD1Database } from 'drizzle-orm/d1';
 import { OutboundInSingBoxSchema, type OutboundInSingBox } from '../schemas/export';
 
@@ -15,38 +15,27 @@ export async function exportOutbound(db: DrizzleD1Database, id: number, type: "s
   const outbound = outbounds[0];
   const config: OutboundInSingBox = {
     type: outbound.type,
-    tag: `out.${outbound.type}.${outbound.region || 'default'}.${outbound.name || outbound.id}`
+    tag: `out.${outbound.type}.${(outbound as any).region || 'default'}.${(outbound as any).name || (outbound as any).id}`
   };
 
-  if (outbound.address) config.server = outbound.address;
-  if (outbound.port) config.server_port = outbound.port;
-  if (outbound.uuid) config.uuid = outbound.uuid;
-  if (outbound.password) config.password = outbound.password;
-  if (outbound.alter_id) config.alter_id = outbound.alter_id;
-  if (outbound.encryption) {
-    config.method = outbound.encryption;
-    config.security = outbound.encryption;
-  }
-  if (outbound.network) config.network = outbound.network;
-  if (outbound.flow) config.flow = outbound.flow;
-  if (outbound.transport) config.transport = outbound.transport;
-  if (outbound.tls) config.tls = outbound.tls;
+  // Map core connection fields
+  if ((outbound as any).server) config.server = (outbound as any).server as string;
+  if ((outbound as any).server_port) config.server_port = (outbound as any).server_port as number;
 
-  // Handle nested outbounds
-  if (outbound.outbounds && Array.isArray(outbound.outbounds) && outbound.outbounds.length > 0) {
-    const nestedOutboundTags: string[] = [];
-    for (const nestedId of outbound.outbounds) {
-      if (typeof nestedId === 'number') {
-        const nestedOutbound = await exportOutbound(db, nestedId, type);
-        if (nestedOutbound) {
-          nestedOutboundTags.push(nestedOutbound.tag);
-        }
-      }
-    }
-    if (nestedOutboundTags.length > 0) {
-      config.outbounds = nestedOutboundTags;
-    }
+  // Optional fields derived from credential/transport/tls
+  const credential = (outbound as any).credential as any | undefined;
+  if (credential && typeof credential === 'object') {
+    if (credential.uuid) config.uuid = credential.uuid;
+    if (credential.password) config.password = credential.password;
+    if (credential.alter_id) config.alter_id = credential.alter_id;
+    if (credential.method) config.method = credential.method;
+    if (credential.security) config.security = credential.security;
+    if (credential.network) config.network = credential.network;
+    if (credential.flow) config.flow = credential.flow;
   }
+
+  if ((outbound as any).transport) config.transport = (outbound as any).transport as any;
+  if ((outbound as any).tls) config.tls = (outbound as any).tls as any;
 
   // Validate result with Zod schema
   return OutboundInSingBoxSchema.parse(config);
@@ -54,68 +43,65 @@ export async function exportOutbound(db: DrizzleD1Database, id: number, type: "s
 
 
 const CreateOutboundBody = z.object({
-  share: z.boolean().default(false),
-  name: z.string().optional(),
-  type: z.string(),
-  outbounds: z.array(z.number()).optional(),
+  name: z.string().min(1),
   region: z.string().optional(),
-  address: z.string().optional(),
-  port: z.number().optional(),
-  network: z.enum(["udp", "tcp"]).optional(),
-  encryption: z.string().optional(),
-  packet_encoding: z.string().optional(),
-  uuid: z.string().optional(),
-  password: z.string().optional(),
-  alter_id: z.number().optional(),
-  flow: z.string().optional(),
-  transport: z.any().optional(),
-  tls: z.any().optional(),
+  provider: z.string().optional(),
+  tag: z.string().optional(),
+  type: z.string().min(1),
+  server: z.string().min(1),
+  server_port: z.number().int().positive(),
+  credential: z.any(),
+  transport: z.any().optional().default({}),
+  tls: z.any().optional().default({}),
+  mux: z.any().optional().default({}),
+  other: z.any().optional().default({}),
+  readable_by: z.array(z.number().int().positive()).optional(),
+  writable_by: z.array(z.number().int().positive()).optional(),
 });
 
 const IDPathParamSchema = z.object({
   id: z.string().transform(val => parseInt(val))
 });
-// Get By ID
+// Get By ID (auth via readable_by/writable_by)
 OUTBOUNDS_ROUTER.add("get", "/:id", async ({
     db, token_payload, path_params
 }) => {
     const user_id = parseInt((token_payload?.sub || '0').toString());
     const outbound_id = path_params.id;
 
-    const outbounds = await db.select().from(Outbounds).where(
-        and(
-            eq(Outbounds.id, outbound_id),
-            or(
-                eq(Outbounds.owner, user_id),
-                eq(Outbounds.share, true)
-            )
-        )
-    );
+    const outbounds = await db.select().from(Outbounds).where(eq(Outbounds.id, outbound_id));
     
     if (outbounds.length === 0) {
         return Response.json({ error: "Not Found" }, { status: 404 });
     }
 
-    return Response.json(outbounds[0]);
+    const row: any = outbounds[0];
+    const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
+    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+    if (![...readable, ...writable].includes(user_id)) {
+      return new Response('Forbidden', { status: 403 });
+    }
+
+    return Response.json(row);
 }, {
     pathParamsSchema: IDPathParamSchema,
     allowedRoles: ['authenticated']
 });
 
-// Get all
+// Get all (filter by membership in readable_by/writable_by on the server side)
 OUTBOUNDS_ROUTER.add("get", "", async ({
     db, token_payload
 }) => {
     const user_id = parseInt((token_payload?.sub || '0').toString());
 
-    const outbounds = await db.select().from(Outbounds).where(
-        or(
-            eq(Outbounds.owner, user_id),
-            eq(Outbounds.share, true)
-        )
-    );
+    const outbounds = await db.select().from(Outbounds);
+    const filtered = outbounds.filter((row: any) => {
+      const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
+      const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+      return [...readable, ...writable].includes(user_id);
+    });
 
-    return Response.json(outbounds);
+    return Response.json(filtered);
 }, {
     allowedRoles: ['authenticated']
 });
@@ -125,9 +111,13 @@ OUTBOUNDS_ROUTER.add("post", "", async ({
 }) => {
     const user_id = parseInt((token_payload?.sub || '0').toString());
 
+    const readable_by = body.readable_by && body.readable_by.length ? body.readable_by : [user_id];
+    const writable_by = body.writable_by && body.writable_by.length ? body.writable_by : [user_id];
+
     const result = await db.insert(Outbounds).values({
       ...body,
-      owner: user_id,
+      readable_by: JSON.stringify(readable_by),
+      writable_by: JSON.stringify(writable_by),
     }).returning();
 
     return Response.json(result[0]);
@@ -142,13 +132,21 @@ OUTBOUNDS_ROUTER.add("put", "/:id", async ({
     body, db, path_params, token_payload
 }) => {
     const user_id = parseInt((token_payload?.sub || '0').toString());
-    
+    // Permission check
+    const existing = await db.select().from(Outbounds).where(eq(Outbounds.id, path_params.id)).limit(1);
+    if (existing.length === 0) {
+      return new Response('Not Found', { status: 404 });
+    }
+    const row: any = existing[0];
+    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+    if (!writable.includes(user_id)) {
+      return new Response('Forbidden', { status: 403 });
+    }
+
     const result = await db.update(Outbounds).set({
       ...body,
-    }).where(and(
-      eq(Outbounds.id, path_params.id),
-      eq(Outbounds.owner, user_id)
-    )).returning();
+      updated_at: Math.floor(Date.now() / 1000)
+    }).where(eq(Outbounds.id, path_params.id)).returning();
 
     return Response.json(result[0]);
 }, {
@@ -164,15 +162,15 @@ OUTBOUNDS_ROUTER.add('DELETE', '/:id', async ({
   const user_id = parseInt((token_payload?.sub || '0').toString());
   const outbound_id = path_params.id;
 
-  // Check ownership
-  const existing = await db.select().from(Outbounds).where(
-    and(
-      eq(Outbounds.id, outbound_id),
-      eq(Outbounds.owner, user_id)
-    )
-  ).limit(1);
+  // Check writable permission
+  const existing = await db.select().from(Outbounds).where(eq(Outbounds.id, outbound_id)).limit(1);
   if (existing.length === 0) {
     return new Response('Outbound not found', { status: 404 });
+  }
+  const row: any = existing[0];
+  const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+  if (!writable.includes(user_id)) {
+    return new Response('Forbidden', { status: 403 });
   }
 
   await db.delete(Outbounds).where(eq(Outbounds.id, outbound_id));
@@ -189,18 +187,15 @@ OUTBOUNDS_ROUTER.add('GET', '/:id/export', async ({
   const user_id = parseInt((token_payload?.sub || '0').toString());
   const outbound_id = path_params.id;
 
-  // Check ownership or share
-  const existing = await db.select().from(Outbounds).where(
-    and(
-      eq(Outbounds.id, outbound_id),
-      or(
-        eq(Outbounds.owner, user_id),
-        eq(Outbounds.share, true)
-      )
-    )
-  ).limit(1);
+  const existing = await db.select().from(Outbounds).where(eq(Outbounds.id, outbound_id)).limit(1);
   if (existing.length === 0) {
     return new Response('Outbound not found', { status: 404 });
+  }
+  const row: any = existing[0];
+  const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
+  const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+  if (![...readable, ...writable].includes(user_id)) {
+    return new Response('Forbidden', { status: 403 });
   }
 
   const exported = await exportOutbound(db, outbound_id);
