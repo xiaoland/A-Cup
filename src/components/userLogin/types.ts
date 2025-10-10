@@ -6,7 +6,6 @@ export interface LoginCredentials {
 export interface LoginResponse {
   id: number
   username: string
-  roles: string[]
 }
 
 export interface JWTPayload {
@@ -14,11 +13,9 @@ export interface JWTPayload {
   iat: number
   exp: number
   sub: string
-  roles: string[]
 }
 
 export interface User {
   id: number
   username: string
-  roles: string[]
 }
