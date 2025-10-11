@@ -23,15 +23,6 @@
                     persistent-hint
                   />
                 </v-col>
-                <v-col cols="12" md="6">
-                  <v-switch
-                    v-model="formData.share"
-                    label="Share with other users"
-                    color="primary"
-                    hint="Allow other users to see and use this DNS server"
-                    persistent-hint
-                  />
-                </v-col>
               </v-row>
             </v-card-text>
           </v-card>
@@ -85,7 +76,7 @@
               <v-row>
                 <v-col cols="12">
                   <p class="text-caption text-medium-emphasis mb-4">
-                    Route DNS requests through a specific outbound or WireGuard endpoint (optional)
+                    Route DNS requests through a specific outbound (optional)
                   </p>
                 </v-col>
               </v-row>
@@ -100,20 +91,6 @@
                     hint="Route DNS requests through this outbound"
                     persistent-hint
                     :loading="loadingOutbounds"
-                    :disabled="!!formData.wg_endpoint_detour"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="formData.wg_endpoint_detour"
-                    :items="wgEndpointOptions"
-                    label="WireGuard Endpoint Detour"
-                    variant="outlined"
-                    clearable
-                    hint="Route DNS requests through this WireGuard endpoint"
-                    persistent-hint
-                    :loading="loadingWgEndpoints"
-                    :disabled="!!formData.outbound_detour"
                   />
                 </v-col>
               </v-row>
@@ -239,12 +216,9 @@ const userStore = useUserStore()
 const saving = ref(false)
 const loadingOutbounds = ref(false)
 const outboundOptions = ref<SelectOption[]>([])
-const loadingWgEndpoints = ref(false)
-const wgEndpointOptions = ref<SelectOption[]>([])
 
 // Form data
 const formData = ref<DNSServer>({
-  share: false,
   name: '',
   type: 'udp',
   address: '',
@@ -261,8 +235,8 @@ const headersText = ref('')
 
 // Computed
 const isEditing = computed(() => props.mode === 'edit')
-const isHTTPSType = computed(() => formData.value.type === 'https' || formData.value.type === 'http3')
-const isTLSType = computed(() => ['https', 'http3', 'tls', 'quic'].includes(formData.value.type))
+const isHTTPSType = computed(() => formData.value.type === 'https' || formData.value.type === 'h3')
+const isTLSType = computed(() => ['https', 'h3', 'tls', 'quic'].includes(formData.value.type))
 
 // Watchers
 watch(() => props.dnsServer, (newDNSServer) => {
@@ -286,17 +260,7 @@ watch(() => props.dnsServer, (newDNSServer) => {
 }, { immediate: true })
 
 // Mutual exclusion watchers for detour fields
-watch(() => formData.value.outbound_detour, (newValue) => {
-  if (newValue && formData.value.wg_endpoint_detour) {
-    formData.value.wg_endpoint_detour = null
-  }
-})
-
-watch(() => formData.value.wg_endpoint_detour, (newValue) => {
-  if (newValue && formData.value.outbound_detour) {
-    formData.value.outbound_detour = null
-  }
-})
+// removed mutual exclusion with wg_endpoint_detour as endpoint detour is not exposed in UI
 
 // Methods
 const onTypeChange = () => {
@@ -364,40 +328,7 @@ const loadOutbounds = async () => {
   }
 }
 
-const loadWgEndpoints = async () => {
-  try {
-    loadingWgEndpoints.value = true
-    const response = await fetch('/api/endpoints', {
-      headers: {
-        'Authorization': `Bearer ${userStore.token}`
-      }
-    })
-    
-    if (response.ok) {
-      const endpoints = await response.json()
-      // Filter for WireGuard endpoints (though currently all are WireGuard)
-      const wgEndpoints = endpoints.filter((ep: any) => ep.type === 'wireguard')
-      wgEndpointOptions.value = wgEndpoints.map((endpoint: any) => {
-        // Try to get first peer's address for display, or just use the name
-        let displayText = endpoint.name
-        if (endpoint.peers && Array.isArray(endpoint.peers) && endpoint.peers.length > 0) {
-          const firstPeer = endpoint.peers[0]
-          if (firstPeer.address && firstPeer.port) {
-            displayText = `${endpoint.name} - ${firstPeer.address}:${firstPeer.port}`
-          }
-        }
-        return {
-          title: displayText,
-          value: endpoint.id
-        }
-      })
-    }
-  } catch (error) {
-    console.error('Failed to load WireGuard endpoints:', error)
-  } finally {
-    loadingWgEndpoints.value = false
-  }
-}
+// removed WireGuard endpoints loader as endpoint detour field is removed
 
 const saveDNSServer = async () => {
   try {
@@ -448,7 +379,6 @@ const saveDNSServer = async () => {
 // Lifecycle
 onMounted(() => {
   loadOutbounds()
-  loadWgEndpoints()
 })
 </script>
 
