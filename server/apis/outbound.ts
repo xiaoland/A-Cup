@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Router } from "../fund/router";
-import { Outbounds } from "../db/schema";
+import { Outbounds, Profiles } from "../db/schema";
 import { and, eq } from "drizzle-orm";
 import { DrizzleD1Database } from 'drizzle-orm/d1';
 import { OutboundInSingBoxSchema, type OutboundInSingBox } from '../schemas/export';
@@ -128,8 +128,10 @@ OUTBOUNDS_ROUTER.add("post", "", async ({
 
 
 const EditOutboundBody = CreateOutboundBody.partial()
+import { exportProfileToR2 } from "../fund/profile-export";
+
 OUTBOUNDS_ROUTER.add("put", "/:id", async ({
-    body, db, path_params, token_payload
+    body, db, path_params, token_payload, env
 }) => {
     const user_id = parseInt((token_payload?.sub || '0').toString());
     // Permission check
@@ -147,6 +149,20 @@ OUTBOUNDS_ROUTER.add("put", "/:id", async ({
       ...body,
       updated_at: Math.floor(Date.now() / 1000)
     }).where(eq(Outbounds.id, path_params.id)).returning();
+
+    // Re-export and upload all profiles referencing this outbound (in outbounds[])
+    const allProfiles = await db.select().from(Profiles);
+    const referencing = (allProfiles as any[]).filter((p) => {
+      try {
+        const outs = Array.isArray(p.outbounds) ? p.outbounds : JSON.parse(p.outbounds || '[]');
+        return outs.includes(path_params.id);
+      } catch {
+        return false;
+      }
+    });
+    if (env.OSS) {
+      await Promise.all(referencing.map((p: any) => exportProfileToR2(db, env, p.id)));
+    }
 
     return Response.json(result[0]);
 }, {

@@ -27,25 +27,62 @@ export const RuleSetInSingBoxSchema = z.object({
 });
 
 // Zod schema for the complete Sing-Box profile configuration
-export const SingBoxProfileSchema = z.object({
+// Request body schema for ProfileEditor (derived from Sing-Box JSON Schema with adaptations):
+// - outbounds: number[] (referencing Outbound IDs)
+// - route.rule_set: number[] (referencing RuleSet IDs)
+export const SingBoxProfileRequestSchema = z.object({
+  // Top-level sections described in Sing-Box schema; most are passthrough here
   log: z.object({
-    level: z.string(),
-    timestamp: z.boolean(),
-  }),
-  experimental: z.object({
-    cache_file: z.object({
-      enabled: z.boolean(),
-      store_fakeip: z.boolean(),
-      store_rdrc: z.boolean(),
-    }),
-  }),
-  outbounds: z.array(OutboundInSingBoxSchema),
+    disabled: z.boolean().optional(),
+    level: z.enum(['trace','debug','info','warn','error','fatal','panic']).optional(),
+    output: z.string().optional(),
+    timestamp: z.boolean().optional(),
+  }).partial().optional(),
+  dns: z.any().optional(),
+  ntp: z.any().optional(),
+  certificate: z.any().optional(),
+  endpoints: z.array(z.any()).optional(),
+  inbounds: z.array(z.any()).optional(),
+
+  // Adapted fields using ID arrays
+  outbounds: z.array(z.number().int().positive()).default([]),
+
   route: z.object({
-    rule_set: z.array(RuleSetInSingBoxSchema),
-    final: z.string(),
-    auto_detect_interface: z.boolean(),
-  }),
-});
+    rules: z.array(z.any()).optional(),
+    rule_set: z.array(z.number().int().positive()).default([]),
+    final: z.string().optional(),
+    auto_detect_interface: z.boolean().optional(),
+    default_interface: z.string().optional(),
+    default_mark: z.number().optional(),
+    default_domain_resolver: z.string().optional(),
+    default_network_strategy: z.string().optional(),
+    default_network_type: z.string().optional(),
+    default_fallback_network_type: z.string().optional(),
+    default_fallback_delay: z.number().optional(),
+    geoip: z.any().optional(),
+    geosite: z.any().optional(),
+  }).partial().default({ rule_set: [] }).optional(),
+
+  services: z.array(z.any()).optional(),
+  experimental: z.any().optional(),
+}).passthrough();
+
+// Export configuration schema (subset for internal generation/validation)
+// Full Sing-Box configuration shape (top-level) – aligned with official JSON Schema
+// Note: Nested structures are left as any to follow upstream spec without re-implementing all branches in Zod.
+export const SingBoxProfileSchema = z.object({
+  $schema: z.string().optional(),
+  log: z.any().optional(),
+  dns: z.any().optional(),
+  ntp: z.any().optional(),
+  certificate: z.any().optional(),
+  endpoints: z.array(z.any()).optional(),
+  inbounds: z.array(z.any()).optional(),
+  outbounds: z.array(z.any()).optional(),
+  route: z.any().optional(),
+  services: z.array(z.any()).optional(),
+  experimental: z.any().optional(),
+}).strict();
 
 // Zod schema for profile export response
 export const ProfileExportDirectResponseSchema = z.object({
@@ -69,4 +106,5 @@ export const ProfileExportResponseSchema = z.union([
 export type OutboundInSingBox = z.infer<typeof OutboundInSingBoxSchema>;
 export type RuleSetInSingBox = z.infer<typeof RuleSetInSingBoxSchema>;
 export type SingBoxProfile = z.infer<typeof SingBoxProfileSchema>;
+export type SingBoxProfileRequest = z.infer<typeof SingBoxProfileRequestSchema>;
 export type ProfileExportResponse = z.infer<typeof ProfileExportResponseSchema>;
