@@ -46,34 +46,52 @@
             </v-card-text>
           </v-card>
 
-          <!-- Inbounds Selection -->
+          <!-- Inbounds Inline Editors -->
           <v-card variant="outlined" class="form-section">
             <v-card-title class="text-h6 d-flex align-center justify-space-between">
               Inbounds
-              <v-btn
-                color="primary"
-                variant="outlined"
-                size="small"
-                @click="openSelectionDialog('inbounds')"
-                prepend-icon="mdi-plus"
-              >
-                Select Inbounds
+              <v-btn color="primary" variant="outlined" size="small" prepend-icon="mdi-plus" @click="addInbound">
+                Add Inbound
               </v-btn>
             </v-card-title>
-            <v-card-text class="selection-section">
-              <div v-if="selectedInbounds.length === 0" class="text-body-2 text-medium-emphasis">
-                No inbounds selected
+            <v-card-text>
+              <div v-if="inboundsState.length === 0" class="text-body-2 text-medium-emphasis">
+                No inbounds. Click Add to create one.
               </div>
-              <div v-else class="selection-chips">
-                <v-chip
-                  v-for="inbound in selectedInbounds"
-                  :key="inbound.id"
-                  closable
-                  @click:close="removeInbound(inbound.id)"
-                >
-                  {{ inbound.type }} {{ inbound.address ? `(${inbound.address}:${inbound.port})` : '' }}
-                </v-chip>
-              </div>
+              <v-expansion-panels v-else multiple>
+                <v-expansion-panel v-for="(inb, idx) in inboundsState" :key="idx">
+                  <v-expansion-panel-title>
+                    <div class="d-flex align-center w-100">
+                      <span class="me-3">Inbound #{{ idx + 1 }}</span>
+                      <v-chip size="x-small" class="me-2">{{ inb.type }}</v-chip>
+                      <span class="text-caption text-medium-emphasis">{{ inb.address ? `${inb.address}:${inb.port || ''}` : '—' }}</span>
+                      <v-spacer />
+                      <v-btn icon="mdi-delete" size="x-small" variant="text" @click.stop="removeInboundAt(idx)" />
+                    </div>
+                  </v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <v-row>
+                      <v-col cols="12" md="4">
+                        <v-select v-model="inb.type" :items="['mixed','tun','socks','http']" label="Type" variant="outlined" />
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <v-text-field v-model="inb.address" label="Address" variant="outlined" />
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <v-text-field v-model.number="inb.port" type="number" label="Port" variant="outlined" />
+                      </v-col>
+                    </v-row>
+                    <v-row v-if="inb.type === 'tun'">
+                      <v-col cols="12" md="6">
+                        <v-select v-model="inb.stack" :items="['system','gvisor','mixed']" label="Stack" variant="outlined" />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-text-field v-model.number="inb.mtu" type="number" label="MTU" variant="outlined" />
+                      </v-col>
+                    </v-row>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
             </v-card-text>
           </v-card>
 
@@ -111,33 +129,8 @@
             </v-card-text>
           </v-card>
 
-          <!-- Route Final Selection -->
-          <v-card variant="outlined" class="form-section">
-            <v-card-title class="text-h6">Route Final</v-card-title>
-            <v-card-text>
-              <v-select
-                v-model="formData.route_final"
-                :items="availableOutbounds"
-                item-title="type"
-                item-value="id"
-                label="Select Final Route Outbound"
-                variant="outlined"
-                clearable
-                hint="The outbound to use when no rules match"
-                persistent-hint
-              >
-                <template v-slot:item="{ props, item }">
-                  <v-list-item v-bind="props">
-                    <v-list-item-title>{{ item.raw.type }}</v-list-item-title>
-                    <v-list-item-subtitle v-if="item.raw.region">{{ item.raw.region }}</v-list-item-subtitle>
-                  </v-list-item>
-                </template>
-                <template v-slot:selection="{ item }">
-                  {{ item.raw.type }} {{ item.raw.region ? `(${item.raw.region})` : '' }}
-                </template>
-              </v-select>
-            </v-card-text>
-          </v-card>
+          <!-- Route Editor -->
+          <RouteEditor v-model:route="routeState" />
 
           <!-- WireGuard Endpoints Selection -->
           <v-card variant="outlined" class="form-section">
@@ -202,98 +195,10 @@
             </v-card-text>
           </v-card>
 
-          <!-- Rule Sets Selection -->
-          <v-card variant="outlined" class="form-section">
-            <v-card-title class="text-h6 d-flex align-center justify-space-between">
-              Rule Sets
-              <v-btn
-                color="primary"
-                variant="outlined"
-                size="small"
-                @click="openSelectionDialog('rule_sets')"
-                prepend-icon="mdi-plus"
-              >
-                Select Rule Sets
-              </v-btn>
-            </v-card-title>
-            <v-card-text class="selection-section">
-              <div v-if="selectedRuleSets.length === 0" class="text-body-2 text-medium-emphasis">
-                No rule sets selected
-              </div>
-              <div v-else class="selection-chips">
-                <v-chip
-                  v-for="ruleSet in selectedRuleSets"
-                  :key="ruleSet.id"
-                  closable
-                  @click:close="removeRuleSet(ruleSet.id)"
-                >
-                  {{ ruleSet.name }} ({{ ruleSet.type }})
-                </v-chip>
-              </div>
-            </v-card-text>
-          </v-card>
+          
 
-          <!-- DNS Rules Selection -->
-          <v-card variant="outlined" class="form-section">
-            <v-card-title class="text-h6 d-flex align-center justify-space-between">
-              DNS Rules
-              <v-btn
-                color="primary"
-                variant="outlined"
-                size="small"
-                @click="openSelectionDialog('dns_rules')"
-                prepend-icon="mdi-plus"
-              >
-                Select DNS Rules
-              </v-btn>
-            </v-card-title>
-            <v-card-text class="selection-section">
-              <div v-if="selectedDnsRules.length === 0" class="text-body-2 text-medium-emphasis">
-                No DNS rules selected
-              </div>
-              <div v-else class="selection-chips">
-                <v-chip
-                  v-for="dnsRule in selectedDnsRules"
-                  :key="dnsRule.id"
-                  closable
-                  @click:close="removeDnsRule(dnsRule.id)"
-                >
-                  {{ dnsRule.name }} {{ dnsRule.action ? `(${dnsRule.action})` : '' }}
-                </v-chip>
-              </div>
-            </v-card-text>
-          </v-card>
-
-          <!-- DNS Servers Selection -->
-          <v-card variant="outlined" class="form-section">
-            <v-card-title class="text-h6 d-flex align-center justify-space-between">
-              DNS Servers
-              <v-btn
-                color="primary"
-                variant="outlined"
-                size="small"
-                @click="openSelectionDialog('dns')"
-                prepend-icon="mdi-plus"
-              >
-                Select DNS Servers
-              </v-btn>
-            </v-card-title>
-            <v-card-text class="selection-section">
-              <div v-if="selectedDnsServers.length === 0" class="text-body-2 text-medium-emphasis">
-                No DNS servers selected
-              </div>
-              <div v-else class="selection-chips">
-                <v-chip
-                  v-for="dnsServer in selectedDnsServers"
-                  :key="dnsServer.id"
-                  closable
-                  @click:close="removeDnsServer(dnsServer.id)"
-                >
-                  {{ dnsServer.name }} ({{ dnsServer.type }})
-                </v-chip>
-              </div>
-            </v-card-text>
-          </v-card>
+          <!-- DNS Editor -->
+          <DNSEditor v-model:dns="dnsState" />
 
           <!-- Action Buttons -->
           <div class="action-buttons d-flex justify-end">
@@ -395,6 +300,8 @@ import type {
   DNSServer
 } from './types'
 import { profileTagOptions } from './types'
+import RouteEditor from '@/components/routeEditor/routeEditor.vue'
+import DNSEditor from '@/components/dnsEditor/dnsEditor.vue'
 
 // Props
 const props = withDefaults(defineProps<Props>(), {
@@ -425,6 +332,11 @@ const formData = ref<Profile>({
   dns_rules: [],
   dns: []
 })
+
+// Embedded editor states
+const inboundsState = ref<any[]>([])
+const routeState = ref<any>({ final: undefined, auto_detect_interface: true, rule_set: [], rules: [] })
+const dnsState = ref<any>({ servers: [], rules: [] })
 
 // Available entities - loaded from API
 const availableInbounds = ref<Inbound[]>([])
@@ -611,15 +523,12 @@ const saveProfile = async () => {
       name: formData.value.name,
       tags: formData.value.tags,
       log: { level: 'info', timestamp: true },
-      dns: {},
+      dns: dnsState.value,
       ntp: {},
       certificate: {},
-      inbounds: [],
+      inbounds: inboundsState.value,
       outbounds: formData.value.outbounds,
-      route: {
-        rule_set: formData.value.rule_sets,
-        auto_detect_interface: true,
-      },
+      route: routeState.value,
       services: [],
       experimental: { cache_file: { enabled: true, store_fakeip: true, store_rdrc: false } },
     }
@@ -705,6 +614,16 @@ watch(
   (newProfile) => {
     if (newProfile) {
       formData.value = { ...newProfile }
+      // Initialize embedded states if present on profile payload
+      if ((newProfile as any).inbounds && Array.isArray((newProfile as any).inbounds)) {
+        inboundsState.value = JSON.parse(JSON.stringify((newProfile as any).inbounds))
+      }
+      if ((newProfile as any).route) {
+        routeState.value = JSON.parse(JSON.stringify((newProfile as any).route))
+      }
+      if ((newProfile as any).dns) {
+        dnsState.value = JSON.parse(JSON.stringify((newProfile as any).dns))
+      }
     } else {
       formData.value = {
         name: '',
@@ -718,10 +637,22 @@ watch(
         dns_rules: [],
         dns: []
       }
+      inboundsState.value = []
+      routeState.value = { final: undefined, auto_detect_interface: true, rule_set: [], rules: [] }
+      dnsState.value = { servers: [], rules: [] }
     }
   },
   { immediate: true }
 )
+
+// Inline inbound helpers
+const addInbound = () => {
+  inboundsState.value.push({ type: 'mixed', address: '', port: undefined })
+}
+
+const removeInboundAt = (idx: number) => {
+  inboundsState.value.splice(idx, 1)
+}
 
 // Load available entities on mount
 onMounted(() => {
