@@ -1,9 +1,0 @@
-.dns-rule-list {
-  .rule-item {
-    cursor: pointer;
-    
-    &:hover {
-      background-color: rgba(var(--v-theme-primary), 0.04);
-    }
-  }
-}
