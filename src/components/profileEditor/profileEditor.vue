@@ -132,37 +132,7 @@
           <!-- Route Editor -->
           <RouteEditor v-model:route="routeState" />
 
-          <!-- WireGuard Endpoints Selection -->
-          <v-card variant="outlined" class="form-section">
-            <v-card-title class="text-h6 d-flex align-center justify-space-between">
-              WireGuard Endpoints
-              <v-btn
-                color="primary"
-                variant="outlined"
-                size="small"
-                @click="openSelectionDialog('wg_endpoints')"
-                prepend-icon="mdi-plus"
-              >
-                Select Endpoints
-              </v-btn>
-            </v-card-title>
-            <v-card-text class="selection-section">
-              <div v-if="selectedWgEndpoints.length === 0" class="text-body-2 text-medium-emphasis">
-                No WireGuard endpoints selected
-              </div>
-              <div v-else class="selection-chips">
-                <v-chip
-                  v-for="endpoint in selectedWgEndpoints"
-                  :key="endpoint.id"
-                  closable
-                  @click:close="removeWgEndpoint(endpoint.id)"
-                >
-                  {{ endpoint.name }}
-                  <v-icon v-if="endpoint.system" size="small" class="ms-1">mdi-cog</v-icon>
-                </v-chip>
-              </div>
-            </v-card-text>
-          </v-card>
+          
 
           <!-- Route Rules Selection -->
           <v-card variant="outlined" class="form-section">
@@ -293,7 +263,6 @@ import type {
   Props, 
   Inbound,
   Outbound,
-  WireguardEndpoint,
   RouteRule,
   RuleSet,
   DNSRule,
@@ -341,7 +310,6 @@ const dnsState = ref<any>({ servers: [], rules: [] })
 // Available entities - loaded from API
 const availableInbounds = ref<Inbound[]>([])
 const availableOutbounds = ref<Outbound[]>([])
-const availableWgEndpoints = ref<WireguardEndpoint[]>([])
 const availableRules = ref<RouteRule[]>([])
 const availableRuleSets = ref<RuleSet[]>([])
 const availableDnsRules = ref<DNSRule[]>([])
@@ -367,9 +335,6 @@ const selectedOutbounds = computed(() =>
   availableOutbounds.value.filter(item => formData.value.outbounds.includes(item.id))
 )
 
-const selectedWgEndpoints = computed(() => 
-  availableWgEndpoints.value.filter(item => formData.value.wg_endpoints.includes(item.id))
-)
 
 const selectedRules = computed(() => 
   availableRules.value.filter(item => formData.value.rules.includes(item.id))
@@ -401,7 +366,6 @@ const currentSelectionItems = computed(() => {
   switch (selectionDialog.value.type) {
     case 'inbounds': return availableInbounds.value
     case 'outbounds': return availableOutbounds.value
-    case 'wg_endpoints': return availableWgEndpoints.value
     case 'rules': return availableRules.value
     case 'rule_sets': return availableRuleSets.value
     case 'dns_rules': return availableDnsRules.value
@@ -425,7 +389,6 @@ const openSelectionDialog = (type: keyof Profile) => {
   const titles: Record<string, string> = {
     inbounds: 'Inbounds',
     outbounds: 'Outbounds', 
-    wg_endpoints: 'WireGuard Endpoints',
     rules: 'Route Rules',
     rule_sets: 'Rule Sets',
     dns_rules: 'DNS Rules',
@@ -484,9 +447,6 @@ const removeOutbound = (id: number) => {
   formData.value.outbounds = formData.value.outbounds.filter(i => i !== id)
 }
 
-const removeWgEndpoint = (id: number) => {
-  formData.value.wg_endpoints = formData.value.wg_endpoints.filter(i => i !== id)
-}
 
 const removeRule = (id: number) => {
   formData.value.rules = formData.value.rules.filter(i => i !== id)
@@ -565,7 +525,6 @@ const loadAvailableEntities = async () => {
     const [
       inboundsRes,
       outboundsRes,
-      endpointsRes,
       rulesRes,
       ruleSetsRes,
       dnsRulesRes,
@@ -573,7 +532,6 @@ const loadAvailableEntities = async () => {
     ] = await Promise.all([
       userStore.authorizedFetch('/api/inbounds'),
       userStore.authorizedFetch('/api/outbounds'),
-      userStore.authorizedFetch('/api/endpoints'),
       userStore.authorizedFetch('/api/route_rules'),
       userStore.authorizedFetch('/api/rule_sets'),
       userStore.authorizedFetch('/api/dns_rules'),
@@ -585,9 +543,6 @@ const loadAvailableEntities = async () => {
     }
     if (outboundsRes.ok) {
       availableOutbounds.value = await outboundsRes.json()
-    }
-    if (endpointsRes.ok) {
-      availableWgEndpoints.value = await endpointsRes.json()
     }
     if (rulesRes.ok) {
       availableRules.value = await rulesRes.json()
