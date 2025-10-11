@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Router } from '../fund/router';
-import { RuleSets } from '../db/schema';
+import { Profiles, RuleSets } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { DrizzleD1Database } from 'drizzle-orm/d1';
 import { RuleSetInSingBoxSchema, type RuleSetInSingBox } from '../schemas/export';
@@ -75,7 +75,9 @@ RULE_SET_ROUTER.add('POST', '', async ({ body, db, token_payload }) => {
 
 // Edit rule set
 const EditRuleSetSchema = CreateRuleSetSchema.partial();
-RULE_SET_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload }) => {
+import { exportProfileToR2 } from '../fund/profile-export';
+
+RULE_SET_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload, env }) => {
   const currentUser = parseInt((token_payload?.sub || '0').toString());
   const rule_set_id = path_params.id;
 
@@ -99,6 +101,21 @@ RULE_SET_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload
   if (body.update_interval !== undefined) updateData.update_interval = body.update_interval;
 
   const result = await db.update(RuleSets).set(updateData).where(eq(RuleSets.id, rule_set_id)).returning();
+
+  // Re-export and upload all profiles referencing this rule set
+  const allProfiles = await db.select().from(Profiles);
+  const referencing = (allProfiles as any[]).filter((p) => {
+    try {
+      const rs = Array.isArray(p.rule_sets) ? p.rule_sets : JSON.parse(p.rule_sets || '[]');
+      return rs.includes(rule_set_id);
+    } catch {
+      return false;
+    }
+  });
+  if (env.OSS) {
+    await Promise.all(referencing.map((p: any) => exportProfileToR2(db, env, p.id)));
+  }
+
   return Response.json(result[0]);
 }, {
   pathParamsSchema: IDPathParamSchema,

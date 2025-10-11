@@ -13,6 +13,7 @@ import {
   type SingBoxProfile,
   type ProfileExportResponse
 } from '../schemas/export';
+import { exportProfileToR2 } from '../fund/profile-export';
 
 // Import export functions from other modules
 import { exportOutbound } from './outbound';
@@ -61,7 +62,7 @@ async function validateEntityAccess(db: any, user_id: number, entityIds: number[
 }
 
 // Create Profile
-PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload }) => {
+PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
   
   try {
@@ -83,6 +84,12 @@ PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload }) => {
       rule_sets: JSON.stringify(body.rule_sets),
     }).returning();
     
+    // Upload exported profile to R2 (private)
+    if (!env.OSS) {
+      return new Response('Object storage not configured', { status: 501 });
+    }
+    await exportProfileToR2(db, env, (result[0] as any).id);
+
     return Response.json(result[0]);
   } catch (error) {
     return new Response(error instanceof Error ? error.message : 'Validation failed', { status: 400 });
@@ -144,7 +151,7 @@ PROFILE_ROUTER.add('GET', '/:id', async ({ path_params, db, token_payload }) => 
 });
 
 // Update Profile
-PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload }) => {
+PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
   
   // Check if profile exists and is owned by user
@@ -181,6 +188,12 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload 
       .where(eq(Profiles.id, path_params.id))
       .returning();
     
+    // Upload updated profile export to R2 (private)
+    if (!env.OSS) {
+      return new Response('Object storage not configured', { status: 501 });
+    }
+    await exportProfileToR2(db, env, path_params.id);
+
     // Parse JSON fields for response
     const resultData = result[0] as any;
     const parsedProfile = {
