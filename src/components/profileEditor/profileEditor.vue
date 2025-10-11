@@ -605,12 +605,25 @@ const saveProfile = async () => {
       ? `/api/profiles/${formData.value.id}` 
       : '/api/profiles'
     
+    // Build Sing-Box-like payload; only outbounds and route.rule_set are number[]
+    const payload: any = {
+      name: formData.value.name,
+      tags: formData.value.tags,
+      outbounds: formData.value.outbounds,
+      route: {
+        rule_set: formData.value.rule_sets,
+        auto_detect_interface: true,
+      },
+      log: { level: 'info', timestamp: true },
+      experimental: { cache_file: { enabled: true, store_fakeip: true, store_rdrc: false } },
+    }
+
     const response = await userStore.authorizedFetch(url, {
       method,
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(formData.value)
+      body: JSON.stringify(payload)
     })
     
     if (response.ok) {

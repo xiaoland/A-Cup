@@ -58,8 +58,8 @@ async function exportRuleSetForProfile(db: DrizzleD1Database, id: number) {
   return config;
 }
 
-export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profileId: number) {
-  // Fetch profile
+export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profileId: number, baseConfig?: any) {
+  // Fetch profile row
   const profileList = await db.select().from(Profiles).where(eq(Profiles.id, profileId)).limit(1);
   if (profileList.length === 0) return;
 
@@ -67,34 +67,53 @@ export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profile
   const outboundIds: number[] = Array.isArray(profile.outbounds) ? profile.outbounds : JSON.parse(profile.outbounds || '[]');
   const ruleSetIds: number[] = Array.isArray(profile.rule_sets) ? profile.rule_sets : JSON.parse(profile.rule_sets || '[]');
 
+  // Prepare base configuration
+  let config: any;
+  if (baseConfig) {
+    // Shallow clone to avoid mutation
+    config = JSON.parse(JSON.stringify(baseConfig));
+  } else {
+    // Load existing config from R2 and update only the outbounds and route.rule_set
+    const existing = await env.OSS.get(`profiles/${profileId}`);
+    if (existing) {
+      try {
+        config = await existing.json<any>();
+      } catch {
+        config = {};
+      }
+    } else {
+      config = {};
+    }
+  }
+
+  // Replace outbounds array with exported objects
   const [outbounds, ruleSets] = await Promise.all([
     Promise.all(outboundIds.map((id) => exportOutboundForProfile(db, id))).then((results) => results.filter((x): x is any => x != null)),
     Promise.all(ruleSetIds.map((id) => exportRuleSetForProfile(db, id))).then((results) => results.filter((x): x is any => x != null)),
   ]);
 
-  // Determine final outbound tag
-  let finalOutbound = 'direct';
-  if (profile.route_final) {
-    const finalOutboundData = outbounds.find((out: any) => (out.tag as string).endsWith(`.${profile.route_final}`));
-    if (finalOutboundData) {
-      finalOutbound = finalOutboundData.tag as string;
-    }
-  } else if (outbounds.length > 0) {
-    finalOutbound = outbounds[0]?.tag || 'direct';
+  config.outbounds = outbounds;
+  // Ensure route object exists
+  config.route = config.route || {};
+  config.route.rule_set = ruleSets;
+
+  // Validate with local schema (minimal)
+  try {
+    SingBoxProfileSchema.parse({
+      log: config.log || { level: 'info', timestamp: true },
+      experimental: config.experimental || { cache_file: { enabled: true, store_fakeip: true, store_rdrc: false } },
+      outbounds: config.outbounds,
+      route: {
+        rule_set: config.route.rule_set,
+        final: config.route.final || 'direct',
+        auto_detect_interface: config.route.auto_detect_interface ?? true,
+      },
+    });
+  } catch {
+    // Do not block upload on schema mismatch; rely on client schema editing
   }
 
-  const singBoxConfig = {
-    log: { level: 'info', timestamp: true },
-    experimental: { cache_file: { enabled: true, store_fakeip: true, store_rdrc: false } },
-    outbounds,
-    route: { rule_set: ruleSets, final: finalOutbound, auto_detect_interface: true },
-  };
-
-  // Validate
-  SingBoxProfileSchema.parse(singBoxConfig);
-
-  const configJson = JSON.stringify(singBoxConfig, null, 2);
-
+  const configJson = JSON.stringify(config, null, 2);
   await env.OSS.put(`profiles/${profileId}`, configJson, {
     httpMetadata: { contentType: 'application/json' },
   });

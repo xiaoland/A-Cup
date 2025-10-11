@@ -81,6 +81,5 @@ export const Profiles = sqliteTable("profiles", {
   name: text().notNull(),
   tags: text({ mode: "json" }).notNull().default("[]"), // text[] for what system,device,etc.
   outbounds: text({ mode: "json" }).notNull().default("[]"), // int[] FK to outbounds.id
-  route_final: int().references(() => Outbounds.id), // FK to outbounds.id
   rule_sets: text({ mode: "json" }).notNull().default("[]"), // int[] FK to rule_sets.id
 });

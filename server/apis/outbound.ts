@@ -150,12 +150,12 @@ OUTBOUNDS_ROUTER.add("put", "/:id", async ({
       updated_at: Math.floor(Date.now() / 1000)
     }).where(eq(Outbounds.id, path_params.id)).returning();
 
-    // Re-export and upload all profiles referencing this outbound (in outbounds[] or route_final)
+    // Re-export and upload all profiles referencing this outbound (in outbounds[])
     const allProfiles = await db.select().from(Profiles);
     const referencing = (allProfiles as any[]).filter((p) => {
       try {
         const outs = Array.isArray(p.outbounds) ? p.outbounds : JSON.parse(p.outbounds || '[]');
-        return outs.includes(path_params.id) || p.route_final === path_params.id;
+        return outs.includes(path_params.id);
       } catch {
         return false;
       }

@@ -21,13 +21,15 @@ import { exportRuleSet } from './rule-set';
 
 export const PROFILE_ROUTER = new Router('/profiles');
 
+// Accept full Sing-Box-like body, but only persist name/tags/outbounds IDs and route.rule_set IDs
 const CreateProfileSchema = z.object({
   name: z.string().min(1),
   tags: z.array(z.string()).default([]),
   outbounds: z.array(z.number().int().positive()).default([]),
-  route_final: z.number().int().positive().optional(),
-  rule_sets: z.array(z.number().int().positive()).default([]),
-});
+  route: z.object({
+    rule_set: z.array(z.number().int().positive()).default([]),
+  }).partial().default({ rule_set: [] }),
+}).passthrough();
 
 const UpdateProfileSchema = CreateProfileSchema.partial();
 
@@ -68,27 +70,26 @@ PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
   try {
     // Validate all referenced entities exist and are accessible
     await validateEntityAccess(db, user_id, body.outbounds, Outbounds, 'outbounds');
-    await validateEntityAccess(db, user_id, body.rule_sets, RuleSets, 'rule sets');
-    
-    // Validate route_final if provided
-    if (body.route_final) {
-      await validateEntityAccess(db, user_id, [body.route_final], Outbounds, 'route final outbound');
-    }
+    const ruleSetIds: number[] = body.route?.rule_set ?? [];
+    await validateEntityAccess(db, user_id, ruleSetIds, RuleSets, 'rule sets');
     
     const result = await db.insert(Profiles).values({
       created_by: user_id,
       name: body.name,
       tags: JSON.stringify(body.tags),
       outbounds: JSON.stringify(body.outbounds),
-      route_final: body.route_final,
-      rule_sets: JSON.stringify(body.rule_sets),
+      rule_sets: JSON.stringify(ruleSetIds),
     }).returning();
     
     // Upload exported profile to R2 (private)
     if (!env.OSS) {
       return new Response('Object storage not configured', { status: 501 });
     }
-    await exportProfileToR2(db, env, (result[0] as any).id);
+    // Remove DB-only fields from base config
+    const baseConfig = { ...body };
+    delete (baseConfig as any).name;
+    delete (baseConfig as any).tags;
+    await exportProfileToR2(db, env, (result[0] as any).id, baseConfig);
 
     return Response.json(result[0]);
   } catch (error) {
@@ -169,19 +170,13 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload,
   try {
     // Validate all referenced entities if they are being updated
     if (body.outbounds) await validateEntityAccess(db, user_id, body.outbounds, Outbounds, 'outbounds');
-    if (body.rule_sets) await validateEntityAccess(db, user_id, body.rule_sets, RuleSets, 'rule sets');
-    
-    // Validate route_final if provided
-    if (body.route_final) {
-      await validateEntityAccess(db, user_id, [body.route_final], Outbounds, 'route final outbound');
-    }
+    if (body.route?.rule_set) await validateEntityAccess(db, user_id, body.route.rule_set, RuleSets, 'rule sets');
     
     const updateData: any = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.tags !== undefined) updateData.tags = JSON.stringify(body.tags);
     if (body.outbounds !== undefined) updateData.outbounds = JSON.stringify(body.outbounds);
-    if (body.route_final !== undefined) updateData.route_final = body.route_final;
-    if (body.rule_sets !== undefined) updateData.rule_sets = JSON.stringify(body.rule_sets);
+    if (body.route?.rule_set !== undefined) updateData.rule_sets = JSON.stringify(body.route.rule_set);
     
     const result = await db.update(Profiles)
       .set(updateData)
@@ -192,7 +187,10 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload,
     if (!env.OSS) {
       return new Response('Object storage not configured', { status: 501 });
     }
-    await exportProfileToR2(db, env, path_params.id);
+    const baseConfig = { ...body };
+    delete (baseConfig as any).name;
+    delete (baseConfig as any).tags;
+    await exportProfileToR2(db, env, path_params.id, baseConfig);
 
     // Parse JSON fields for response
     const resultData = result[0] as any;
@@ -262,16 +260,7 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, query_params, db,
     ]);
     
     // Determine the final outbound with proper tag format
-    let finalOutbound = "direct";
-    if (profileData.route_final) {
-      // Find the route_final outbound in our exported outbounds
-      const finalOutboundData = outbounds.find(out => out.tag.endsWith(`.${profileData.route_final}`));
-      if (finalOutboundData) {
-        finalOutbound = finalOutboundData.tag;
-      }
-    } else if (outbounds.length > 0) {
-      finalOutbound = outbounds[0]?.tag || "direct";
-    }
+    const finalOutbound = outbounds[0]?.tag || 'direct';
     
     // Generate sing-box configuration
     const singBoxConfig: SingBoxProfile = {
