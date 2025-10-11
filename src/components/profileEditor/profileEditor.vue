@@ -134,36 +134,7 @@
 
           
 
-          <!-- Route Rules Selection -->
-          <v-card variant="outlined" class="form-section">
-            <v-card-title class="text-h6 d-flex align-center justify-space-between">
-              Route Rules
-              <v-btn
-                color="primary"
-                variant="outlined"
-                size="small"
-                @click="openSelectionDialog('rules')"
-                prepend-icon="mdi-plus"
-              >
-                Select Rules
-              </v-btn>
-            </v-card-title>
-            <v-card-text class="selection-section">
-              <div v-if="selectedRules.length === 0" class="text-body-2 text-medium-emphasis">
-                No route rules selected
-              </div>
-              <div v-else class="selection-chips">
-                <v-chip
-                  v-for="rule in selectedRules"
-                  :key="rule.id"
-                  closable
-                  @click:close="removeRule(rule.id)"
-                >
-                  {{ rule.name }} ({{ rule.action }})
-                </v-chip>
-              </div>
-            </v-card-text>
-          </v-card>
+          
 
           
 
@@ -258,16 +229,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import type { 
-  Profile, 
-  Props, 
-  Inbound,
-  Outbound,
-  RouteRule,
-  RuleSet,
-  DNSRule,
-  DNSServer
-} from './types'
+import type { Profile, Props, Outbound, RuleSet } from './types'
 import { profileTagOptions } from './types'
 import RouteEditor from '@/components/routeEditor/routeEditor.vue'
 import DNSEditor from '@/components/dnsEditor/dnsEditor.vue'
@@ -308,12 +270,8 @@ const routeState = ref<any>({ final: undefined, auto_detect_interface: true, rul
 const dnsState = ref<any>({ servers: [], rules: [] })
 
 // Available entities - loaded from API
-const availableInbounds = ref<Inbound[]>([])
 const availableOutbounds = ref<Outbound[]>([])
-const availableRules = ref<RouteRule[]>([])
 const availableRuleSets = ref<RuleSet[]>([])
-const availableDnsRules = ref<DNSRule[]>([])
-const availableDnsServers = ref<DNSServer[]>([])
 
 // Selection dialog
 const selectionDialog = ref({
@@ -327,29 +285,12 @@ const selectionDialog = ref({
 // Computed
 const isEditing = computed(() => props.mode === 'edit')
 
-const selectedInbounds = computed(() => 
-  availableInbounds.value.filter(item => formData.value.inbounds.includes(item.id))
-)
-
 const selectedOutbounds = computed(() => 
   availableOutbounds.value.filter(item => formData.value.outbounds.includes(item.id))
 )
 
-
-const selectedRules = computed(() => 
-  availableRules.value.filter(item => formData.value.rules.includes(item.id))
-)
-
 const selectedRuleSets = computed(() => 
   availableRuleSets.value.filter(item => formData.value.rule_sets.includes(item.id))
-)
-
-const selectedDnsRules = computed(() => 
-  availableDnsRules.value.filter(item => formData.value.dns_rules.includes(item.id))
-)
-
-const selectedDnsServers = computed(() => 
-  availableDnsServers.value.filter(item => formData.value.dns.includes(item.id))
 )
 
 const selectedTagValues = computed({
@@ -364,12 +305,8 @@ const selectedTagValues = computed({
 
 const currentSelectionItems = computed(() => {
   switch (selectionDialog.value.type) {
-    case 'inbounds': return availableInbounds.value
     case 'outbounds': return availableOutbounds.value
-    case 'rules': return availableRules.value
     case 'rule_sets': return availableRuleSets.value
-    case 'dns_rules': return availableDnsRules.value
-    case 'dns': return availableDnsServers.value
     default: return []
   }
 })
@@ -387,12 +324,8 @@ const filteredSelectionItems = computed(() => {
 // Methods
 const openSelectionDialog = (type: keyof Profile) => {
   const titles: Record<string, string> = {
-    inbounds: 'Inbounds',
     outbounds: 'Outbounds', 
-    rules: 'Route Rules',
-    rule_sets: 'Rule Sets',
-    dns_rules: 'DNS Rules',
-    dns: 'DNS Servers'
+    rule_sets: 'Rule Sets'
   }
   
   selectionDialog.value = {
@@ -439,29 +372,13 @@ const confirmSelection = () => {
   selectionDialog.value.show = false
 }
 
-const removeInbound = (id: number) => {
-  formData.value.inbounds = formData.value.inbounds.filter(i => i !== id)
-}
-
 const removeOutbound = (id: number) => {
   formData.value.outbounds = formData.value.outbounds.filter(i => i !== id)
 }
 
 
-const removeRule = (id: number) => {
-  formData.value.rules = formData.value.rules.filter(i => i !== id)
-}
-
 const removeRuleSet = (id: number) => {
   formData.value.rule_sets = formData.value.rule_sets.filter(i => i !== id)
-}
-
-const removeDnsRule = (id: number) => {
-  formData.value.dns_rules = formData.value.dns_rules.filter(i => i !== id)
-}
-
-const removeDnsServer = (id: number) => {
-  formData.value.dns = formData.value.dns.filter(i => i !== id)
 }
 
 const saveProfile = async () => {
@@ -522,39 +439,16 @@ const loadAvailableEntities = async () => {
   loadingEntities.value = true
   
   try {
-    const [
-      inboundsRes,
-      outboundsRes,
-      rulesRes,
-      ruleSetsRes,
-      dnsRulesRes,
-      dnsServersRes
-    ] = await Promise.all([
-      userStore.authorizedFetch('/api/inbounds'),
+    const [ outboundsRes, ruleSetsRes ] = await Promise.all([
       userStore.authorizedFetch('/api/outbounds'),
-      userStore.authorizedFetch('/api/route_rules'),
-      userStore.authorizedFetch('/api/rule_sets'),
-      userStore.authorizedFetch('/api/dns_rules'),
-      userStore.authorizedFetch('/api/dns_servers')
+      userStore.authorizedFetch('/api/rule_sets')
     ])
     
-    if (inboundsRes.ok) {
-      availableInbounds.value = await inboundsRes.json()
-    }
     if (outboundsRes.ok) {
       availableOutbounds.value = await outboundsRes.json()
     }
-    if (rulesRes.ok) {
-      availableRules.value = await rulesRes.json()
-    }
     if (ruleSetsRes.ok) {
       availableRuleSets.value = await ruleSetsRes.json()
-    }
-    if (dnsRulesRes.ok) {
-      availableDnsRules.value = await dnsRulesRes.json()
-    }
-    if (dnsServersRes.ok) {
-      availableDnsServers.value = await dnsServersRes.json()
     }
   } catch (error) {
     console.error('Error loading available entities:', error)
