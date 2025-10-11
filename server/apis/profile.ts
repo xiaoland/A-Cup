@@ -8,7 +8,8 @@ import {
 import { eq, and, or, inArray } from 'drizzle-orm';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { 
-  SingBoxProfileSchema, 
+  SingBoxProfileSchema,
+  SingBoxProfileRequestSchema,
   ProfileExportResponseSchema,
   type SingBoxProfile,
   type ProfileExportResponse
@@ -21,17 +22,9 @@ import { exportRuleSet } from './rule-set';
 
 export const PROFILE_ROUTER = new Router('/profiles');
 
-// Accept full Sing-Box-like body, but only persist name/tags/outbounds IDs and route.rule_set IDs
-const CreateProfileSchema = z.object({
-  name: z.string().min(1),
-  tags: z.array(z.string()).default([]),
-  outbounds: z.array(z.number().int().positive()).default([]),
-  route: z.object({
-    rule_set: z.array(z.number().int().positive()).default([]),
-  }).partial().default({ rule_set: [] }),
-}).passthrough();
-
-const UpdateProfileSchema = CreateProfileSchema.partial();
+// Request body schema derived from Sing-Box JSON Schema with adapted ID arrays
+const CreateProfileSchema = SingBoxProfileRequestSchema;
+const UpdateProfileSchema = SingBoxProfileRequestSchema.partial();
 
 const IDPathParamSchema = z.object({
   id: z.string().transform(val => parseInt(val))
