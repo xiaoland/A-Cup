@@ -10,12 +10,7 @@ const drawer = ref(false)
 const navItems = [
   { title: 'Profiles', to: '/profiles' },
   { title: 'Outbounds', to: '/outbounds' },
-  { title: 'Inbounds', to: '/inbounds' },
-  { title: 'Endpoints', to: '/endpoints' },
-  { title: 'Route Rules', to: '/route-rules' },
   { title: 'Rule Sets', to: '/rule-sets' },
-  { title: 'DNS Servers', to: '/dns-servers' },
-  { title: 'DNS Rules', to: '/dns-rules' }
 ]
 </script>
 
@@ -46,12 +41,7 @@ const navItems = [
               <nav class="nav-links">
                 <RouterLink to="/profiles">Profiles</RouterLink>
                 <RouterLink to="/outbounds">Outbounds</RouterLink>
-                <RouterLink to="/inbounds">Inbounds</RouterLink>
-                <RouterLink to="/endpoints">Endpoints</RouterLink>
-                <RouterLink to="/route-rules">Route Rules</RouterLink>
                 <RouterLink to="/rule-sets">Rule Sets</RouterLink>
-                <RouterLink to="/dns-servers">DNS Servers</RouterLink>
-                <RouterLink to="/dns-rules">DNS Rules</RouterLink>
               </nav>
             </v-col>
             
