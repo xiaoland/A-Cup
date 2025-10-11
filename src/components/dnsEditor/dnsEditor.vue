@@ -141,7 +141,7 @@
     <v-card>
       <v-card-title>{{ ruleDialog.editIndex === -1 ? 'Add DNS Rule' : 'Edit DNS Rule' }}</v-card-title>
       <v-card-text>
-        <DNSRuleEditor :dns-rule="ruleDialog.data" :mode="ruleDialog.editIndex === -1 ? 'create' : 'edit'" @save="onRuleSaved" @cancel="ruleDialog.show = false" />
+        <DNSRuleEditor :dns-rule="ruleDialog.data" :dns-servers="localDns.servers" :mode="ruleDialog.editIndex === -1 ? 'create' : 'edit'" @save="onRuleSaved" @cancel="ruleDialog.show = false" />
       </v-card-text>
     </v-card>
   </v-dialog>

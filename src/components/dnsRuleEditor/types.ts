@@ -1,7 +1,8 @@
 export interface DNSRule {
   id?: number
   owner?: number
-  share: boolean
+  // removed from UI; kept optional for backward compatibility if present in API
+  share?: boolean
   name: string
   action?: string
   server: number
@@ -14,6 +15,8 @@ export interface DNSRule {
 export interface Props {
   dnsRule?: DNSRule
   mode?: 'create' | 'edit'
+  // optional list of available servers passed from parent (e.g., ProfileEditor via DNSEditor)
+  dnsServers?: any[]
 }
 
 export interface SelectOption {

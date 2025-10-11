@@ -23,15 +23,7 @@
                     persistent-hint
                   />
                 </v-col>
-                <v-col cols="12" md="6">
-                  <v-switch
-                    v-model="formData.share"
-                    label="Share with other users"
-                    color="primary"
-                    hint="Allow other users to see and use this DNS rule"
-                    persistent-hint
-                  />
-                </v-col>
+                <!-- Share option removed -->
               </v-row>
             </v-card-text>
           </v-card>
@@ -61,7 +53,6 @@
                     variant="outlined"
                     hint="DNS server to route requests to"
                     persistent-hint
-                    :loading="loadingDNSServers"
                   />
                 </v-col>
               </v-row>
@@ -252,14 +243,12 @@ const userStore = useUserStore()
 
 // Reactive data
 const saving = ref(false)
-const loadingDNSServers = ref(false)
 const loadingRuleSets = ref(false)
 const dnsServerOptions = ref<SelectOption[]>([])
 const ruleSetOptions = ref<SelectOption[]>([])
 
 // Form data
 const formData = ref<DNSRule>({
-  share: false,
   name: '',
   action: undefined,
   server: 0,
@@ -285,7 +274,7 @@ const isFormValid = computed(() => {
   return (
     formData.value.name.trim() &&
     hasAnyCondition.value &&
-    (formData.value.action === 'reject' || formData.value.server > 0)
+    (formData.value.action === 'reject' || formData.value.server !== undefined)
   )
 })
 
@@ -297,28 +286,15 @@ watch(() => props.dnsRule, (newDNSRule) => {
 }, { immediate: true })
 
 // Methods
-const loadDNSServers = async () => {
-  try {
-    loadingDNSServers.value = true
-    const response = await fetch('/api/dns_servers', {
-      headers: {
-        'Authorization': `Bearer ${userStore.token}`
-      }
-    })
-    
-    if (response.ok) {
-      const servers = await response.json()
-      dnsServerOptions.value = servers.map((server: any) => ({
-        title: `${server.name} (${server.type.toUpperCase()})`,
-        value: server.id
-      }))
-    }
-  } catch (error) {
-    console.error('Failed to load DNS servers:', error)
-  } finally {
-    loadingDNSServers.value = false
+// Build server options from passed-in dnsServers prop if provided
+watch(() => props.dnsServers, (servers) => {
+  if (servers && Array.isArray(servers)) {
+    dnsServerOptions.value = servers.map((s: any, idx: number) => ({
+      title: `${s.name || s.tag || s.type} ${s.type ? `(${String(s.type).toUpperCase()})` : ''}`.trim(),
+      value: s.id ?? idx
+    }))
   }
-}
+}, { immediate: true, deep: true })
 
 const loadRuleSets = async () => {
   try {
@@ -358,24 +334,29 @@ const saveDNSRule = async () => {
       domain_keywords: formData.value.domain_keywords?.filter(d => d.trim()) || undefined
     }
 
-    const url = isEditing.value ? `/api/dns_rules/${props.dnsRule?.id}` : '/api/dns_rules'
-    const method = isEditing.value ? 'PUT' : 'POST'
-    
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userStore.token}`
-      },
-      body: JSON.stringify(dataToSave)
-    })
-    
-    if (response.ok) {
-      const result = await response.json()
-      emit('save', result)
+    // If dnsServers are provided via props, we treat this as an inline editor and emit the data directly
+    if (props.dnsServers && props.dnsServers.length > 0) {
+      emit('save', dataToSave)
     } else {
-      const error = await response.text()
-      alert(`Failed to save DNS rule: ${error}`)
+      const url = isEditing.value ? `/api/dns_rules/${props.dnsRule?.id}` : '/api/dns_rules'
+      const method = isEditing.value ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userStore.token}`
+        },
+        body: JSON.stringify(dataToSave)
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        emit('save', result)
+      } else {
+        const error = await response.text()
+        alert(`Failed to save DNS rule: ${error}`)
+      }
     }
   } catch (error) {
     console.error('Error saving DNS rule:', error)
@@ -421,7 +402,6 @@ const removeDomainKeyword = (index: number) => {
 
 // Lifecycle
 onMounted(() => {
-  loadDNSServers()
   loadRuleSets()
 })
 </script>
