@@ -68,25 +68,21 @@ export const SingBoxProfileRequestSchema = z.object({
 }).passthrough();
 
 // Export configuration schema (subset for internal generation/validation)
+// Full Sing-Box configuration shape (top-level) – aligned with official JSON Schema
+// Note: Nested structures are left as any to follow upstream spec without re-implementing all branches in Zod.
 export const SingBoxProfileSchema = z.object({
-  log: z.object({
-    level: z.string(),
-    timestamp: z.boolean().optional(),
-  }).partial().optional(),
-  experimental: z.object({
-    cache_file: z.object({
-      enabled: z.boolean(),
-      store_fakeip: z.boolean().optional(),
-      store_rdrc: z.boolean().optional(),
-    }),
-  }).partial().optional(),
-  outbounds: z.array(OutboundInSingBoxSchema),
-  route: z.object({
-    rule_set: z.array(RuleSetInSingBoxSchema),
-    final: z.string().optional(),
-    auto_detect_interface: z.boolean().optional(),
-  }),
-}).passthrough();
+  $schema: z.string().optional(),
+  log: z.any().optional(),
+  dns: z.any().optional(),
+  ntp: z.any().optional(),
+  certificate: z.any().optional(),
+  endpoints: z.array(z.any()).optional(),
+  inbounds: z.array(z.any()).optional(),
+  outbounds: z.array(z.any()).optional(),
+  route: z.any().optional(),
+  services: z.array(z.any()).optional(),
+  experimental: z.any().optional(),
+}).strict();
 
 // Zod schema for profile export response
 export const ProfileExportDirectResponseSchema = z.object({
