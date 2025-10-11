@@ -605,16 +605,22 @@ const saveProfile = async () => {
       ? `/api/profiles/${formData.value.id}` 
       : '/api/profiles'
     
-    // Build Sing-Box-like payload; only outbounds and route.rule_set are number[]
+    // Build Sing-Box-like payload: include all top-level fields.
+    // outbounds and route.rule_set are ID arrays; other sections initialized for delegation to dedicated editors.
     const payload: any = {
       name: formData.value.name,
       tags: formData.value.tags,
+      log: { level: 'info', timestamp: true },
+      dns: {},
+      ntp: {},
+      certificate: {},
+      inbounds: [],
       outbounds: formData.value.outbounds,
       route: {
         rule_set: formData.value.rule_sets,
         auto_detect_interface: true,
       },
-      log: { level: 'info', timestamp: true },
+      services: [],
       experimental: { cache_file: { enabled: true, store_fakeip: true, store_rdrc: false } },
     }
 
