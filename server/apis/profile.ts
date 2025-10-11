@@ -15,6 +15,7 @@ import {
   type ProfileExportResponse
 } from '../schemas/export';
 import { exportProfileToR2 } from '../fund/profile-export';
+import { validateSingBoxConfig } from '../fund/ajv';
 
 // Import export functions from other modules
 import { exportOutbound } from './outbound';
@@ -276,8 +277,8 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, query_params, db,
       }
     };
 
-    // Validate the complete configuration with Zod schema
-    const validatedConfig = SingBoxProfileSchema.parse(singBoxConfig);
+    // Validate the complete configuration with official JSON Schema (Ajv)
+    await validateSingBoxConfig(singBoxConfig);
     
     const configJson = JSON.stringify(singBoxConfig, null, 2);
     
