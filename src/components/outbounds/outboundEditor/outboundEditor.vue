@@ -14,13 +14,7 @@
       <v-card-text>
         <v-form @submit.prevent="onSave">
           <template v-if="editMode === 'json'">
-            <v-textarea
-              v-model="formJsonText"
-              label="Outbound JSON"
-              variant="outlined"
-              rows="18"
-              :error-messages="formJsonError || undefined"
-            />
+            <JSONEditor v-model="jsonWhole" label="Outbound JSON" :rows="18" />
           </template>
           <template v-else-if="form.type === 'selector'">
             <v-row>
@@ -224,40 +218,16 @@
                   <v-expansion-panel-text>
                     <v-row>
                       <v-col cols="12" md="6">
-                        <v-textarea
-                          v-model="transportText"
-                          label="Transport (JSON)"
-                          variant="outlined"
-                          rows="6"
-                          :error-messages="transportError || undefined"
-                        />
+                        <JSONEditor v-model="form.transport" label="Transport (JSON)" :rows="6" />
                       </v-col>
                       <v-col cols="12" md="6">
-                        <v-textarea
-                          v-model="tlsText"
-                          label="TLS (JSON)"
-                          variant="outlined"
-                          rows="6"
-                          :error-messages="tlsError || undefined"
-                        />
+                        <JSONEditor v-model="form.tls" label="TLS (JSON)" :rows="6" />
                       </v-col>
                       <v-col cols="12" md="6">
-                        <v-textarea
-                          v-model="muxText"
-                          label="Mux (JSON)"
-                          variant="outlined"
-                          rows="6"
-                          :error-messages="muxError || undefined"
-                        />
+                        <JSONEditor v-model="form.mux" label="Mux (JSON)" :rows="6" />
                       </v-col>
                       <v-col cols="12" md="6">
-                        <v-textarea
-                          v-model="otherText"
-                          label="Other (JSON)"
-                          variant="outlined"
-                          rows="6"
-                          :error-messages="otherError || undefined"
-                        />
+                        <JSONEditor v-model="form.other" label="Other (JSON)" :rows="6" />
                       </v-col>
                     </v-row>
                   </v-expansion-panel-text>
@@ -291,6 +261,7 @@ import { useUserStore } from '@/stores/user'
 import type { Outbound } from './types'
 import { typeOptions, regionOptions } from './types'
 import OutboundsSelector from '@/components/outbounds/common/OutboundsSelector.vue'
+import JSONEditor from '@/components/common/JSONEditor.vue'
 
 const props = defineProps<{ form: Outbound }>()
 const emit = defineEmits<{ (e: 'saved', value: Outbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
@@ -303,8 +274,11 @@ const form = props.form
 const saving = ref(false)
 const deleting = ref(false)
 const editMode = ref<'ui' | 'json'>('ui')
-const formJsonText = ref('')
-const formJsonError = ref('')
+// JSON mode uses JSONEditor bound to this computed
+const jsonWhole = computed({
+  get: () => form,
+  set: (v: any) => { if (v && typeof v === 'object') Object.assign(form, v) }
+})
 const selectorConfig = ref<{ outbounds: number[]; default: number | null; interrupt_exist_connections: boolean }>({ outbounds: [], default: null, interrupt_exist_connections: false })
 const urltestConfig = ref<{ outbounds: number[]; url: string; interval: string; tolerance: number; idle_timeout: string; interrupt_exist_connections: boolean }>({ outbounds: [], url: '', interval: '', tolerance: 0, idle_timeout: '', interrupt_exist_connections: false })
 
@@ -339,31 +313,7 @@ const ssMethods = [
 const vmessSecurities = ['auto','none','zero','aes-128-gcm','chacha20-poly1305']
 const vlessFlows = ['xtls-rprx-vision']
 const hy2ObfsTypes = ['salamander']
-const transportText = ref<string>('')
-const transportError = ref<string>('')
-const tlsText = ref<string>('')
-const tlsError = ref<string>('')
-const muxText = ref<string>('')
-const muxError = ref<string>('')
-const otherText = ref<string>('')
-const otherError = ref<string>('')
-
-const syncFromObject = () => {
-  if (!form.credential || typeof form.credential !== 'object') form.credential = {}
-  try { transportText.value = JSON.stringify(form.transport ?? {}, null, 2); transportError.value = '' } catch { transportText.value = '{}' }
-  try { tlsText.value = JSON.stringify(form.tls ?? {}, null, 2); tlsError.value = '' } catch { tlsText.value = '{}' }
-  try { muxText.value = JSON.stringify(form.mux ?? {}, null, 2); muxError.value = '' } catch { muxText.value = '{}' }
-  try { otherText.value = JSON.stringify(form.other ?? {}, null, 2); otherError.value = '' } catch { otherText.value = '{}' }
-}
-const parseAdvanced = () => {
-  let ok = true
-  try { form.transport = transportText.value ? JSON.parse(transportText.value) : {}; transportError.value = '' } catch { transportError.value = 'Invalid JSON'; ok = false }
-  try { form.tls = tlsText.value ? JSON.parse(tlsText.value) : {}; tlsError.value = '' } catch { tlsError.value = 'Invalid JSON'; ok = false }
-  try { form.mux = muxText.value ? JSON.parse(muxText.value) : {}; muxError.value = '' } catch { muxError.value = 'Invalid JSON'; ok = false }
-  try { form.other = otherText.value ? JSON.parse(otherText.value) : {}; otherError.value = 'Invalid JSON'; ok = false } catch { otherError.value = 'Invalid JSON'; ok = false }
-  return ok
-}
-onMounted(syncFromObject)
+onMounted(() => { if (!form.credential || typeof form.credential !== 'object') form.credential = {} })
 
 // ensure nested objects for hysteria2 obfs when editing
 watchEffect(() => {
@@ -375,32 +325,7 @@ watchEffect(() => {
   }
 })
 
-watch(editMode, (mode) => {
-  if (mode === 'json') {
-    // apply advanced UI changes to form before serializing
-    if (!parseAdvanced()) {
-      editMode.value = 'ui'
-      return
-    }
-    try {
-      formJsonText.value = JSON.stringify(form, null, 2)
-      formJsonError.value = ''
-    } catch {
-      formJsonText.value = '{}'
-    }
-  } else {
-    // switching to UI: try applying JSON back
-    try {
-      const parsed = JSON.parse(formJsonText.value || '{}')
-      Object.assign(form, parsed)
-      formJsonError.value = ''
-      syncFromObject()
-    } catch (e) {
-      formJsonError.value = 'Invalid JSON'
-      editMode.value = 'json'
-    }
-  }
-})
+// JSON mode serialization/deserialization handled by JSONEditor on blur
 
 const hy2ObfsType = computed({
   get: () => (form.credential as any)?.obfs?.type ?? '',
@@ -453,7 +378,6 @@ const onSave = async () => {
     router.push('/outbounds')
     return
   }
-  if (!parseAdvanced()) return
   saving.value = true
   try {
     const body = { ...form }
