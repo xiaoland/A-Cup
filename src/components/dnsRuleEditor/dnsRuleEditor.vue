@@ -229,13 +229,12 @@ import type { DNSRule, Props, SelectOption } from './types'
 import { actionOptions } from './types'
 
 // Props and emits
-const props = withDefaults(defineProps<Props>(), {
-  mode: 'create'
-})
+const props = withDefaults(defineProps<Props>(), { mode: 'create' })
 
 const emit = defineEmits<{
   save: [dnsRule: DNSRule]
   cancel: []
+  'update:dnsRule': [dnsRule: DNSRule]
 }>()
 
 // Stores
@@ -284,6 +283,11 @@ watch(() => props.dnsRule, (newDNSRule) => {
     formData.value = { ...newDNSRule }
   }
 }, { immediate: true })
+
+// v-model sync for dnsRule
+watch(formData, (val) => {
+  emit('update:dnsRule', { ...val })
+}, { deep: true })
 
 // Methods
 // Build server options from passed-in dnsServers prop if provided
@@ -334,30 +338,8 @@ const saveDNSRule = async () => {
       domain_keywords: formData.value.domain_keywords?.filter(d => d.trim()) || undefined
     }
 
-    // If dnsServers are provided via props, we treat this as an inline editor and emit the data directly
-    if (props.dnsServers && props.dnsServers.length > 0) {
-      emit('save', dataToSave)
-    } else {
-      const url = isEditing.value ? `/api/dns_rules/${props.dnsRule?.id}` : '/api/dns_rules'
-      const method = isEditing.value ? 'PUT' : 'POST'
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userStore.token}`
-        },
-        body: JSON.stringify(dataToSave)
-      })
-      
-      if (response.ok) {
-        const result = await response.json()
-        emit('save', result)
-      } else {
-        const error = await response.text()
-        alert(`Failed to save DNS rule: ${error}`)
-      }
-    }
+    // Do not call API; emit to parent
+    emit('save', dataToSave)
   } catch (error) {
     console.error('Error saving DNS rule:', error)
     alert('Failed to save DNS rule')

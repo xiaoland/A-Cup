@@ -207,6 +207,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   save: [dnsServer: DNSServer]
   cancel: []
+  'update:dnsServer': [dnsServer: DNSServer]
 }>()
 
 // Stores
@@ -258,6 +259,11 @@ watch(() => props.dnsServer, (newDNSServer) => {
     }
   }
 }, { immediate: true })
+
+// v-model sync for dnsServer
+watch(formData, (val) => {
+  emit('update:dnsServer', { ...val })
+}, { deep: true })
 
 // Mutual exclusion watchers for detour fields
 // removed mutual exclusion with wg_endpoint_detour as endpoint detour is not exposed in UI
@@ -349,25 +355,8 @@ const saveDNSServer = async () => {
       delete dataToSave.https
     }
 
-    const url = isEditing.value ? `/api/dns_servers/${props.dnsServer?.id}` : '/api/dns_servers'
-    const method = isEditing.value ? 'PUT' : 'POST'
-    
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userStore.token}`
-      },
-      body: JSON.stringify(dataToSave)
-    })
-    
-    if (response.ok) {
-      const result = await response.json()
-      emit('save', result)
-    } else {
-      const error = await response.text()
-      alert(`Failed to save DNS server: ${error}`)
-    }
+    // Do not call API; emit to parent
+    emit('save', dataToSave)
   } catch (error) {
     console.error('Error saving DNS server:', error)
     alert('Failed to save DNS server')

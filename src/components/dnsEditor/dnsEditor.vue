@@ -131,7 +131,7 @@
     <v-card>
       <v-card-title>{{ serverDialog.editIndex === -1 ? 'Add DNS Server' : 'Edit DNS Server' }}</v-card-title>
       <v-card-text>
-        <DNSServerEditor :dns-server="serverDialog.data" :mode="serverDialog.editIndex === -1 ? 'create' : 'edit'" @save="onServerSaved" @cancel="serverDialog.show = false" />
+        <DNSServerEditor v-model:dns-server="serverDialog.data" :mode="serverDialog.editIndex === -1 ? 'create' : 'edit'" @save="onServerSaved" @cancel="serverDialog.show = false" />
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -141,7 +141,7 @@
     <v-card>
       <v-card-title>{{ ruleDialog.editIndex === -1 ? 'Add DNS Rule' : 'Edit DNS Rule' }}</v-card-title>
       <v-card-text>
-        <DNSRuleEditor :dns-rule="ruleDialog.data" :dns-servers="localDns.servers" :mode="ruleDialog.editIndex === -1 ? 'create' : 'edit'" @save="onRuleSaved" @cancel="ruleDialog.show = false" />
+        <DNSRuleEditor v-model:dns-rule="ruleDialog.data" :dns-servers="localDns.servers" :mode="ruleDialog.editIndex === -1 ? 'create' : 'edit'" @save="onRuleSaved" @cancel="ruleDialog.show = false" />
       </v-card-text>
     </v-card>
   </v-dialog>

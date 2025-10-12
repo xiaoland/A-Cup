@@ -15,8 +15,8 @@ export interface DNSRule {
 export interface Props {
   dnsRule?: DNSRule
   mode?: 'create' | 'edit'
-  // optional list of available servers passed from parent (e.g., ProfileEditor via DNSEditor)
-  dnsServers?: any[]
+  // List of available servers passed from parent (required)
+  dnsServers: any[]
 }
 
 export interface SelectOption {
