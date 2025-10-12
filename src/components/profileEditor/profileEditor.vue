@@ -46,54 +46,7 @@
             </v-card-text>
           </v-card>
 
-          <!-- Inbounds Inline Editors -->
-          <v-card variant="outlined" class="form-section">
-            <v-card-title class="text-h6 d-flex align-center justify-space-between">
-              Inbounds
-              <v-btn color="primary" variant="outlined" size="small" prepend-icon="mdi-plus" @click="addInbound">
-                Add Inbound
-              </v-btn>
-            </v-card-title>
-            <v-card-text>
-              <div v-if="formData.inbounds.length === 0" class="text-body-2 text-medium-emphasis">
-                No inbounds. Click Add to create one.
-              </div>
-              <v-expansion-panels v-else multiple>
-                <v-expansion-panel v-for="(inb, idx) in formData.inbounds" :key="idx">
-                  <v-expansion-panel-title>
-                    <div class="d-flex align-center w-100">
-                      <span class="me-3">Inbound #{{ idx + 1 }}</span>
-                      <v-chip size="x-small" class="me-2">{{ inb.type }}</v-chip>
-                      <span class="text-caption text-medium-emphasis">{{ inb.address ? `${inb.address}:${inb.port || ''}` : '—' }}</span>
-                      <v-spacer />
-                      <v-btn icon="mdi-delete" size="x-small" variant="text" @click.stop="removeInboundAt(idx)" />
-                    </div>
-                  </v-expansion-panel-title>
-                  <v-expansion-panel-text>
-                    <v-row>
-                      <v-col cols="12" md="4">
-                        <v-select v-model="inb.type" :items="['mixed','tun','socks','http']" label="Type" variant="outlined" />
-                      </v-col>
-                      <v-col cols="12" md="4">
-                        <v-text-field v-model="inb.address" label="Address" variant="outlined" />
-                      </v-col>
-                      <v-col cols="12" md="4">
-                        <v-text-field v-model.number="inb.port" type="number" label="Port" variant="outlined" />
-                      </v-col>
-                    </v-row>
-                    <v-row v-if="inb.type === 'tun'">
-                      <v-col cols="12" md="6">
-                        <v-select v-model="inb.stack" :items="['system','gvisor','mixed']" label="Stack" variant="outlined" />
-                      </v-col>
-                      <v-col cols="12" md="6">
-                        <v-text-field v-model.number="inb.mtu" type="number" label="MTU" variant="outlined" />
-                      </v-col>
-                    </v-row>
-                  </v-expansion-panel-text>
-                </v-expansion-panel>
-              </v-expansion-panels>
-            </v-card-text>
-          </v-card>
+          <InboundEditor />
 
           <OutboundsEditor :form="formData" />
 
@@ -144,6 +97,7 @@ import { profileTagOptions } from './types'
 import RouteEditor from '@/components/routeEditor/routeEditor.vue'
 import DNSEditor from '@/components/dnsEditor/dnsEditor.vue'
 import OutboundsEditor from './outboundsEditor.vue'
+import InboundEditor from '@/components/inboundEditor/inboundEditor.vue'
 
 // Props
 const props = withDefaults(defineProps<Props>(), {
@@ -398,14 +352,7 @@ watch(
   { immediate: true }
 )
 
-// Inline inbound helpers
-const addInbound = () => {
-  formData.value.inbounds.push({ type: 'mixed', address: '', port: undefined })
-}
-
-const removeInboundAt = (idx: number) => {
-  formData.value.inbounds.splice(idx, 1)
-}
+// Inbounds now edited via dedicated InboundEditor component
 
 // Load available entities on mount
 onMounted(() => {
