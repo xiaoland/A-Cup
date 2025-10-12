@@ -55,11 +55,11 @@
               </v-btn>
             </v-card-title>
             <v-card-text>
-              <div v-if="inboundsState.length === 0" class="text-body-2 text-medium-emphasis">
+              <div v-if="formData.inbounds.length === 0" class="text-body-2 text-medium-emphasis">
                 No inbounds. Click Add to create one.
               </div>
               <v-expansion-panels v-else multiple>
-                <v-expansion-panel v-for="(inb, idx) in inboundsState" :key="idx">
+                <v-expansion-panel v-for="(inb, idx) in formData.inbounds" :key="idx">
                   <v-expansion-panel-title>
                     <div class="d-flex align-center w-100">
                       <span class="me-3">Inbound #{{ idx + 1 }}</span>
@@ -130,7 +130,7 @@
           </v-card>
 
           <!-- Route Editor -->
-          <RouteEditor v-model:route="routeState" />
+          <RouteEditor v-model:route="formData.route" />
 
           
 
@@ -139,7 +139,7 @@
           
 
           <!-- DNS Editor -->
-          <DNSEditor v-model:dns="dnsState" />
+          <DNSEditor :dns="formData.dns" />
 
           <!-- Action Buttons -->
           <div class="action-buttons d-flex justify-end">
@@ -251,7 +251,7 @@ const userStore = useUserStore()
 // Reactive data
 const saving = ref(false)
 const loadingEntities = ref(false)
-const formData = ref<Profile>({
+const formData = ref<any>({
   name: '',
   tags: [],
   inbounds: [],
@@ -261,13 +261,11 @@ const formData = ref<Profile>({
   rules: [],
   rule_sets: [],
   dns_rules: [],
-  dns: []
+  dns: { servers: [], rules: [], fakeip: {} },
+  route: { final: undefined, auto_detect_interface: true, rule_set: [], rules: [] }
 })
 
-// Embedded editor states
-const inboundsState = ref<any[]>([])
-const routeState = ref<any>({ final: undefined, auto_detect_interface: true, rule_set: [], rules: [] })
-const dnsState = ref<any>({ servers: [], rules: [] })
+// Embedded editor states removed; bind directly to formData
 
 // Available entities - loaded from API
 const availableOutbounds = ref<Outbound[]>([])
@@ -373,12 +371,12 @@ const confirmSelection = () => {
 }
 
 const removeOutbound = (id: number) => {
-  formData.value.outbounds = formData.value.outbounds.filter(i => i !== id)
+  formData.value.outbounds = formData.value.outbounds.filter((i: number) => i !== id)
 }
 
 
 const removeRuleSet = (id: number) => {
-  formData.value.rule_sets = formData.value.rule_sets.filter(i => i !== id)
+  formData.value.rule_sets = formData.value.rule_sets.filter((i: number) => i !== id)
 }
 
 const saveProfile = async () => {
@@ -400,12 +398,12 @@ const saveProfile = async () => {
       name: formData.value.name,
       tags: formData.value.tags,
       log: { level: 'info', timestamp: true },
-      dns: dnsState.value,
+      dns: formData.value.dns,
       ntp: {},
       certificate: {},
-      inbounds: inboundsState.value,
+      inbounds: formData.value.inbounds,
       outbounds: formData.value.outbounds,
-      route: routeState.value,
+      route: formData.value.route,
       services: [],
       experimental: { cache_file: { enabled: true, store_fakeip: true, store_rdrc: false } },
     }
@@ -462,16 +460,13 @@ watch(
   () => props.profile,
   (newProfile) => {
     if (newProfile) {
-      formData.value = { ...newProfile }
-      // Initialize embedded states if present on profile payload
-      if ((newProfile as any).inbounds && Array.isArray((newProfile as any).inbounds)) {
-        inboundsState.value = JSON.parse(JSON.stringify((newProfile as any).inbounds))
-      }
-      if ((newProfile as any).route) {
-        routeState.value = JSON.parse(JSON.stringify((newProfile as any).route))
-      }
-      if ((newProfile as any).dns) {
-        dnsState.value = JSON.parse(JSON.stringify((newProfile as any).dns))
+      const np: any = newProfile
+      formData.value = {
+        ...formData.value,
+        ...np,
+        inbounds: Array.isArray(np.inbounds) ? JSON.parse(JSON.stringify(np.inbounds)) : [],
+        route: np.route ? JSON.parse(JSON.stringify(np.route)) : { final: undefined, auto_detect_interface: true, rule_set: [], rules: [] },
+        dns: np.dns ? JSON.parse(JSON.stringify(np.dns)) : { servers: [], rules: [], fakeip: {} }
       }
     } else {
       formData.value = {
@@ -484,11 +479,9 @@ watch(
         rules: [],
         rule_sets: [],
         dns_rules: [],
-        dns: []
+        dns: { servers: [], rules: [], fakeip: {} },
+        route: { final: undefined, auto_detect_interface: true, rule_set: [], rules: [] }
       }
-      inboundsState.value = []
-      routeState.value = { final: undefined, auto_detect_interface: true, rule_set: [], rules: [] }
-      dnsState.value = { servers: [], rules: [] }
     }
   },
   { immediate: true }
@@ -496,11 +489,11 @@ watch(
 
 // Inline inbound helpers
 const addInbound = () => {
-  inboundsState.value.push({ type: 'mixed', address: '', port: undefined })
+  formData.value.inbounds.push({ type: 'mixed', address: '', port: undefined })
 }
 
 const removeInboundAt = (idx: number) => {
-  inboundsState.value.splice(idx, 1)
+  formData.value.inbounds.splice(idx, 1)
 }
 
 // Load available entities on mount
