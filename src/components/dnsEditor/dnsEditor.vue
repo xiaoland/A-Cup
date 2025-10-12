@@ -105,8 +105,8 @@
 </template>
 
 <script setup lang="ts">
-import DnsServer from '@/components/dnsServerEditor/dnsServer.vue'
-import DnsRule from '@/components/dnsRuleEditor/dnsRule.vue'
+import DnsServer from '@/components/dnsServer/dnsServer.vue'
+import DnsRule from '@/components/dnsRule/dnsRule.vue'
 
 type DnsServer = any
 type DnsRule = any

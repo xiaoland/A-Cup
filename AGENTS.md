@@ -41,6 +41,38 @@ Notes:
 - `vite.config.ts`, `tsconfig*.json` build and TS configs
 - `wrangler.jsonc`, `worker-configuration.d.ts` Cloudflare config/types
 
+## Coding Standard
+
+Don't extract a function if there's no more than one usage.
+
+### VueJS
+
+- Vue3 + TypeScript
+- UI Lib: [Vuetify 3](https://vuetifyjs.com/en/components/all)
+- Store Lib: [Pinia](https://pinia.vuejs.org/core-concepts/)
+
+#### Component
+
+- Compositional API
+- Every component has a directory with these files:
+  - `compName.vue`: template and script
+  - `types.ts`: types and constant of this component
+  - `index.scss`: styles of this component
+
+### Styles
+
+Extract common styles, mixtures into `src/styles/`
+
+#### SCSS
+
+- use `@use` to replace `@import`
+
+### TypeScript
+
+- name a variable with snake naming
+- name a function with camel naming
+- name module level constants with UPPER CASE naming
+
 ## Branching & PR workflow
 1) Create a feature branch from `master`.
 2) Make changes.
