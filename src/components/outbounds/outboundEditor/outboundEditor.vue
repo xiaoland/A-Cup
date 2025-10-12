@@ -51,6 +51,55 @@
                 :error-messages="credentialError || undefined"
               />
             </v-col>
+
+            <!-- Advanced section -->
+            <v-col cols="12">
+              <v-expansion-panels variant="accordion">
+                <v-expansion-panel>
+                  <v-expansion-panel-title>Advanced</v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <v-row>
+                      <v-col cols="12" md="6">
+                        <v-textarea
+                          v-model="transportText"
+                          label="Transport (JSON)"
+                          variant="outlined"
+                          rows="6"
+                          :error-messages="transportError || undefined"
+                        />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-textarea
+                          v-model="tlsText"
+                          label="TLS (JSON)"
+                          variant="outlined"
+                          rows="6"
+                          :error-messages="tlsError || undefined"
+                        />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-textarea
+                          v-model="muxText"
+                          label="Mux (JSON)"
+                          variant="outlined"
+                          rows="6"
+                          :error-messages="muxError || undefined"
+                        />
+                      </v-col>
+                      <v-col cols="12" md="6">
+                        <v-textarea
+                          v-model="otherText"
+                          label="Other (JSON)"
+                          variant="outlined"
+                          rows="6"
+                          :error-messages="otherError || undefined"
+                        />
+                      </v-col>
+                    </v-row>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
+            </v-col>
           </v-row>
         </v-form>
       </v-card-text>
@@ -90,6 +139,14 @@ const deleting = ref(false)
 
 const credentialText = ref<string>('')
 const credentialError = ref<string>('')
+const transportText = ref<string>('')
+const transportError = ref<string>('')
+const tlsText = ref<string>('')
+const tlsError = ref<string>('')
+const muxText = ref<string>('')
+const muxError = ref<string>('')
+const otherText = ref<string>('')
+const otherError = ref<string>('')
 
 const syncFromObject = () => {
   try {
@@ -98,6 +155,10 @@ const syncFromObject = () => {
   } catch (e) {
     credentialText.value = '{}'
   }
+  try { transportText.value = JSON.stringify(form.transport ?? {}, null, 2); transportError.value = '' } catch { transportText.value = '{}' }
+  try { tlsText.value = JSON.stringify(form.tls ?? {}, null, 2); tlsError.value = '' } catch { tlsText.value = '{}' }
+  try { muxText.value = JSON.stringify(form.mux ?? {}, null, 2); muxError.value = '' } catch { muxText.value = '{}' }
+  try { otherText.value = JSON.stringify(form.other ?? {}, null, 2); otherError.value = '' } catch { otherText.value = '{}' }
 }
 const parseCredential = () => {
   try {
@@ -109,6 +170,14 @@ const parseCredential = () => {
     return false
   }
 }
+const parseAdvanced = () => {
+  let ok = true
+  try { form.transport = transportText.value ? JSON.parse(transportText.value) : {}; transportError.value = '' } catch { transportError.value = 'Invalid JSON'; ok = false }
+  try { form.tls = tlsText.value ? JSON.parse(tlsText.value) : {}; tlsError.value = '' } catch { tlsError.value = 'Invalid JSON'; ok = false }
+  try { form.mux = muxText.value ? JSON.parse(muxText.value) : {}; muxError.value = '' } catch { muxError.value = 'Invalid JSON'; ok = false }
+  try { form.other = otherText.value ? JSON.parse(otherText.value) : {}; otherError.value = 'Invalid JSON'; ok = false } catch { otherError.value = 'Invalid JSON'; ok = false }
+  return ok
+}
 onMounted(syncFromObject)
 
 const onCancel = () => {
@@ -118,6 +187,7 @@ const onCancel = () => {
 
 const onSave = async () => {
   if (!parseCredential()) return
+  if (!parseAdvanced()) return
   saving.value = true
   try {
     const body = { ...form }
