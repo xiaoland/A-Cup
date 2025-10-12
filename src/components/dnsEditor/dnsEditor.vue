@@ -105,7 +105,6 @@
 </template>
 
 <script setup lang="ts">
-import { } from 'vue'
 import DnsServer from '@/components/dnsServerEditor/dnsServer.vue'
 import DnsRule from '@/components/dnsRuleEditor/dnsRule.vue'
 
@@ -144,28 +143,20 @@ const strategyItems = [
 
 // Servers
 const addServer = () => {
-  const servers = [...(props.dns.servers || [])]
-  servers.push({ name: '', type: 'udp', address: '', port: 53 })
-  emit('update:dns', { ...props.dns, servers })
+  props.dns.servers.push({ name: '', type: 'udp', address: '', port: 53 })
 }
 
 const removeServer = (index: number) => {
-  const servers = [...(props.dns.servers || [])]
-  servers.splice(index, 1)
-  emit('update:dns', { ...props.dns, servers })
+  props.dns.servers.splice(index, 1)
 }
 
 // Rules
 const addRule = () => {
-  const rules = [...(props.dns.rules || [])]
-  rules.push({ name: '', server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] })
-  emit('update:dns', { ...props.dns, rules })
+  props.dns.rules.push({ name: '', server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] })
 }
 
 const removeRule = (index: number) => {
-  const rules = [...(props.dns.rules || [])]
-  rules.splice(index, 1)
-  emit('update:dns', { ...props.dns, rules })
+  props.dns.rules.splice(index, 1)
 }
 </script>
 
