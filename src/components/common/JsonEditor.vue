@@ -67,8 +67,9 @@ async function init() {
   if (!container.value) return
   loading.value = true
   try {
-    const [{ editor: MonacoEditor, languages, Uri }, EditorWorker, JsonWorker] = await Promise.all([
+    const [{ editor: MonacoEditor, languages, Uri }, _contrib, EditorWorker, JsonWorker] = await Promise.all([
       import('monaco-editor/esm/vs/editor/editor.api'),
+      import('monaco-editor/esm/vs/language/json/monaco.contribution'),
       import('monaco-editor/esm/vs/editor/editor.worker?worker'),
       import('monaco-editor/esm/vs/language/json/json.worker?worker'),
     ])
@@ -82,8 +83,9 @@ async function init() {
     monaco = { editor: MonacoEditor, languages, Uri } as Monaco
     const schemaObject = await loadSchemaObject()
 
-    // Configure JSON language features
-    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+    // Configure JSON language features (guard if json language is present)
+    // @ts-ignore - optional chaining for runtime safety
+    monaco.languages?.json?.jsonDefaults?.setDiagnosticsOptions({
       allowComments: false,
       enableSchemaRequest: false,
       validate: true,
