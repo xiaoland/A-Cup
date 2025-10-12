@@ -15,7 +15,7 @@
             <div class="text-body-2">Server #{{ sidx + 1 }}</div>
             <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="removeServer(sidx)" />
           </div>
-          <DnsServer v-model:dns-server="dns.servers[sidx]" />
+          <DnsServer :dns-server="dns.servers[sidx]" />
         </div>
         <div v-if="(dns.servers?.length || 0) === 0" class="text-body-2 text-medium-emphasis">No servers yet. Click Add to create one.</div>
       </div>
@@ -33,7 +33,7 @@
             <div class="text-body-2">Rule #{{ ridx + 1 }}</div>
             <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="removeRule(ridx)" />
           </div>
-          <DnsRule v-model:dns-rule="dns.rules[ridx]" :dns-servers="dns.servers" />
+          <DnsRule :dns-rule="dns.rules[ridx]" :dns-servers="dns.servers" />
         </div>
         <div v-if="(dns.rules?.length || 0) === 0" class="text-body-2 text-medium-emphasis">No rules yet. Click Add to create one.</div>
       </div>
@@ -132,8 +132,9 @@ type DnsConfig = {
   fakeip?: FakeIP
 }
 
-const props = defineProps<{ dns: DnsConfig }>()
-const emit = defineEmits<{ 'update:dns': [value: DnsConfig] }>()
+const props = withDefaults(defineProps<{ dns?: DnsConfig }>(), {
+  dns: () => ({ servers: [], rules: [], fakeip: {} }) as DnsConfig,
+})
 
 const strategyItems = [
   { title: 'prefer_ipv4', value: 'prefer_ipv4' },
@@ -144,28 +145,22 @@ const strategyItems = [
 
 // Servers
 const addServer = () => {
-  const servers = [...(props.dns.servers || [])]
-  servers.push({ name: '', type: 'udp', address: '', port: 53 })
-  emit('update:dns', { ...props.dns, servers })
+  if (!props.dns.servers) props.dns.servers = []
+  props.dns.servers.push({ name: '', type: 'udp', address: '', port: 53 })
 }
 
 const removeServer = (index: number) => {
-  const servers = [...(props.dns.servers || [])]
-  servers.splice(index, 1)
-  emit('update:dns', { ...props.dns, servers })
+  props.dns.servers?.splice(index, 1)
 }
 
 // Rules
 const addRule = () => {
-  const rules = [...(props.dns.rules || [])]
-  rules.push({ name: '', server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] })
-  emit('update:dns', { ...props.dns, rules })
+  if (!props.dns.rules) props.dns.rules = []
+  props.dns.rules.push({ name: '', server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] })
 }
 
 const removeRule = (index: number) => {
-  const rules = [...(props.dns.rules || [])]
-  rules.splice(index, 1)
-  emit('update:dns', { ...props.dns, rules })
+  props.dns.rules?.splice(index, 1)
 }
 </script>
 

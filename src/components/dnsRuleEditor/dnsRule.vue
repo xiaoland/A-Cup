@@ -105,7 +105,10 @@ import type { SelectOption } from './types'
 import { actionOptions } from './types'
 import type { DNSRule } from './index'
 
-const props = withDefaults(defineProps<{ dnsServers: any[]; editable?: boolean }>(), { editable: false })
+const props = withDefaults(defineProps<{ dnsRule?: DNSRule; dnsServers: any[]; editable?: boolean }>(), {
+  editable: false,
+  dnsRule: () => ({ name: '', action: undefined, server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] }) as DNSRule,
+})
 const emit = defineEmits<{ save: [dnsRule: DNSRule]; cancel: []; 'request-edit': [] }>()
 
 const userStore = useUserStore()
@@ -114,9 +117,8 @@ const loadingRuleSets = ref(false)
 const dnsServerOptions = ref<SelectOption[]>([])
 const ruleSetOptions = ref<SelectOption[]>([])
 
-const form = defineModel<DNSRule>('dnsRule', {
-  default: () => ({ name: '', action: undefined, server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] })
-})
+import { toRef } from 'vue'
+const form = toRef(props, 'dnsRule')
 
 const hasAnyCondition = computed(() => !!((form.value?.domains && form.value.domains.length > 0) || (form.value?.domain_suffixes && form.value.domain_suffixes.length > 0) || (form.value?.domain_keywords && form.value.domain_keywords.length > 0) || (form.value?.rule_sets && form.value.rule_sets.length > 0)))
 const isFormValid = computed(() => !!form.value && !!form.value.name.trim() && hasAnyCondition.value && (form.value.action === 'reject' || form.value.server !== undefined))

@@ -101,7 +101,10 @@ import type { SelectOption } from './types'
 import { typeOptions, DEFAULT_PORTS } from './types'
 import type { DNSServer } from './index'
 
-const props = withDefaults(defineProps<{ editable?: boolean }>(), { editable: false })
+const props = withDefaults(defineProps<{ dnsServer?: DNSServer; editable?: boolean }>(), {
+  editable: false,
+  dnsServer: () => ({ name: '', type: 'udp', address: '', port: 53, tls: {}, https: {}, outbound_detour: null, wg_endpoint_detour: null }) as DNSServer,
+})
 const emit = defineEmits<{ save: [dnsServer: DNSServer]; cancel: []; 'request-edit': [] }>()
 
 const userStore = useUserStore()
@@ -109,9 +112,8 @@ const saving = ref(false)
 const loadingOutbounds = ref(false)
 const outboundOptions = ref<SelectOption[]>([])
 
-const form = defineModel<DNSServer>('dnsServer', {
-  default: () => ({ name: '', type: 'udp', address: '', port: 53, tls: {}, https: {}, outbound_detour: null, wg_endpoint_detour: null })
-})
+import { toRef } from 'vue'
+const form = toRef(props, 'dnsServer')
 
 const tlsEnabled = ref(false)
 const headersText = ref('')
