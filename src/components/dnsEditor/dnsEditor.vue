@@ -15,7 +15,7 @@
             <div class="text-body-2">Server #{{ sidx + 1 }}</div>
             <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="removeServer(sidx)" />
           </div>
-          <DnsServer :dns-server="dns.servers[sidx]" />
+          <v-alert type="warning" variant="tonal">TODO: DNS Server Editor removed</v-alert>
         </div>
         <div v-if="(dns.servers?.length || 0) === 0" class="text-body-2 text-medium-emphasis">No servers yet. Click Add to create one.</div>
       </div>
@@ -33,7 +33,7 @@
             <div class="text-body-2">Rule #{{ ridx + 1 }}</div>
             <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="removeRule(ridx)" />
           </div>
-          <DnsRule :dns-rule="dns.rules[ridx]" :dns-servers="dns.servers" />
+          <v-alert type="warning" variant="tonal">TODO: DNS Rule Editor removed</v-alert>
         </div>
         <div v-if="(dns.rules?.length || 0) === 0" class="text-body-2 text-medium-emphasis">No rules yet. Click Add to create one.</div>
       </div>
@@ -105,8 +105,6 @@
 </template>
 
 <script setup lang="ts">
-import DnsServer from '@/components/dnsServer/dnsServer.vue'
-import DnsRule from '@/components/dnsRule/dnsRule.vue'
 
 type DnsServer = any
 type DnsRule = any

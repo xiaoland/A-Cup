@@ -28,7 +28,7 @@
   
   <!-- Display and edit using Inbound component -->
   <div v-for="(item, idx) in displayInbounds" :key="item.id ?? `new-${idx}`" class="mt-4">
-    <Inbound :inbound="item" :editable="!item.id" @save="(saved) => onSaved(saved, item)" />
+    <Inbound :inbound="item" :editable="!item.id" @save="handleSaved($event, item)" />
   </div>
 </template>
 
@@ -72,6 +72,8 @@ const onSaved = (saved: APIInbound, original?: APIInbound) => {
     newInbounds.value = newInbounds.value.filter(i => i !== original)
   }
 }
+
+const handleSaved = (saved: APIInbound, original: APIInbound) => onSaved(saved, original)
 
 const removeInbound = (id?: number) => {
   if (id == null) return
