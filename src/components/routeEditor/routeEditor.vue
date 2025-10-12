@@ -25,22 +25,7 @@
 
       <v-divider class="my-4" />
 
-      <v-row>
-        <v-col cols="12">
-          <v-select
-            v-model="ruleSetIds"
-            :items="ruleSetItems"
-            item-title="title"
-            item-value="value"
-            label="Rule Sets"
-            multiple
-            chips
-            clearable
-            variant="outlined"
-            :loading="loadingRuleSets"
-          />
-        </v-col>
-      </v-row>
+      <RuleSetsEditor :route="localRoute" />
 
       <v-divider class="my-4" />
 
@@ -100,8 +85,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
-import { useUserStore } from '@/stores/user'
+import { ref, watch } from 'vue'
+import RuleSetsEditor from '../profileEditor/ruleSetsEditor.vue'
 
 type RouteRule = {
   action: 'route' | 'reject'
@@ -121,8 +106,6 @@ const emit = defineEmits<{
   'update:route': [value: RouteConfig]
 }>()
 
-const userStore = useUserStore()
-
 const localRoute = ref<RouteConfig>({ final: undefined, auto_detect_interface: true, rule_set: [], rules: [] })
 const openPanels = ref<number[]>([])
 
@@ -131,22 +114,16 @@ const actionItems = [
   { title: 'reject', value: 'reject' }
 ]
 
-// Rule sets
-const loadingRuleSets = ref(false)
-const ruleSetItems = ref<{ title: string; value: number }[]>([])
-const ruleSetIds = ref<number[]>([])
-
 const syncEmit = () => {
-  emit('update:route', { ...localRoute.value, rule_set: [...ruleSetIds.value] })
+  emit('update:route', { ...localRoute.value })
 }
 
 watch(() => props.route, (val) => {
   if (!val) return
   localRoute.value = { ...val, rules: [...(val.rules || [])] }
-  ruleSetIds.value = [...(val.rule_set || [])]
 }, { immediate: true, deep: true })
 
-watch([localRoute, ruleSetIds], syncEmit, { deep: true })
+watch([localRoute], syncEmit, { deep: true })
 
 const addRule = () => {
   localRoute.value.rules.push({ action: 'route', outbound: 'direct', domains: [] })
@@ -156,22 +133,7 @@ const removeRule = (idx: number) => {
   localRoute.value.rules.splice(idx, 1)
 }
 
-const loadRuleSets = async () => {
-  loadingRuleSets.value = true
-  try {
-    const res = await userStore.authorizedFetch('/api/rule_sets')
-    if (res.ok) {
-      const data = await res.json()
-      ruleSetItems.value = data.map((r: any) => ({ title: `${r.name} (${r.type})`, value: r.id }))
-    }
-  } finally {
-    loadingRuleSets.value = false
-  }
-}
-
-onMounted(() => {
-  loadRuleSets()
-})
+ 
 </script>
 
 <style scoped>

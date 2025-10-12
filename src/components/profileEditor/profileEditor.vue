@@ -97,7 +97,6 @@
 
           <OutboundsEditor :form="formData" />
 
-          <RuleSetsEditor :route="formData.route" />
 
           <!-- Route Editor -->
           <RouteEditor v-model:route="formData.route" />
@@ -145,7 +144,6 @@ import { profileTagOptions } from './types'
 import RouteEditor from '@/components/routeEditor/routeEditor.vue'
 import DNSEditor from '@/components/dnsEditor/dnsEditor.vue'
 import OutboundsEditor from './outboundsEditor.vue'
-import RuleSetsEditor from './ruleSetsEditor.vue'
 
 // Props
 const props = withDefaults(defineProps<Props>(), {
