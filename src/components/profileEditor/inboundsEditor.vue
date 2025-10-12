@@ -26,16 +26,16 @@
     </v-card-text>
   </v-card>
 
-  <!-- Create dialog reusing InboundEditor -->
+  <!-- Create dialog reusing Inbound component -->
   <v-dialog v-model="createDialog" max-width="900px" scrollable>
-    <InboundEditor @save="onCreateSaved" @cancel="createDialog = false" />
+    <Inbound @save="onCreateSaved" @cancel="createDialog = false" />
   </v-dialog>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import InboundEditor from '@/components/inboundEditor/inboundEditor.vue'
-import type { Inbound as APIInbound } from '@/components/inboundEditor/types'
+import Inbound from '@/components/inbound/inbound.vue'
+import type { Inbound as APIInbound } from '@/components/inbound/types'
 
 const props = defineProps<{ form: any }>()
 
