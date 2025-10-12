@@ -15,7 +15,7 @@
             <div class="text-body-2">Server #{{ sidx + 1 }}</div>
             <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="removeServer(sidx)" />
           </div>
-          <DnsServer v-model:dns-server="localDns.servers[sidx]" :editable="serversEditable[sidx]" @request-edit="serversEditable[sidx] = true" @save="onServerSavedInline(sidx, $event)" @cancel="onServerCancel(sidx)" />
+          <DnsServer v-model:dns-server="localDns.servers[sidx]" />
         </div>
         <div v-if="(localDns.servers?.length || 0) === 0" class="text-body-2 text-medium-emphasis">No servers yet. Click Add to create one.</div>
       </div>
@@ -33,7 +33,7 @@
             <div class="text-body-2">Rule #{{ ridx + 1 }}</div>
             <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="removeRule(ridx)" />
           </div>
-          <DnsRule v-model:dns-rule="localDns.rules[ridx]" :dns-servers="localDns.servers" :editable="rulesEditable[ridx]" @request-edit="rulesEditable[ridx] = true" @save="onRuleSavedInline(ridx, $event)" @cancel="onRuleCancel(ridx)" />
+          <DnsRule v-model:dns-rule="localDns.rules[ridx]" :dns-servers="localDns.servers" />
         </div>
         <div v-if="(localDns.rules?.length || 0) === 0" class="text-body-2 text-medium-emphasis">No rules yet. Click Add to create one.</div>
       </div>
@@ -162,17 +162,9 @@ watch([localDns, localFakeip], () => {
 }, { deep: true })
 
 // Servers
-const serversEditable = ref<boolean[]>([])
 const addServer = () => {
-  localDns.value.servers = [...(localDns.value.servers || []), { name: '', type: 'udp', address: '', port: 53 }]
-  serversEditable.value = [...serversEditable.value, true]
-}
-const onServerSavedInline = (index: number, saved: DnsServer) => {
-  localDns.value.servers.splice(index, 1, saved)
-  serversEditable.value.splice(index, 1, false)
-}
-const onServerCancel = (index: number) => {
-  serversEditable.value.splice(index, 1, false)
+  if (!localDns.value.servers) localDns.value.servers = []
+  localDns.value.servers.push({ name: '', type: 'udp', address: '', port: 53 })
 }
 
 const removeServer = (index: number) => {
@@ -180,17 +172,9 @@ const removeServer = (index: number) => {
 }
 
 // Rules
-const rulesEditable = ref<boolean[]>([])
 const addRule = () => {
-  localDns.value.rules = [...(localDns.value.rules || []), { name: '', server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] }]
-  rulesEditable.value = [...rulesEditable.value, true]
-}
-const onRuleSavedInline = (index: number, saved: DnsRule) => {
-  localDns.value.rules.splice(index, 1, saved)
-  rulesEditable.value.splice(index, 1, false)
-}
-const onRuleCancel = (index: number) => {
-  rulesEditable.value.splice(index, 1, false)
+  if (!localDns.value.rules) localDns.value.rules = []
+  localDns.value.rules.push({ name: '', server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] })
 }
 
 const removeRule = (index: number) => {
