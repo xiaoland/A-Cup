@@ -22,6 +22,61 @@
               :error-messages="formJsonError || undefined"
             />
           </template>
+          <template v-else-if="form.type === 'selector'">
+            <v-row>
+              <v-col cols="12" md="8">
+                <v-combobox
+                  v-model="selectorConfig.outbounds"
+                  label="Outbounds (tags)"
+                  multiple
+                  chips
+                  closable-chips
+                  variant="outlined"
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-combobox
+                  v-model="selectorConfig.default"
+                  :items="selectorConfig.outbounds"
+                  label="Default (optional)"
+                  clearable
+                  variant="outlined"
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-switch inset v-model="selectorConfig.interrupt_exist_connections" label="Interrupt existing connections" />
+              </v-col>
+            </v-row>
+          </template>
+          <template v-else-if="form.type === 'urltest'">
+            <v-row>
+              <v-col cols="12" md="8">
+                <v-combobox
+                  v-model="urltestConfig.outbounds"
+                  label="Outbounds (tags)"
+                  multiple
+                  chips
+                  closable-chips
+                  variant="outlined"
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-switch inset v-model="urltestConfig.interrupt_exist_connections" label="Interrupt existing connections" />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="urltestConfig.url" label="Test URL (optional)" variant="outlined" />
+              </v-col>
+              <v-col cols="12" md="3">
+                <v-text-field v-model="urltestConfig.interval" label="Interval (e.g. 3m)" variant="outlined" />
+              </v-col>
+              <v-col cols="12" md="3">
+                <v-text-field type="number" v-model.number="urltestConfig.tolerance" label="Tolerance (ms)" variant="outlined" />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field v-model="urltestConfig.idle_timeout" label="Idle Timeout (e.g. 30m)" variant="outlined" />
+              </v-col>
+            </v-row>
+          </template>
           <template v-else>
           <v-row>
             <v-col cols="12" md="6">
@@ -239,6 +294,8 @@ const deleting = ref(false)
 const editMode = ref<'ui' | 'json'>('ui')
 const formJsonText = ref('')
 const formJsonError = ref('')
+const selectorConfig = ref<{ outbounds: string[]; default: string | null; interrupt_exist_connections: boolean }>({ outbounds: [], default: null, interrupt_exist_connections: false })
+const urltestConfig = ref<{ outbounds: string[]; url: string; interval: string; tolerance: number; idle_timeout: string; interrupt_exist_connections: boolean }>({ outbounds: [], url: '', interval: '', tolerance: 0, idle_timeout: '', interrupt_exist_connections: false })
 
 // Credential helpers
 const ssMethods = [
@@ -337,6 +394,32 @@ const onCancel = () => {
 }
 
 const onSave = async () => {
+  // Special handling: selector/urltest emit only, no backend save
+  if (form.type === 'selector') {
+    const obj: any = {
+      type: 'selector',
+      outbounds: selectorConfig.value.outbounds,
+      interrupt_exist_connections: !!selectorConfig.value.interrupt_exist_connections,
+    }
+    if (selectorConfig.value.default) obj.default = selectorConfig.value.default
+    emit('saved', obj as any)
+    router.push('/outbounds')
+    return
+  }
+  if (form.type === 'urltest') {
+    const obj: any = {
+      type: 'urltest',
+      outbounds: urltestConfig.value.outbounds,
+      url: urltestConfig.value.url || undefined,
+      interval: urltestConfig.value.interval || undefined,
+      tolerance: urltestConfig.value.tolerance || undefined,
+      idle_timeout: urltestConfig.value.idle_timeout || undefined,
+      interrupt_exist_connections: !!urltestConfig.value.interrupt_exist_connections,
+    }
+    emit('saved', obj as any)
+    router.push('/outbounds')
+    return
+  }
   if (!parseAdvanced()) return
   saving.value = true
   try {
