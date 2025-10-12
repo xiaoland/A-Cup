@@ -105,9 +105,8 @@
 </template>
 
 <script setup lang="ts">
-import { } from 'vue'
-import DnsServer from '@/components/dnsServerEditor/dnsServer.vue'
-import DnsRule from '@/components/dnsRuleEditor/dnsRule.vue'
+import DnsServer from '@/components/dnsServer/dnsServer.vue'
+import DnsRule from '@/components/dnsRule/dnsRule.vue'
 
 type DnsServer = any
 type DnsRule = any
@@ -145,22 +144,20 @@ const strategyItems = [
 
 // Servers
 const addServer = () => {
-  if (!props.dns.servers) props.dns.servers = []
   props.dns.servers.push({ name: '', type: 'udp', address: '', port: 53 })
 }
 
 const removeServer = (index: number) => {
-  props.dns.servers?.splice(index, 1)
+  props.dns.servers.splice(index, 1)
 }
 
 // Rules
 const addRule = () => {
-  if (!props.dns.rules) props.dns.rules = []
   props.dns.rules.push({ name: '', server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] })
 }
 
 const removeRule = (index: number) => {
-  props.dns.rules?.splice(index, 1)
+  props.dns.rules.splice(index, 1)
 }
 </script>
 
