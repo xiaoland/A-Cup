@@ -24,6 +24,17 @@
           </template>
           <template v-else-if="form.type === 'selector'">
             <v-row>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="form.type"
+                  :items="typeOptions"
+                  item-title="title"
+                  item-value="value"
+                  label="Type"
+                  variant="outlined"
+                  required
+                />
+              </v-col>
               <v-col cols="12">
                 <OutboundsSelector v-model="selectorConfig.outbounds" />
               </v-col>
@@ -45,6 +56,17 @@
           </template>
           <template v-else-if="form.type === 'urltest'">
             <v-row>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="form.type"
+                  :items="typeOptions"
+                  item-title="title"
+                  item-value="value"
+                  label="Type"
+                  variant="outlined"
+                  required
+                />
+              </v-col>
               <v-col cols="12">
                 <OutboundsSelector v-model="urltestConfig.outbounds" />
               </v-col>
@@ -355,6 +377,11 @@ watchEffect(() => {
 
 watch(editMode, (mode) => {
   if (mode === 'json') {
+    // apply advanced UI changes to form before serializing
+    if (!parseAdvanced()) {
+      editMode.value = 'ui'
+      return
+    }
     try {
       formJsonText.value = JSON.stringify(form, null, 2)
       formJsonError.value = ''
