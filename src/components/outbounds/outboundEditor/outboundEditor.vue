@@ -24,20 +24,15 @@
           </template>
           <template v-else-if="form.type === 'selector'">
             <v-row>
-              <v-col cols="12" md="8">
-                <v-combobox
-                  v-model="selectorConfig.outbounds"
-                  label="Outbounds (tags)"
-                  multiple
-                  chips
-                  closable-chips
-                  variant="outlined"
-                />
+              <v-col cols="12">
+                <OutboundsSelector v-model="selectorConfig.outbounds" />
               </v-col>
-              <v-col cols="12" md="4">
-                <v-combobox
+              <v-col cols="12" md="6">
+                <v-select
                   v-model="selectorConfig.default"
-                  :items="selectorConfig.outbounds"
+                  :items="selectorDefaultOptions"
+                  item-title="title"
+                  item-value="value"
                   label="Default (optional)"
                   clearable
                   variant="outlined"
@@ -50,15 +45,8 @@
           </template>
           <template v-else-if="form.type === 'urltest'">
             <v-row>
-              <v-col cols="12" md="8">
-                <v-combobox
-                  v-model="urltestConfig.outbounds"
-                  label="Outbounds (tags)"
-                  multiple
-                  chips
-                  closable-chips
-                  variant="outlined"
-                />
+              <v-col cols="12">
+                <OutboundsSelector v-model="urltestConfig.outbounds" />
               </v-col>
               <v-col cols="12" md="4">
                 <v-switch inset v-model="urltestConfig.interrupt_exist_connections" label="Interrupt existing connections" />
@@ -275,11 +263,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watchEffect, watch } from 'vue'
+import { ref, onMounted, watchEffect, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import type { Outbound } from './types'
 import { typeOptions, regionOptions } from './types'
+import OutboundsSelector from '@/components/outbounds/common/OutboundsSelector.vue'
 
 const props = defineProps<{ form: Outbound }>()
 const emit = defineEmits<{ (e: 'saved', value: Outbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
@@ -294,8 +283,26 @@ const deleting = ref(false)
 const editMode = ref<'ui' | 'json'>('ui')
 const formJsonText = ref('')
 const formJsonError = ref('')
-const selectorConfig = ref<{ outbounds: string[]; default: string | null; interrupt_exist_connections: boolean }>({ outbounds: [], default: null, interrupt_exist_connections: false })
-const urltestConfig = ref<{ outbounds: string[]; url: string; interval: string; tolerance: number; idle_timeout: string; interrupt_exist_connections: boolean }>({ outbounds: [], url: '', interval: '', tolerance: 0, idle_timeout: '', interrupt_exist_connections: false })
+const selectorConfig = ref<{ outbounds: number[]; default: number | null; interrupt_exist_connections: boolean }>({ outbounds: [], default: null, interrupt_exist_connections: false })
+const urltestConfig = ref<{ outbounds: number[]; url: string; interval: string; tolerance: number; idle_timeout: string; interrupt_exist_connections: boolean }>({ outbounds: [], url: '', interval: '', tolerance: 0, idle_timeout: '', interrupt_exist_connections: false })
+
+// for default options, fetch all outbounds for name lookup
+const allOutbounds = ref<any[]>([])
+const loadAllOutbounds = async () => {
+  try {
+    const res = await userStore.authorizedFetch('/api/outbounds')
+    if (res.ok) {
+      const data = await res.json()
+      if (Array.isArray(data)) allOutbounds.value = data
+    }
+  } catch (e) { console.error(e) }
+}
+onMounted(loadAllOutbounds)
+const selectorDefaultOptions = computed(() =>
+  allOutbounds.value
+    .filter((o: any) => selectorConfig.value.outbounds.includes(o.id))
+    .map((o: any) => ({ title: o.name || `#${o.id}`, value: o.id }))
+)
 
 // Credential helpers
 const ssMethods = [
@@ -310,7 +317,6 @@ const ssMethods = [
 const vmessSecurities = ['auto','none','zero','aes-128-gcm','chacha20-poly1305']
 const vlessFlows = ['xtls-rprx-vision']
 const hy2ObfsTypes = ['salamander']
-import { computed } from 'vue'
 const transportText = ref<string>('')
 const transportError = ref<string>('')
 const tlsText = ref<string>('')
