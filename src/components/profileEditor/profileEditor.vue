@@ -46,7 +46,7 @@
             </v-card-text>
           </v-card>
 
-          <InboundEditor />
+          <InboundsEditor :form="formData" />
 
           <OutboundsEditor :form="formData" />
 
@@ -97,7 +97,7 @@ import { profileTagOptions } from './types'
 import RouteEditor from '@/components/routeEditor/routeEditor.vue'
 import DNSEditor from '@/components/dnsEditor/dnsEditor.vue'
 import OutboundsEditor from './outboundsEditor.vue'
-import InboundEditor from '@/components/inboundEditor/inboundEditor.vue'
+import InboundsEditor from './inboundsEditor.vue'
 
 // Props
 const props = withDefaults(defineProps<Props>(), {
