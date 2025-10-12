@@ -1,9 +1,28 @@
 <template>
   <v-container class="py-4">
     <v-card>
-      <v-card-title class="text-h6">Outbound Editor</v-card-title>
+      <v-card-title class="text-h6 d-flex align-center justify-space-between">
+        Outbound Editor
+        <div class="d-flex align-center" style="gap: 8px">
+          <span class="text-caption text-medium-emphasis">Mode</span>
+          <v-btn-toggle v-model="editMode" density="compact" mandatory>
+            <v-btn value="ui" size="small">UI</v-btn>
+            <v-btn value="json" size="small">JSON</v-btn>
+          </v-btn-toggle>
+        </div>
+      </v-card-title>
       <v-card-text>
         <v-form @submit.prevent="onSave">
+          <template v-if="editMode === 'json'">
+            <v-textarea
+              v-model="formJsonText"
+              label="Outbound JSON"
+              variant="outlined"
+              rows="18"
+              :error-messages="formJsonError || undefined"
+            />
+          </template>
+          <template v-else>
           <v-row>
             <v-col cols="12" md="6">
               <v-select
@@ -181,6 +200,7 @@
               </v-expansion-panels>
             </v-col>
           </v-row>
+          </template>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -200,7 +220,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watchEffect } from 'vue'
+import { ref, onMounted, watchEffect, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import type { Outbound } from './types'
@@ -216,6 +236,9 @@ const form = props.form
 
 const saving = ref(false)
 const deleting = ref(false)
+const editMode = ref<'ui' | 'json'>('ui')
+const formJsonText = ref('')
+const formJsonError = ref('')
 
 // Credential helpers
 const ssMethods = [
@@ -263,6 +286,28 @@ watchEffect(() => {
     if (!form.credential) form.credential = {}
     if (form.credential && typeof form.credential === 'object' && !('obfs' in form.credential)) {
       ;(form.credential as any).obfs = {}
+    }
+  }
+})
+
+watch(editMode, (mode) => {
+  if (mode === 'json') {
+    try {
+      formJsonText.value = JSON.stringify(form, null, 2)
+      formJsonError.value = ''
+    } catch {
+      formJsonText.value = '{}'
+    }
+  } else {
+    // switching to UI: try applying JSON back
+    try {
+      const parsed = JSON.parse(formJsonText.value || '{}')
+      Object.assign(form, parsed)
+      formJsonError.value = ''
+      syncFromObject()
+    } catch (e) {
+      formJsonError.value = 'Invalid JSON'
+      editMode.value = 'json'
     }
   }
 })
