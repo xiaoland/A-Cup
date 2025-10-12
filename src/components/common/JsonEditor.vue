@@ -41,7 +41,7 @@ const parseText = (text: string) => {
   try { return { value: JSON.parse(text), ok: true } } catch { return { value: props.modelValue, ok: false } }
 }
 
-async function loadSchemaObject(): Promise<any | undefined> {
+async function loadSchemaObject(): Promise<{ schema: any, ref?: string } | undefined> {
   if (!props.schemaUrl) return undefined
   try {
     const res = await fetch(props.schemaUrl)
@@ -55,9 +55,11 @@ async function loadSchemaObject(): Promise<any | undefined> {
       for (const k of path) {
         if (cur && typeof cur === 'object' && k in cur) cur = cur[k]; else { ok = false; break }
       }
-      if (ok && cur && typeof cur === 'object') return cur
+      if (ok && cur && typeof cur === 'object') {
+        return { schema, ref: p }
+      }
     }
-    return schema
+    return { schema }
   } catch (_) {
     return undefined
   }
@@ -81,23 +83,24 @@ async function init() {
       }
     }
     monaco = { editor: MonacoEditor, languages, Uri } as Monaco
-    const schemaObject = await loadSchemaObject()
+    const loaded = await loadSchemaObject()
 
     // Configure JSON language features (guard if json language is present)
     // @ts-ignore - optional chaining for runtime safety
+    const modelUri = monaco.Uri.parse('inmemory://model/inbound.json')
     monaco.languages?.json?.jsonDefaults?.setDiagnosticsOptions({
       allowComments: false,
       enableSchemaRequest: false,
       validate: true,
-      schemas: schemaObject ? [{
+      schemas: loaded ? [{
         uri: 'inmemory://model/inbound.schema.json',
-        fileMatch: ['*'],
-        schema: schemaObject,
+        fileMatch: [modelUri.toString()],
+        schema: loaded.ref ? { ...loaded.schema, $id: 'inbound.schema.json', $ref: loaded.ref } : loaded.schema,
       }] : [],
     })
 
     const initialValue = toText(props.modelValue)
-    const model = monaco.editor.createModel(initialValue, 'json', monaco.Uri.parse('inmemory://model/inbound.json'))
+    const model = monaco.editor.createModel(initialValue, 'json', modelUri)
 
     editorInstance = monaco.editor.create(container.value, {
       model,
