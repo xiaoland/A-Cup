@@ -2,8 +2,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import ProfileList from '@/components/profileList/profileList.vue'
-import type { Profile, ExportOptions } from '@/components/profileList/types'
+import ProfileList from '@/components/profile/profileList/profileList.vue'
+import type { Profile, ExportOptions } from '@/components/profile/profileList/types'
 
 const router = useRouter()
 const userStore = useUserStore()

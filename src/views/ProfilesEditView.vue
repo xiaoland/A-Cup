@@ -2,8 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import ProfileEditor from '@/components/profileEditor/profileEditor.vue'
-import type { Profile } from '@/components/profileEditor/types'
+import ProfileEditor from '@/components/profile/profileEditor/profileEditor.vue'
+import type { Profile } from '@/components/profile/profileEditor/types'
 
 const router = useRouter()
 const route = useRoute()

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import RuleSetEditor from '@/components/ruleSetEditor/ruleSetEditor.vue'
-import type { RuleSet } from '@/components/ruleSetEditor/types'
+import RuleSetEditor from '@/components/route/ruleSets/ruleSetEditor/ruleSetEditor.vue'
+import type { RuleSet } from '@/components/route/ruleSets/ruleSetEditor/types'
 import { useUserStore } from '@/stores/user'
 
 interface Props {
