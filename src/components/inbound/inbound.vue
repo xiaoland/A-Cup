@@ -140,7 +140,6 @@ import { useUserStore } from '@/stores/user'
 const userStore = useUserStore()
 
 const props = withDefaults(defineProps<Props>(), {
-  mode: 'create',
   editable: false
 })
 
@@ -163,11 +162,10 @@ const formData = ref<Inbound>({
 const loading = ref(false)
 
 // Computed properties
-const isEditing = computed(() => props.mode === 'edit')
-const canEdit = computed(() => !isEditing.value || props.editable === true)
+const canEdit = computed(() => props.editable === true || !formData.value.id)
 const titleText = computed(() => {
-  if (!isEditing.value) return 'Create Inbound'
-  return props.editable ? 'Edit Inbound' : 'Inbound Details'
+  if (!formData.value.id) return 'New Inbound'
+  return canEdit.value ? 'Edit Inbound' : 'Inbound Details'
 })
 
 // Initialize form data
@@ -203,8 +201,9 @@ const saveInbound = async () => {
   loading.value = true
   
   try {
-    const url = isEditing.value ? `/api/inbounds/${formData.value.id}` : '/api/inbounds'
-    const method = isEditing.value ? 'PUT' : 'POST'
+    const isUpdate = !!formData.value.id
+    const url = isUpdate ? `/api/inbounds/${formData.value.id}` : '/api/inbounds'
+    const method = isUpdate ? 'PUT' : 'POST'
     
     const cleanedData = cleanFormData(formData.value)
     

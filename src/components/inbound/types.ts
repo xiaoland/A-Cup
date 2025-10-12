@@ -11,7 +11,6 @@ export interface Inbound {
 
 export interface Props {
   inbound?: Inbound
-  mode?: 'create' | 'edit'
   editable?: boolean
 }
 

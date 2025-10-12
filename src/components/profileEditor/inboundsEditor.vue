@@ -3,8 +3,8 @@
     <v-card-title class="text-h6 d-flex align-center justify-space-between">
       Inbounds
       <div class="d-flex" style="gap: 8px">
-        <v-btn color="primary" size="small" @click="openCreateDialog" prepend-icon="mdi-plus">
-          Create Inbound
+        <v-btn color="primary" size="small" @click="addInbound" prepend-icon="mdi-plus">
+          Add Inbound
         </v-btn>
       </div>
     </v-card-title>
@@ -25,11 +25,11 @@
       </div>
     </v-card-text>
   </v-card>
-
-  <!-- Create dialog reusing Inbound component -->
-  <v-dialog v-model="createDialog" max-width="900px" scrollable>
-    <Inbound @save="onCreateSaved" @cancel="createDialog = false" />
-  </v-dialog>
+  
+  <!-- Display and edit using Inbound component -->
+  <div v-for="(item, idx) in displayInbounds" :key="item.id ?? `new-${idx}`" class="mt-4">
+    <Inbound :inbound="item" :editable="!item.id" @save="(saved) => onSaved(saved, item)" />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -40,8 +40,7 @@ import type { Inbound as APIInbound } from '@/components/inbound/types'
 const props = defineProps<{ form: any }>()
 
 const inbounds = ref<APIInbound[]>([])
-
-const createDialog = ref(false)
+const newInbounds = ref<APIInbound[]>([])
 
 const chipLabel = (i: APIInbound) => i.type ? `${i.type}${i.address || i.port ? ` — ${i.address || ''}${i.port ? `:${i.port}` : ''}` : ''}` : `Inbound #${i.id}`
 
@@ -50,15 +49,27 @@ const selectedInbounds = computed(() =>
   inbounds.value.filter(i => typeof i.id === 'number' && props.form.inbounds?.includes(i.id))
 )
 
-const openCreateDialog = () => {
-  createDialog.value = true
+const addInbound = () => {
+  // push a new, unsaved inbound; component will be editable by default (no id)
+  newInbounds.value.push({ share: false, type: 'mixed', address: '', port: undefined, stack: 'mixed', mtu: 9000 })
 }
-const onCreateSaved = (created: APIInbound) => {
-  createDialog.value = false
-  // refresh list and add to selection
-  if (created?.id != null) {
+
+const displayInbounds = computed(() => [
+  ...newInbounds.value,
+  ...selectedInbounds.value,
+])
+
+const onSaved = (saved: APIInbound, original?: APIInbound) => {
+  if (saved?.id != null) {
+    // ensure appears in master list
+    if (!inbounds.value.find(i => i.id === saved.id)) inbounds.value.push(saved)
+    // ensure selected in form
     if (!props.form.inbounds) props.form.inbounds = []
-    if (!props.form.inbounds.includes(created.id)) props.form.inbounds.push(created.id)
+    if (!props.form.inbounds.includes(saved.id)) props.form.inbounds.push(saved.id)
+  }
+  // remove the temporary new item if present
+  if (original && !original.id) {
+    newInbounds.value = newInbounds.value.filter(i => i !== original)
   }
 }
 
