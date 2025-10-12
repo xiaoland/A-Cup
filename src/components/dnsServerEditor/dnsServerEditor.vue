@@ -15,7 +15,7 @@
               <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="formData.name"
+                    v-model="form.name"
                     label="Name *"
                     required
                     variant="outlined"
@@ -34,7 +34,7 @@
               <v-row>
                 <v-col cols="12" md="4">
                   <v-select
-                    v-model="formData.type"
+                    v-model="form.type"
                     :items="typeOptions"
                     label="Type *"
                     required
@@ -46,7 +46,7 @@
                 </v-col>
                 <v-col cols="12" md="4">
                   <v-text-field
-                    v-model="formData.address"
+                    v-model="form.address"
                     label="Server Address *"
                     placeholder="8.8.8.8"
                     required
@@ -57,7 +57,7 @@
                 </v-col>
                 <v-col cols="12" md="4">
                   <v-text-field
-                    v-model.number="formData.port"
+                    v-model.number="form.port"
                     label="Port"
                     type="number"
                     variant="outlined"
@@ -83,7 +83,7 @@
               <v-row>
                 <v-col cols="12" md="6">
                   <v-select
-                    v-model="formData.outbound_detour"
+                    v-model="form.outbound_detour"
                     :items="outboundOptions"
                     label="Outbound Detour"
                     variant="outlined"
@@ -117,7 +117,7 @@
                       </v-col>
                       <v-col cols="12" md="4" v-if="tlsEnabled">
                         <v-text-field
-                          v-model="formData.tls!.server_name"
+                          v-model="form.tls!.server_name"
                           label="Server Name"
                           variant="outlined"
                           hint="TLS server name for verification"
@@ -126,7 +126,7 @@
                       </v-col>
                       <v-col cols="12" md="4" v-if="tlsEnabled">
                         <v-switch
-                          v-model="formData.tls!.insecure"
+                          v-model="form.tls!.insecure"
                           label="Skip Certificate Verification"
                           color="warning"
                           hint="Not recommended for production"
@@ -144,7 +144,7 @@
                     <v-row>
                       <v-col cols="12" md="6">
                         <v-text-field
-                          v-model="formData.https!.path"
+                          v-model="form.https!.path"
                           label="Path"
                           placeholder="/dns-query"
                           variant="outlined"
@@ -196,18 +196,16 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import type { DNSServer, Props, SelectOption, TLSOptions, HTTPSOptions } from './types'
+import type { SelectOption, TLSOptions, HTTPSOptions } from './types'
 import { typeOptions, DEFAULT_PORTS } from './types'
+import type { DNSServer } from './index'
 
 // Props and emits
-const props = withDefaults(defineProps<Props>(), {
-  mode: 'create'
-})
+const props = withDefaults(defineProps<{ mode?: 'create' | 'edit' }>(), { mode: 'create' })
 
 const emit = defineEmits<{
   save: [dnsServer: DNSServer]
   cancel: []
-  'update:dnsServer': [dnsServer: DNSServer]
 }>()
 
 // Stores
@@ -218,16 +216,18 @@ const saving = ref(false)
 const loadingOutbounds = ref(false)
 const outboundOptions = ref<SelectOption[]>([])
 
-// Form data
-const formData = ref<DNSServer>({
-  name: '',
-  type: 'udp',
-  address: '',
-  port: 53,
-  tls: {},
-  https: {},
-  outbound_detour: null,
-  wg_endpoint_detour: null
+// v-model form
+const form = defineModel<DNSServer>('dnsServer', {
+  default: () => ({
+    name: '',
+    type: 'udp',
+    address: '',
+    port: 53,
+    tls: {},
+    https: {},
+    outbound_detour: null,
+    wg_endpoint_detour: null
+  })
 })
 
 // TLS and HTTPS helpers
@@ -236,34 +236,20 @@ const headersText = ref('')
 
 // Computed
 const isEditing = computed(() => props.mode === 'edit')
-const isHTTPSType = computed(() => formData.value.type === 'https' || formData.value.type === 'h3')
-const isTLSType = computed(() => ['https', 'h3', 'tls', 'quic'].includes(formData.value.type))
+const isHTTPSType = computed(() => form.value.type === 'https' || form.value.type === 'h3')
+const isTLSType = computed(() => ['https', 'h3', 'tls', 'quic'].includes(form.value.type))
 
 // Watchers
-watch(() => props.dnsServer, (newDNSServer) => {
-  if (newDNSServer) {
-    formData.value = {
-      ...newDNSServer,
-      tls: newDNSServer.tls || {},
-      https: newDNSServer.https || {}
-    }
-    
-    // Set TLS enabled state
-    tlsEnabled.value = !!(newDNSServer.tls?.enabled || newDNSServer.tls?.server_name || newDNSServer.tls?.insecure)
-    
-    // Set headers text
-    if (newDNSServer.https?.headers) {
-      headersText.value = Object.entries(newDNSServer.https.headers)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join('\n')
-    }
+watch(form, (val) => {
+  // Set TLS enabled state
+  tlsEnabled.value = !!(val.tls?.enabled || val.tls?.server_name || val.tls?.insecure)
+  // Set headers text
+  if (val.https?.headers) {
+    headersText.value = Object.entries(val.https.headers)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n')
   }
-}, { immediate: true })
-
-// v-model sync for dnsServer
-watch(formData, (val) => {
-  emit('update:dnsServer', { ...val })
-}, { deep: true })
+}, { immediate: true, deep: true })
 
 // Mutual exclusion watchers for detour fields
 // removed mutual exclusion with wg_endpoint_detour as endpoint detour is not exposed in UI
@@ -271,20 +257,20 @@ watch(formData, (val) => {
 // Methods
 const onTypeChange = () => {
   // Set default port if port is null or matches the previous type's default
-  if (!formData.value.port || (formData.value.port && Object.values(DEFAULT_PORTS).includes(formData.value.port))) {
-    formData.value.port = DEFAULT_PORTS[formData.value.type] || null
+  if (!form.value.port || (form.value.port && Object.values(DEFAULT_PORTS).includes(form.value.port))) {
+    form.value.port = DEFAULT_PORTS[form.value.type] || null
   }
 }
 
 const onTLSToggle = () => {
   if (tlsEnabled.value) {
-    formData.value.tls = {
+    form.value.tls = {
       enabled: true,
       server_name: '',
       insecure: false
     }
   } else {
-    formData.value.tls = {}
+    form.value.tls = {}
   }
 }
 
@@ -304,10 +290,10 @@ const onHeadersChange = () => {
   }
   
   if (Object.keys(headers).length > 0) {
-    formData.value.https = formData.value.https || {}
-    formData.value.https.headers = headers
-  } else if (formData.value.https) {
-    delete formData.value.https.headers
+    form.value.https = form.value.https || {}
+    form.value.https!.headers = headers
+  } else if (form.value.https) {
+    delete form.value.https!.headers
   }
 }
 
@@ -341,17 +327,15 @@ const saveDNSServer = async () => {
     saving.value = true
     
     // Prepare form data
-    const dataToSave: DNSServer = {
-      ...formData.value
-    }
+    const dataToSave: DNSServer = { ...form.value }
     
     // Clean up TLS options if not enabled
-    if (!tlsEnabled.value || Object.keys(formData.value.tls || {}).length === 0) {
+    if (!tlsEnabled.value || Object.keys(form.value.tls || {}).length === 0) {
       delete dataToSave.tls
     }
     
     // Clean up HTTPS options if not HTTPS type or empty
-    if (!isHTTPSType.value || (!formData.value.https?.path && !formData.value.https?.headers)) {
+    if (!isHTTPSType.value || (!form.value.https?.path && !form.value.https?.headers)) {
       delete dataToSave.https
     }
 

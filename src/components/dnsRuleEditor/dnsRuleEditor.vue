@@ -15,7 +15,7 @@
               <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
-                    v-model="formData.name"
+                    v-model="form.name"
                     label="Name *"
                     required
                     variant="outlined"
@@ -35,7 +35,7 @@
               <v-row>
                 <v-col cols="12" md="6">
                   <v-select
-                    v-model="formData.action"
+                    v-model="form.action"
                     :items="actionOptions"
                     label="Action"
                     variant="outlined"
@@ -44,9 +44,9 @@
                     persistent-hint
                   />
                 </v-col>
-                <v-col cols="12" md="6" v-if="!formData.action || formData.action === 'route'">
+                <v-col cols="12" md="6" v-if="!form.action || form.action === 'route'">
                   <v-select
-                    v-model="formData.server"
+                    v-model="form.server"
                     :items="dnsServerOptions"
                     label="DNS Server *"
                     required
@@ -79,9 +79,9 @@
                 <!-- Exact Domains -->
                 <div class="array-field">
                   <v-label class="array-label">Exact Domains</v-label>
-                  <div v-for="(domain, index) in (formData.domains || [])" :key="`domain-${index}`" class="array-item">
+                  <div v-for="(domain, index) in (form.domains || [])" :key="`domain-${index}`" class="array-item">
                     <v-text-field
-                      v-model="formData.domains![index]"
+                      v-model="form.domains![index]"
                       placeholder="example.com"
                       variant="outlined"
                       density="compact"
@@ -112,9 +112,9 @@
                 <!-- Domain Suffixes -->
                 <div class="array-field">
                   <v-label class="array-label">Domain Suffixes</v-label>
-                  <div v-for="(suffix, index) in (formData.domain_suffixes || [])" :key="`suffix-${index}`" class="array-item">
+                  <div v-for="(suffix, index) in (form.domain_suffixes || [])" :key="`suffix-${index}`" class="array-item">
                     <v-text-field
-                      v-model="formData.domain_suffixes![index]"
+                      v-model="form.domain_suffixes![index]"
                       placeholder=".example.com"
                       variant="outlined"
                       density="compact"
@@ -145,9 +145,9 @@
                 <!-- Domain Keywords -->
                 <div class="array-field">
                   <v-label class="array-label">Domain Keywords</v-label>
-                  <div v-for="(keyword, index) in (formData.domain_keywords || [])" :key="`keyword-${index}`" class="array-item">
+                  <div v-for="(keyword, index) in (form.domain_keywords || [])" :key="`keyword-${index}`" class="array-item">
                     <v-text-field
-                      v-model="formData.domain_keywords![index]"
+                      v-model="form.domain_keywords![index]"
                       placeholder="example"
                       variant="outlined"
                       density="compact"
@@ -182,7 +182,7 @@
                 <v-row>
                   <v-col cols="12">
                     <v-select
-                      v-model="formData.rule_sets"
+                      v-model="form.rule_sets"
                       :items="ruleSetOptions"
                       label="Rule Sets"
                       variant="outlined"
@@ -225,16 +225,16 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import type { DNSRule, Props, SelectOption } from './types'
+import type { SelectOption } from './types'
 import { actionOptions } from './types'
+import type { DNSRule } from './index'
 
 // Props and emits
-const props = withDefaults(defineProps<Props>(), { mode: 'create' })
+const props = withDefaults(defineProps<{ mode?: 'create' | 'edit'; dnsServers: any[] }>(), { mode: 'create' })
 
 const emit = defineEmits<{
   save: [dnsRule: DNSRule]
   cancel: []
-  'update:dnsRule': [dnsRule: DNSRule]
 }>()
 
 // Stores
@@ -246,15 +246,17 @@ const loadingRuleSets = ref(false)
 const dnsServerOptions = ref<SelectOption[]>([])
 const ruleSetOptions = ref<SelectOption[]>([])
 
-// Form data
-const formData = ref<DNSRule>({
-  name: '',
-  action: undefined,
-  server: 0,
-  domains: [],
-  domain_suffixes: [],
-  domain_keywords: [],
-  rule_sets: []
+// v-model form
+const form = defineModel<DNSRule>('dnsRule', {
+  default: () => ({
+    name: '',
+    action: undefined,
+    server: 0,
+    domains: [],
+    domain_suffixes: [],
+    domain_keywords: [],
+    rule_sets: []
+  })
 })
 
 // Computed
@@ -262,32 +264,23 @@ const isEditing = computed(() => props.mode === 'edit')
 
 const hasAnyCondition = computed(() => {
   return !!(
-    (formData.value.domains && formData.value.domains.length > 0) ||
-    (formData.value.domain_suffixes && formData.value.domain_suffixes.length > 0) ||
-    (formData.value.domain_keywords && formData.value.domain_keywords.length > 0) ||
-    (formData.value.rule_sets && formData.value.rule_sets.length > 0)
+    (form.value?.domains && form.value.domains.length > 0) ||
+    (form.value?.domain_suffixes && form.value.domain_suffixes.length > 0) ||
+    (form.value?.domain_keywords && form.value.domain_keywords.length > 0) ||
+    (form.value?.rule_sets && form.value.rule_sets.length > 0)
   )
 })
 
 const isFormValid = computed(() => {
   return (
-    formData.value.name.trim() &&
+    !!form.value &&
+    form.value.name.trim() &&
     hasAnyCondition.value &&
-    (formData.value.action === 'reject' || formData.value.server !== undefined)
+    (form.value.action === 'reject' || form.value.server !== undefined)
   )
 })
 
 // Watchers
-watch(() => props.dnsRule, (newDNSRule) => {
-  if (newDNSRule) {
-    formData.value = { ...newDNSRule }
-  }
-}, { immediate: true })
-
-// v-model sync for dnsRule
-watch(formData, (val) => {
-  emit('update:dnsRule', { ...val })
-}, { deep: true })
 
 // Methods
 // Build server options from passed-in dnsServers prop if provided
@@ -331,11 +324,11 @@ const saveDNSRule = async () => {
     
     // Prepare form data
     const dataToSave: DNSRule = {
-      ...formData.value,
+      ...form.value,
       // Filter out empty strings from arrays
-      domains: formData.value.domains?.filter(d => d.trim()) || undefined,
-      domain_suffixes: formData.value.domain_suffixes?.filter(d => d.trim()) || undefined,
-      domain_keywords: formData.value.domain_keywords?.filter(d => d.trim()) || undefined
+      domains: form.value.domains?.filter(d => d.trim()) || undefined,
+      domain_suffixes: form.value.domain_suffixes?.filter(d => d.trim()) || undefined,
+      domain_keywords: form.value.domain_keywords?.filter(d => d.trim()) || undefined
     }
 
     // Do not call API; emit to parent
@@ -350,36 +343,30 @@ const saveDNSRule = async () => {
 
 // Array manipulation methods
 const addDomain = () => {
-  if (!formData.value.domains) formData.value.domains = []
-  formData.value.domains.push('')
+  if (!form.value.domains) form.value.domains = []
+  form.value.domains.push('')
 }
 
 const removeDomain = (index: number) => {
-  if (formData.value.domains) {
-    formData.value.domains.splice(index, 1)
-  }
+  form.value.domains?.splice(index, 1)
 }
 
 const addDomainSuffix = () => {
-  if (!formData.value.domain_suffixes) formData.value.domain_suffixes = []
-  formData.value.domain_suffixes.push('')
+  if (!form.value.domain_suffixes) form.value.domain_suffixes = []
+  form.value.domain_suffixes.push('')
 }
 
 const removeDomainSuffix = (index: number) => {
-  if (formData.value.domain_suffixes) {
-    formData.value.domain_suffixes.splice(index, 1)
-  }
+  form.value.domain_suffixes?.splice(index, 1)
 }
 
 const addDomainKeyword = () => {
-  if (!formData.value.domain_keywords) formData.value.domain_keywords = []
-  formData.value.domain_keywords.push('')
+  if (!form.value.domain_keywords) form.value.domain_keywords = []
+  form.value.domain_keywords.push('')
 }
 
 const removeDomainKeyword = (index: number) => {
-  if (formData.value.domain_keywords) {
-    formData.value.domain_keywords.splice(index, 1)
-  }
+  form.value.domain_keywords?.splice(index, 1)
 }
 
 // Lifecycle
