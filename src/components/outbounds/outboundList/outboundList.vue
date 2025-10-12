@@ -219,9 +219,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import type { Outbound, ExportType } from '../outbounds/outboundEditor/types'
-import { typeOptions, regionOptions, exportTypes } from '../outbounds/outboundEditor/types'
-import { useUserStore } from '@/stores/user'
+// import type { Outbound, ExportType } from '../outboundEditor/types' // TODO: Uncomment when implemented
+// import { typeOptions, regionOptions, exportTypes } from '../outboundEditor/types' // TODO: Uncomment when implemented
+// import { typeOptions, regionOptions, exportTypes } from '../outboundEditor/types' // TODO: Uncomment when implemented
+// import type { Outbound, ExportType } from '../outboundEditor/types'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -233,8 +234,8 @@ const deleteDialog = ref(false)
 const deleteLoading = ref(false)
 const exportDialog = ref(false)
 const selectedOutbound = ref<Outbound | null>(null)
-const exportType = ref<ExportType>('sing-box')
-const exportedConfig = ref('')
+// const exportType = ref<ExportType>('sing-box') // TODO: Uncomment when implemented
+// const exportedConfig = ref('') // TODO: Uncomment when implemented
 
 // Load outbounds from API
 const loadOutbounds = async () => {

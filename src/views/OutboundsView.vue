@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import OutboundList from '@/components/outboundList/outboundList.vue';
+import OutboundList from '@/components/outbounds/outboundList/outboundList.vue';
 </script>
 
 <template>

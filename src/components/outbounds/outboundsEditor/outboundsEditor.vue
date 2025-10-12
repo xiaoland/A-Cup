@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import type { Outbound } from '../../profile/profileEditor/types'
+// import type { Outbound } from '../../profile/profileEditor/types' // TODO: Uncomment when implemented
 
 const props = defineProps<{ form: any }>()
 

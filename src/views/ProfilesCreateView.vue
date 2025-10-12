@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ProfileEditor from '@/components/profile/profileEditor/profileEditor.vue'
-import type { Profile } from '@/components/profile/profileEditor/types'
+// import type { Profile } from '@/components/profile/profileEditor/types' // TODO: Uncomment when implemented
 
 const router = useRouter()
 const profileEditorRef = ref<InstanceType<typeof ProfileEditor> | null>(null)

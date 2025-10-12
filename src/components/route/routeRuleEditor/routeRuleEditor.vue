@@ -165,7 +165,7 @@ import { useRouter } from 'vue-router'
 import type { RouteRule, Props, OutboundSelectItem } from './types'
 import { actionOptions } from './types'
 import { useUserStore } from '@/stores/user'
-import type { Outbound } from '@/components/outbounds/outboundEditor/types'
+// import type { Outbound } from '@/components/outbounds/outboundEditor/types' // TODO: Uncomment when implemented
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'create'

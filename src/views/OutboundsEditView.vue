@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue'
-import type { Outbound } from '@/components/outbounds/outboundEditor/types'
+// import type { Outbound } from '@/components/outbounds/outboundEditor/types' // TODO: Uncomment when implemented
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
