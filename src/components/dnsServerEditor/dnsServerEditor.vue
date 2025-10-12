@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title>
         <v-icon class="me-2">mdi-dns</v-icon>
-        {{ isEditing ? 'Edit DNS Server' : 'Create DNS Server' }}
+        DNS Server
       </v-card-title>
       
       <v-card-text>
@@ -184,7 +184,7 @@
               color="primary"
               :loading="saving"
             >
-              {{ isEditing ? 'Update' : 'Create' }}
+              Save
             </v-btn>
           </div>
         </v-form>
@@ -201,7 +201,7 @@ import { typeOptions, DEFAULT_PORTS } from './types'
 import type { DNSServer } from './index'
 
 // Props and emits
-const props = withDefaults(defineProps<{ mode?: 'create' | 'edit' }>(), { mode: 'create' })
+const props = withDefaults(defineProps<{}>(), {})
 
 const emit = defineEmits<{
   save: [dnsServer: DNSServer]
@@ -235,7 +235,7 @@ const tlsEnabled = ref(false)
 const headersText = ref('')
 
 // Computed
-const isEditing = computed(() => props.mode === 'edit')
+// removed mode prop
 const isHTTPSType = computed(() => form.value.type === 'https' || form.value.type === 'h3')
 const isTLSType = computed(() => ['https', 'h3', 'tls', 'quic'].includes(form.value.type))
 

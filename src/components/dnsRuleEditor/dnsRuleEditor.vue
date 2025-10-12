@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title>
         <v-icon class="me-2">mdi-dns-outline</v-icon>
-        {{ isEditing ? 'Edit DNS Rule' : 'Create DNS Rule' }}
+        DNS Rule
       </v-card-title>
       
       <v-card-text>
@@ -213,7 +213,7 @@
               :loading="saving"
               :disabled="!isFormValid"
             >
-              {{ isEditing ? 'Update' : 'Create' }}
+              Save
             </v-btn>
           </div>
         </v-form>
@@ -230,7 +230,7 @@ import { actionOptions } from './types'
 import type { DNSRule } from './index'
 
 // Props and emits
-const props = withDefaults(defineProps<{ mode?: 'create' | 'edit'; dnsServers: any[] }>(), { mode: 'create' })
+const props = withDefaults(defineProps<{ dnsServers: any[] }>(), {})
 
 const emit = defineEmits<{
   save: [dnsRule: DNSRule]
@@ -260,7 +260,6 @@ const form = defineModel<DNSRule>('dnsRule', {
 })
 
 // Computed
-const isEditing = computed(() => props.mode === 'edit')
 
 const hasAnyCondition = computed(() => {
   return !!(
