@@ -95,39 +95,9 @@
             </v-card-text>
           </v-card>
 
-          <!-- Outbounds Selection -->
-          <v-card variant="outlined" class="form-section">
-            <v-card-title class="text-h6 d-flex align-center justify-space-between">
-              Outbounds
-              <v-btn
-                color="primary"
-                variant="outlined"
-                size="small"
-                @click="openSelectionDialog('outbounds')"
-                prepend-icon="mdi-plus"
-              >
-                Select Outbounds
-              </v-btn>
-            </v-card-title>
-            <v-card-text class="selection-section">
-              <div v-if="selectedOutbounds.length === 0" class="text-body-2 text-medium-emphasis">
-                No outbounds selected. First outbound will be the fallback.
-              </div>
-              <div v-else class="selection-chips">
-                <v-chip
-                  v-for="(outbound, index) in selectedOutbounds"
-                  :key="outbound.id"
-                  closable
-                  :color="index === 0 ? 'primary' : undefined"
-                  :variant="index === 0 ? 'elevated' : 'outlined'"
-                  @click:close="removeOutbound(outbound.id)"
-                >
-                  {{ outbound.name || `${outbound.type} ${outbound.region ? `(${outbound.region})` : ''}` }}
-                  <v-tooltip v-if="index === 0" activator="parent">Fallback outbound</v-tooltip>
-                </v-chip>
-              </div>
-            </v-card-text>
-          </v-card>
+          <OutboundsEditor :form="formData" />
+
+          <RuleSetsEditor :route="formData.route" />
 
           <!-- Route Editor -->
           <RouteEditor v-model:route="formData.route" />
@@ -163,66 +133,7 @@
       </v-card-text>
     </v-card>
 
-    <!-- Selection Dialog -->
-    <v-dialog
-      v-model="selectionDialog.show"
-      max-width="600px"
-      scrollable
-    >
-      <v-card class="selection-dialog">
-        <v-card-title>
-          Select {{ selectionDialog.title }}
-        </v-card-title>
-        
-        <v-card-text>
-          <v-text-field
-            v-model="selectionDialog.search"
-            label="Search"
-            variant="outlined"
-            prepend-inner-icon="mdi-magnify"
-            clearable
-            class="search-field"
-          />
-          
-          <v-list class="item-list">
-            <v-list-item
-              v-for="item in filteredSelectionItems"
-              :key="item.id"
-              :title="getItemTitle(item)"
-              :subtitle="getItemSubtitle(item)"
-              :active="isItemSelected(item)"
-              :color="isItemSelected(item) ? 'primary' : undefined"
-              @click="toggleSelection(item)"
-            >
-              <template #prepend>
-                <v-checkbox
-                  :model-value="isItemSelected(item)"
-                  color="primary"
-                  hide-details
-                />
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-        
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="outlined"
-            @click="selectionDialog.show = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="primary"
-            variant="elevated"
-            @click="confirmSelection"
-          >
-            Confirm
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    
   </v-container>
 </template>
 
@@ -233,6 +144,8 @@ import type { Profile, Props, Outbound, RuleSet } from './types'
 import { profileTagOptions } from './types'
 import RouteEditor from '@/components/routeEditor/routeEditor.vue'
 import DNSEditor from '@/components/dnsEditor/dnsEditor.vue'
+import OutboundsEditor from './outboundsEditor.vue'
+import RuleSetsEditor from './ruleSetsEditor.vue'
 
 // Props
 const props = withDefaults(defineProps<Props>(), {
