@@ -6,11 +6,11 @@
         <v-form @submit.prevent="onSave">
           <v-row>
             <v-col cols="12" md="6">
-              <v-text-field v-model="local.name" label="Name" variant="outlined" required />
+              <v-text-field v-model="form.name" label="Name" variant="outlined" required />
             </v-col>
             <v-col cols="12" md="6">
               <v-select
-                v-model="local.type"
+                v-model="form.type"
                 :items="typeOptions"
                 item-title="title"
                 item-value="value"
@@ -22,7 +22,7 @@
 
             <v-col cols="12" md="6">
               <v-select
-                v-model="local.region"
+                v-model="form.region"
                 :items="regionOptions"
                 item-title="title"
                 item-value="value"
@@ -32,14 +32,14 @@
               />
             </v-col>
             <v-col cols="12" md="6">
-              <v-text-field v-model="local.provider" label="Provider" variant="outlined" />
+              <v-text-field v-model="form.provider" label="Provider" variant="outlined" />
             </v-col>
 
             <v-col cols="12" md="8">
-              <v-text-field v-model="local.server" label="Server" variant="outlined" required />
+              <v-text-field v-model="form.server" label="Server" variant="outlined" required />
             </v-col>
             <v-col cols="12" md="4">
-              <v-text-field v-model.number="local.server_port" label="Port" type="number" variant="outlined" required />
+              <v-text-field v-model.number="form.server_port" label="Port" type="number" variant="outlined" required />
             </v-col>
 
             <v-col cols="12">
@@ -59,7 +59,7 @@
         <v-btn variant="text" @click="onCancel">Cancel</v-btn>
         <v-btn color="primary" :loading="saving" @click="onSave">Save</v-btn>
         <v-btn
-          v-if="local.id"
+          v-if="form.id"
           color="error"
           variant="outlined"
           :loading="deleting"
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import type { Outbound } from './types'
@@ -83,8 +83,7 @@ const emit = defineEmits<{ (e: 'saved', value: Outbound): void; (e: 'cancel'): v
 const router = useRouter()
 const userStore = useUserStore()
 
-const local = ref<Outbound>({ ...(props.form as any) })
-watch(() => props.form, (v) => { local.value = { ...(v as any) } }, { deep: true })
+const form = props.form
 
 const saving = ref(false)
 const deleting = ref(false)
@@ -94,7 +93,7 @@ const credentialError = ref<string>('')
 
 const syncFromObject = () => {
   try {
-    credentialText.value = JSON.stringify(local.value.credential ?? {}, null, 2)
+    credentialText.value = JSON.stringify(form.credential ?? {}, null, 2)
     credentialError.value = ''
   } catch (e) {
     credentialText.value = '{}'
@@ -102,7 +101,7 @@ const syncFromObject = () => {
 }
 const parseCredential = () => {
   try {
-    local.value.credential = credentialText.value ? JSON.parse(credentialText.value) : {}
+    form.credential = credentialText.value ? JSON.parse(credentialText.value) : {}
     credentialError.value = ''
     return true
   } catch (e: any) {
@@ -110,8 +109,7 @@ const parseCredential = () => {
     return false
   }
 }
-
-syncFromObject()
+onMounted(syncFromObject)
 
 const onCancel = () => {
   emit('cancel')
@@ -122,7 +120,7 @@ const onSave = async () => {
   if (!parseCredential()) return
   saving.value = true
   try {
-    const body = { ...local.value }
+    const body = { ...form }
     const hasId = !!body.id
     const url = hasId ? `/api/outbounds/${body.id}` : '/api/outbounds'
     const method = hasId ? 'PUT' : 'POST'
@@ -143,12 +141,12 @@ const onSave = async () => {
 }
 
 const onDelete = async () => {
-  if (!local.value.id) return
+  if (!form.id) return
   deleting.value = true
   try {
-    const res = await userStore.authorizedFetch(`/api/outbounds/${local.value.id}`, { method: 'DELETE' })
+    const res = await userStore.authorizedFetch(`/api/outbounds/${form.id}`, { method: 'DELETE' })
     if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`)
-    emit('deleted', local.value.id)
+    emit('deleted', form.id)
     router.push('/outbounds')
   } catch (e) {
     console.error(e)
