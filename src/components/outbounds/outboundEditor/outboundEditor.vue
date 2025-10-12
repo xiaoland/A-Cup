@@ -6,9 +6,6 @@
         <v-form @submit.prevent="onSave">
           <v-row>
             <v-col cols="12" md="6">
-              <v-text-field v-model="form.name" label="Name" variant="outlined" required />
-            </v-col>
-            <v-col cols="12" md="6">
               <v-select
                 v-model="form.type"
                 :items="typeOptions"
@@ -20,19 +17,34 @@
               />
             </v-col>
 
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="form.region"
-                :items="regionOptions"
-                item-title="title"
-                item-value="value"
-                label="Region"
-                variant="outlined"
-                clearable
-              />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="form.provider" label="Provider" variant="outlined" />
+            <!-- Basic Info (default expanded) -->
+            <v-col cols="12">
+              <v-expansion-panels variant="accordion" :model-value="[0]">
+                <v-expansion-panel>
+                  <v-expansion-panel-title>Basic Info</v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <v-row>
+                      <v-col cols="12" md="4">
+                        <v-text-field v-model="form.name" label="Name" variant="outlined" required />
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <v-select
+                          v-model="form.region"
+                          :items="regionOptions"
+                          item-title="title"
+                          item-value="value"
+                          label="Region"
+                          variant="outlined"
+                          clearable
+                        />
+                      </v-col>
+                      <v-col cols="12" md="4">
+                        <v-text-field v-model="form.provider" label="Provider" variant="outlined" />
+                      </v-col>
+                    </v-row>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
             </v-col>
 
             <v-col cols="12" md="8">
@@ -42,14 +54,82 @@
               <v-text-field v-model.number="form.server_port" label="Port" type="number" variant="outlined" required />
             </v-col>
 
+            <!-- Credential (default expanded) -->
             <v-col cols="12">
-              <v-textarea
-                v-model="credentialText"
-                label="Credential (JSON)"
-                variant="outlined"
-                rows="6"
-                :error-messages="credentialError || undefined"
-              />
+              <v-expansion-panels variant="accordion" :model-value="[0]">
+                <v-expansion-panel>
+                  <v-expansion-panel-title>Credential</v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <template v-if="form.type === 'shadowsocks'">
+                      <v-row>
+                        <v-col cols="12" md="6">
+                          <v-select :items="ssMethods" v-model="form.credential.method" label="Method" variant="outlined" />
+                        </v-col>
+                        <v-col cols="12" md="6">
+                          <v-text-field v-model="form.credential.password" label="Password" variant="outlined" type="password" />
+                        </v-col>
+                        <v-col cols="12" md="6">
+                          <v-text-field v-model="form.credential.plugin" label="Plugin (optional)" variant="outlined" />
+                        </v-col>
+                        <v-col cols="12" md="6">
+                          <v-text-field v-model="form.credential.plugin_opts" label="Plugin Opts (optional)" variant="outlined" />
+                        </v-col>
+                      </v-row>
+                    </template>
+                    <template v-else-if="form.type === 'vmess'">
+                      <v-row>
+                        <v-col cols="12" md="6">
+                          <v-text-field v-model="form.credential.uuid" label="UUID" variant="outlined" />
+                        </v-col>
+                        <v-col cols="12" md="6">
+                          <v-select :items="vmessSecurities" v-model="form.credential.security" label="Security" variant="outlined" />
+                        </v-col>
+                        <v-col cols="12" md="4">
+                          <v-text-field type="number" v-model.number="form.credential.alter_id" label="Alter ID" variant="outlined" />
+                        </v-col>
+                        <v-col cols="12" md="4">
+                          <v-switch inset v-model="form.credential.global_padding" label="Global Padding" />
+                        </v-col>
+                        <v-col cols="12" md="4">
+                          <v-switch inset v-model="form.credential.authenticated_length" label="Authenticated Length" />
+                        </v-col>
+                      </v-row>
+                    </template>
+                    <template v-else-if="form.type === 'vless'">
+                      <v-row>
+                        <v-col cols="12" md="6">
+                          <v-text-field v-model="form.credential.uuid" label="UUID" variant="outlined" />
+                        </v-col>
+                        <v-col cols="12" md="6">
+                          <v-select :items="vlessFlows" v-model="form.credential.flow" label="Flow (optional)" variant="outlined" clearable />
+                        </v-col>
+                      </v-row>
+                    </template>
+                    <template v-else-if="form.type === 'hysteria2'">
+                      <v-row>
+                        <v-col cols="12" md="6">
+                          <v-text-field v-model="form.credential.password" label="Password" variant="outlined" type="password" />
+                        </v-col>
+                        <v-col cols="12" md="3">
+                          <v-text-field type="number" v-model.number="form.credential.up_mbps" label="Up Mbps" variant="outlined" />
+                        </v-col>
+                        <v-col cols="12" md="3">
+                          <v-text-field type="number" v-model.number="form.credential.down_mbps" label="Down Mbps" variant="outlined" />
+                        </v-col>
+                        <v-col cols="12" md="4">
+                          <v-select :items="hy2ObfsTypes" v-model="hy2ObfsType" label="Obfs Type" variant="outlined" clearable />
+                        </v-col>
+                        <v-col cols="12" md="8">
+                          <v-text-field v-model="hy2ObfsPassword" label="Obfs Password" variant="outlined" />
+                        </v-col>
+                      </v-row>
+                    </template>
+                    <template v-else>
+                      <div class="text-medium-emphasis">No credential fields for this type.</div>
+                    </template>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
             </v-col>
 
             <!-- Advanced section -->
@@ -120,7 +200,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import type { Outbound } from './types'
@@ -137,8 +217,20 @@ const form = props.form
 const saving = ref(false)
 const deleting = ref(false)
 
-const credentialText = ref<string>('')
-const credentialError = ref<string>('')
+// Credential helpers
+const ssMethods = [
+  '2022-blake3-aes-128-gcm',
+  '2022-blake3-aes-256-gcm',
+  '2022-blake3-chacha20-poly1305',
+  'none',
+  'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm',
+  'chacha20-ietf-poly1305', 'xchacha20-ietf-poly1305',
+  'aes-128-ctr','aes-192-ctr','aes-256-ctr','aes-128-cfb','aes-192-cfb','aes-256-cfb','rc4-md5','chacha20-ietf','xchacha20'
+]
+const vmessSecurities = ['auto','none','zero','aes-128-gcm','chacha20-poly1305']
+const vlessFlows = ['xtls-rprx-vision']
+const hy2ObfsTypes = ['salamander']
+import { computed } from 'vue'
 const transportText = ref<string>('')
 const transportError = ref<string>('')
 const tlsText = ref<string>('')
@@ -149,26 +241,11 @@ const otherText = ref<string>('')
 const otherError = ref<string>('')
 
 const syncFromObject = () => {
-  try {
-    credentialText.value = JSON.stringify(form.credential ?? {}, null, 2)
-    credentialError.value = ''
-  } catch (e) {
-    credentialText.value = '{}'
-  }
+  if (!form.credential || typeof form.credential !== 'object') form.credential = {}
   try { transportText.value = JSON.stringify(form.transport ?? {}, null, 2); transportError.value = '' } catch { transportText.value = '{}' }
   try { tlsText.value = JSON.stringify(form.tls ?? {}, null, 2); tlsError.value = '' } catch { tlsText.value = '{}' }
   try { muxText.value = JSON.stringify(form.mux ?? {}, null, 2); muxError.value = '' } catch { muxText.value = '{}' }
   try { otherText.value = JSON.stringify(form.other ?? {}, null, 2); otherError.value = '' } catch { otherText.value = '{}' }
-}
-const parseCredential = () => {
-  try {
-    form.credential = credentialText.value ? JSON.parse(credentialText.value) : {}
-    credentialError.value = ''
-    return true
-  } catch (e: any) {
-    credentialError.value = 'Invalid JSON'
-    return false
-  }
 }
 const parseAdvanced = () => {
   let ok = true
@@ -180,13 +257,41 @@ const parseAdvanced = () => {
 }
 onMounted(syncFromObject)
 
+// ensure nested objects for hysteria2 obfs when editing
+watchEffect(() => {
+  if (form.type === 'hysteria2') {
+    if (!form.credential) form.credential = {}
+    if (form.credential && typeof form.credential === 'object' && !('obfs' in form.credential)) {
+      ;(form.credential as any).obfs = {}
+    }
+  }
+})
+
+const hy2ObfsType = computed({
+  get: () => (form.credential as any)?.obfs?.type ?? '',
+  set: (v: any) => {
+    if (!form.credential || typeof form.credential !== 'object') form.credential = {}
+    if (!(form.credential as any).obfs) (form.credential as any).obfs = {}
+    if (v == null || v === '') delete (form.credential as any).obfs.type
+    else (form.credential as any).obfs.type = v
+  }
+})
+const hy2ObfsPassword = computed({
+  get: () => (form.credential as any)?.obfs?.password ?? '',
+  set: (v: any) => {
+    if (!form.credential || typeof form.credential !== 'object') form.credential = {}
+    if (!(form.credential as any).obfs) (form.credential as any).obfs = {}
+    if (v == null || v === '') delete (form.credential as any).obfs.password
+    else (form.credential as any).obfs.password = v
+  }
+})
+
 const onCancel = () => {
   emit('cancel')
   router.back()
 }
 
 const onSave = async () => {
-  if (!parseCredential()) return
   if (!parseAdvanced()) return
   saving.value = true
   try {

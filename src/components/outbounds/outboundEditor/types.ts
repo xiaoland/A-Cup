@@ -27,11 +27,9 @@ export interface SelectOption<T extends string = string> {
 
 export const typeOptions: SelectOption[] = [
   { title: 'Direct', value: 'direct' },
-  { title: 'URL Test', value: 'urltest' },
-  { title: 'Selector', value: 'selector' },
   { title: 'VMess', value: 'vmess' },
   { title: 'VLESS', value: 'vless' },
-  { title: 'Shadowsocks', value: 'ss' },
+  { title: 'Shadowsocks', value: 'shadowsocks' },
   { title: 'Hysteria2', value: 'hysteria2' },
 ]
 
