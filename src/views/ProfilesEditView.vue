@@ -3,18 +3,17 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import ProfileEditor from '@/components/profile/profileEditor/profileEditor.vue'
-// import type { Profile } from '@/components/profile/profileEditor/types' // TODO: Uncomment when implemented
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const profileEditorRef = ref<InstanceType<typeof ProfileEditor> | null>(null)
-const currentProfile = ref<Profile | undefined>()
+const currentProfile = ref<any | undefined>()
 const loading = ref(false)
 
 const profileId = computed(() => route.params.id as string)
 
-const handleSave = (profile: Profile) => {
+const handleSave = (profile: any) => {
   // Profile update is handled by the ProfileEditor component
   console.log('Profile updated:', profile)
   router.push('/profiles')

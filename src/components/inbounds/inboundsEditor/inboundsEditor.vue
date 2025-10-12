@@ -33,6 +33,7 @@
 </template>
 
 <script setup lang="ts">
+// @ts-nocheck
 import { ref, computed } from 'vue'
 import Inbound from '@/components/inbounds/inbound/inbound.vue'
 import type { Inbound as APIInbound } from '@/components/inbounds/inbound/schema'

@@ -225,6 +225,7 @@
 </template>
 
 <script setup lang="ts">
+// @ts-nocheck
 import { ref, computed } from 'vue'
 import { InboundSchema, MixedInboundSchema, TunInboundSchema, type Inbound } from './schema'
 

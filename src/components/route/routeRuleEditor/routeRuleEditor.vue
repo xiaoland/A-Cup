@@ -165,7 +165,7 @@ import { useRouter } from 'vue-router'
 import type { RouteRule, Props, OutboundSelectItem } from './types'
 import { actionOptions } from './types'
 import { useUserStore } from '@/stores/user'
-// import type { Outbound } from '@/components/outbounds/outboundEditor/types' // TODO: Uncomment when implemented
+import type { Outbound } from '@/components/outbounds/outboundEditor/types'
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'create'
@@ -204,8 +204,8 @@ const isEditing = computed(() => props.mode === 'edit')
 const outboundItems = computed(() => {
   return availableOutbounds.value.map(outbound => ({
     title: outbound.name || (outbound.region 
-      ? `${outbound.type}.${outbound.region} (${outbound.address || 'N/A'})`
-      : `${outbound.type} (${outbound.address || 'N/A'})`),
+      ? `${outbound.type}.${outbound.region} (${outbound.server || 'N/A'}${outbound.server_port ? `:${outbound.server_port}` : ''})`
+      : `${outbound.type} (${outbound.server || 'N/A'}${outbound.server_port ? `:${outbound.server_port}` : ''})`),
     value: outbound.id
   }))
 })

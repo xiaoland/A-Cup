@@ -17,7 +17,7 @@
           closable
           :color="index === 0 ? 'primary' : undefined"
           :variant="index === 0 ? 'elevated' : 'outlined'"
-          @click:close="removeOutbound(outbound.id)"
+          @click:close="removeOutbound(outbound.id!)"
         >
           {{ outbound.name || `${outbound.type} ${outbound.region ? `(${outbound.region})` : ''}` }}
           <v-tooltip v-if="index === 0" activator="parent">Fallback outbound</v-tooltip>
@@ -36,13 +36,13 @@
             v-for="item in filteredOutbounds"
             :key="item.id"
             :title="item.name || item.type"
-            :subtitle="item.address ? `${item.address}${item.port ? `:${item.port}` : ''}` : (item.region || '')"
-            :active="isSelected(item.id)"
-            :color="isSelected(item.id) ? 'primary' : undefined"
-            @click="toggle(item.id)"
+            :subtitle="item.server ? `${item.server}${item.server_port ? `:${item.server_port}` : ''}` : (item.region || '')"
+            :active="isSelected(item.id!)"
+            :color="isSelected(item.id!) ? 'primary' : undefined"
+            @click="toggle(item.id!)"
           >
             <template #prepend>
-              <v-checkbox :model-value="isSelected(item.id)" color="primary" hide-details />
+              <v-checkbox :model-value="isSelected(item.id!)" color="primary" hide-details />
             </template>
           </v-list-item>
         </v-list>
@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-// import type { Outbound } from '../../profile/profileEditor/types' // TODO: Uncomment when implemented
+import type { Outbound } from '../outboundEditor/types'
 
 const props = defineProps<{ form: any }>()
 
@@ -70,7 +70,7 @@ const loading = ref(false)
 const dialog = ref({ show: false, search: '', selected: [] as number[] })
 
 const selectedOutbounds = computed(() =>
-  outbounds.value.filter(o => props.form.outbounds.includes(o.id))
+  outbounds.value.filter(o => props.form.outbounds.includes(o.id!))
 )
 
 const filteredOutbounds = computed(() => {
@@ -78,7 +78,7 @@ const filteredOutbounds = computed(() => {
   const s = dialog.value.search.toLowerCase()
   return outbounds.value.filter(o =>
     (o.name || o.type).toLowerCase().includes(s) ||
-    (o.address ? `${o.address}${o.port ? `:${o.port}` : ''}` : '').toLowerCase().includes(s) ||
+    (o.server ? `${o.server}${o.server_port ? `:${o.server_port}` : ''}` : '').toLowerCase().includes(s) ||
     (o.region || '').toLowerCase().includes(s)
   )
 })

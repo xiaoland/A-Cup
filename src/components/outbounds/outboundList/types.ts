@@ -1,18 +1,4 @@
-// Re-export shared types from outboundEditor
-// export type {
-//   Outbound,
-//   SelectOption,
-//   OutboundSelectItem
-// } from '../outbounds/outboundEditor/types' // TODO: Uncomment when implemented
-
-// export {
-//   typeOptions,
-//   regionOptions,
-//   networkOptions
-// } from '../outbounds/outboundEditor/types' // TODO: Uncomment when implemented
-
-// Import for local use
-// import type { Outbound } from '../outbounds/outboundEditor/types' // TODO: Uncomment when implemented
+import type { Outbound } from '../outboundEditor/types'
 
 // Export type options
 export type ExportType = 'sing-box'

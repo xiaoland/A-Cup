@@ -77,24 +77,15 @@
                     {{ getRegionDisplayName(outbound.region) }}
                   </v-chip>
                 </span>
-                <span v-if="outbound.address" class="text-caption">
-                  {{ outbound.address }}{{ outbound.port ? `:${outbound.port}` : '' }}
+                <span v-if="outbound.server" class="text-caption">
+                  {{ outbound.server }}{{ outbound.server_port ? `:${outbound.server_port}` : '' }}
                 </span>
               </div>
             </v-list-item-subtitle>
 
             <template #append>
               <div class="d-flex align-center">
-                <v-chip
-                  v-if="outbound.share"
-                  size="small"
-                  color="success"
-                  variant="outlined"
-                  class="me-2"
-                >
-                  <v-icon start size="small">mdi-share-variant</v-icon>
-                  Shared
-                </v-chip>
+                
                 
                 <v-menu>
                   <template #activator="{ props }">
@@ -219,10 +210,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-// import type { Outbound, ExportType } from '../outboundEditor/types' // TODO: Uncomment when implemented
-// import { typeOptions, regionOptions, exportTypes } from '../outboundEditor/types' // TODO: Uncomment when implemented
-// import { typeOptions, regionOptions, exportTypes } from '../outboundEditor/types' // TODO: Uncomment when implemented
-// import type { Outbound, ExportType } from '../outboundEditor/types'
+import { useUserStore } from '@/stores/user'
+import type { Outbound } from '../outboundEditor/types'
+import { typeOptions, regionOptions } from '../outboundEditor/types'
+import { exportTypes, type ExportType } from './types'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -234,8 +225,8 @@ const deleteDialog = ref(false)
 const deleteLoading = ref(false)
 const exportDialog = ref(false)
 const selectedOutbound = ref<Outbound | null>(null)
-// const exportType = ref<ExportType>('sing-box') // TODO: Uncomment when implemented
-// const exportedConfig = ref('') // TODO: Uncomment when implemented
+const exportType = ref<ExportType>('sing-box')
+const exportedConfig = ref('')
 
 // Load outbounds from API
 const loadOutbounds = async () => {

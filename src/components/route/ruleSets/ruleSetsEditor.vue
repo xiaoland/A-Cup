@@ -16,7 +16,7 @@
           :key="item.id"
           closable
           variant="outlined"
-          @click:close="removeRuleSet(item.id)"
+          @click:close="removeRuleSet(item.id!)"
         >
           {{ item.name || `RuleSet #${item.id}` }}
         </v-chip>
@@ -35,12 +35,12 @@
             :key="item.id"
             :title="item.name"
             :subtitle="item.type || ''"
-            :active="isSelected(item.id)"
-            :color="isSelected(item.id) ? 'primary' : undefined"
-            @click="toggle(item.id)"
+            :active="isSelected(item.id!)"
+            :color="isSelected(item.id!) ? 'primary' : undefined"
+            @click="toggle(item.id!)"
           >
             <template #prepend>
-              <v-checkbox :model-value="isSelected(item.id)" color="primary" hide-details />
+              <v-checkbox :model-value="isSelected(item.id!)" color="primary" hide-details />
             </template>
           </v-list-item>
         </v-list>
@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-// import type { RuleSet } from '../../profile/profileEditor/types' // TODO: Uncomment when implemented
+import type { RuleSet } from './ruleSetEditor/types'
 
 const props = defineProps<{ route: any }>()
 
@@ -68,13 +68,13 @@ const loading = ref(false)
 const dialog = ref({ show: false, search: '', selected: [] as number[] })
 
 const selectedRuleSets = computed(() =>
-  ruleSets.value.filter(rs => props.route.rule_set?.includes(rs.id))
+  ruleSets.value.filter(rs => props.route.rule_set?.includes(rs.id!))
 )
 
 const filteredRuleSets = computed(() => {
   if (!dialog.value.search) return ruleSets.value
   const s = dialog.value.search.toLowerCase()
-  return ruleSets.value.filter(rs =>
+  return ruleSets.value.filter((rs: RuleSet) =>
     (rs.name || '').toLowerCase().includes(s) ||
     (rs.type || '').toLowerCase().includes(s)
   )

@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue'
-// import type { Outbound } from '@/components/outbounds/outboundEditor/types' // TODO: Uncomment when implemented
+import type { Outbound } from '@/components/outbounds/outboundEditor/types'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
@@ -42,8 +42,7 @@ onMounted(() => {
   
   <OutboundEditor
     v-else-if="outbound"
-    :outbound="outbound"
-    mode="edit"
+    :form="outbound"
   />
   
   <v-alert
