@@ -17,6 +17,9 @@ dependencies:
   jsonwebtoken:
     specifier: ^9.0.2
     version: 9.0.2
+  monaco-editor:
+    specifier: ^0.54.0
+    version: 0.54.0
   pinia:
     specifier: ^3.0.3
     version: 3.0.3(typescript@5.8.3)(vue@3.5.17)
@@ -70,6 +73,9 @@ devDependencies:
   vite:
     specifier: ^7.0.0
     version: 7.0.4(@types/node@22.16.3)(sass-embedded@1.89.2)
+  vite-plugin-monaco-editor:
+    specifier: ^1.1.0
+    version: 1.1.0(monaco-editor@0.54.0)
   vite-plugin-vue-devtools:
     specifier: ^7.7.7
     version: 7.7.7(vite@7.0.4)(vue@3.5.17)
@@ -2064,6 +2070,9 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /dompurify@3.1.7:
+    resolution: {integrity: sha512-VaTstWtsneJY8xzy7DekmYWEOZcmzIe3Qb3zPd4STve1OBTa+e+WmS1ITQec1fZYXI3HCsOZZiSMpG6oxoWMWQ==}
+
   /drizzle-kit@0.31.4:
     resolution: {integrity: sha512-tCPWVZWZqWVx2XUsVpJRnH9Mx0ClVOf5YUHerZ5so1OKSlqww4zy1R5ksEdGRcO3tM3zj0PYN6V48TbQCL1RfA==}
     hasBin: true
@@ -2596,6 +2605,11 @@ packages:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.4
 
+  /marked@14.0.0:
+    resolution: {integrity: sha512-uIj4+faQ+MgHgwUW1l2PsPglZLOLOT1uErt06dAPtx2kjteLAkbsd/0FiYg/MGS+i7ZKLb7w2WClxHkzOOuryQ==}
+    engines: {node: '>= 18'}
+    hasBin: true
+
   /memorystream@0.3.1:
     resolution: {integrity: sha512-S3UwM3yj5mtUSEfP41UZmt/0SCoVYUcU1rkXv+BQ5Ig8ndL4sPoJNBUJERafdPb5jjHJGuMgytgKvKIf58XNBw==}
     engines: {node: '>= 0.10.0'}
@@ -2638,6 +2652,12 @@ packages:
 
   /mitt@3.0.1:
     resolution: {integrity: sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==}
+
+  /monaco-editor@0.54.0:
+    resolution: {integrity: sha512-hx45SEUoLatgWxHKCmlLJH81xBo0uXP4sRkESUpmDQevfi+e7K1VuiSprK6UpQ8u4zOcKNiH0pMvHvlMWA/4cw==}
+    dependencies:
+      dompurify: 3.1.7
+      marked: 14.0.0
 
   /mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
@@ -3263,6 +3283,14 @@ packages:
     transitivePeerDependencies:
       - rollup
       - supports-color
+    dev: true
+
+  /vite-plugin-monaco-editor@1.1.0(monaco-editor@0.54.0):
+    resolution: {integrity: sha512-IvtUqZotrRoVqwT0PBBDIZPNraya3BxN/bfcNfnxZ5rkJiGcNtO5eAOWWSgT7zullIAEqQwxMU83yL9J5k7gww==}
+    peerDependencies:
+      monaco-editor: '>=0.33.0'
+    dependencies:
+      monaco-editor: 0.54.0
     dev: true
 
   /vite-plugin-vue-devtools@7.7.7(vite@7.0.4)(vue@3.5.17):

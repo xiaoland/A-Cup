@@ -7,105 +7,17 @@
       </v-card-title>
       
       <v-card-text>
-        <v-form @submit.prevent="saveInbound">
-          <!-- Basic Info -->
-          <v-card variant="outlined" class="mb-6">
-            <v-card-title class="text-h6">Basic Information</v-card-title>
-            <v-card-text>
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="formData.type"
-                    :items="typeOptions"
-                    label="Type *"
-                    required
-                    variant="outlined"
-                    hint="Mixed: proxy socks5/http traffic on port, TUN: virtual NIC for transport proxy"
-                    persistent-hint
-                    :disabled="!canEdit"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-switch
-                    v-model="formData.share"
-                    label="Share with other users"
-                    color="primary"
-                    hint="Allow other users to see and use this inbound"
-                    persistent-hint
-                    :disabled="!canEdit"
-                  />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-
-          <!-- Network Configuration -->
-          <v-card variant="outlined" class="mb-6">
-            <v-card-title class="text-h6">Network Configuration</v-card-title>
-            <v-card-text>
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.address"
-                    label="Listen Address"
-                    placeholder="0.0.0.0"
-                    variant="outlined"
-                    hint="IP address to bind to (optional, defaults to all interfaces)"
-                    persistent-hint
-                    :disabled="!canEdit"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model.number="formData.port"
-                    label="Listen Port"
-                    type="number"
-                    min="1"
-                    max="65535"
-                    variant="outlined"
-                    :hint="formData.type === 'mixed' ? 'Port to listen for proxy connections' : 'Optional for TUN mode'"
-                    persistent-hint
-                    :disabled="!canEdit"
-                  />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-
-          <!-- TUN-specific Configuration -->
-          <v-card variant="outlined" class="mb-6" v-if="formData.type === 'tun'">
-            <v-card-title class="text-h6">TUN Configuration</v-card-title>
-            <v-card-text>
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-select
-                    v-model="formData.stack"
-                    :items="stackOptions"
-                    label="Network Stack"
-                    variant="outlined"
-                    hint="System: best performance, gVisor: best compatibility, Mixed: balanced"
-                    persistent-hint
-                    :disabled="!canEdit"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model.number="formData.mtu"
-                    label="MTU"
-                    type="number"
-                    min="1280"
-                    max="9000"
-                    variant="outlined"
-                    hint="Maximum transmission unit (default: 9000)"
-                    persistent-hint
-                    :disabled="!canEdit"
-                  />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
-
-        </v-form>
+        <v-alert type="info" variant="tonal" class="mb-4">
+          Edit inbound JSON with schema-based hints, completion and validation.
+        </v-alert>
+        <JsonEditor
+          v-model="jsonData"
+          :read-only="!canEdit"
+          height="420px"
+          :schema-url="schemaUrl"
+          :schema-ref-path="schemaRefPath"
+          @valid="(ok) => (isValid = ok)"
+        />
       </v-card-text>
 
       <!-- Form Actions -->
@@ -122,6 +34,7 @@
           v-if="canEdit"
           color="primary"
           :loading="loading"
+          :disabled="!isValid"
           @click="saveInbound"
         >
           Save Inbound
@@ -134,7 +47,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import type { Inbound, Props } from './types'
-import { typeOptions, stackOptions } from './types'
+import JsonEditor from '@/components/common/JsonEditor.vue'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -148,51 +61,30 @@ const emit = defineEmits<{
   cancel: []
 }>()
 
-// Form data
-const formData = ref<Inbound>({
+// JSON editor state
+const jsonData = ref<Record<string, any>>({
   share: false,
   type: 'mixed',
-  address: '',
-  port: undefined,
-  stack: 'mixed',
-  mtu: 9000
 })
+const isValid = ref(true)
+const schemaUrl = 'https://raw.githubusercontent.com/BlackDuty/sing-box-schema/refs/heads/main/schema.json'
+const schemaRefPath = '#/$defs/inbound'
 
 // State
 const loading = ref(false)
 
 // Computed properties
-const canEdit = computed(() => props.editable === true || !formData.value.id)
+const canEdit = computed(() => props.editable === true || !(jsonData.value as any).id)
 const titleText = computed(() => {
-  if (!formData.value.id) return 'New Inbound'
+  if (!(jsonData.value as any).id) return 'New Inbound'
   return canEdit.value ? 'Edit Inbound' : 'Inbound Details'
 })
 
 // Initialize form data
 const initializeForm = () => {
   if (props.inbound) {
-    formData.value = { ...props.inbound }
+    jsonData.value = { ...props.inbound }
   }
-}
-
-// Clean form data by converting empty strings to undefined
-const cleanFormData = (data: Inbound): Inbound => {
-  const cleaned = { ...data }
-  
-  // Clean string fields
-  if (cleaned.address === '') {
-    cleaned.address = undefined
-  }
-  
-  // Clean number fields
-  if (cleaned.port === 0 || cleaned.port === null) {
-    cleaned.port = undefined
-  }
-  if (cleaned.mtu === 0 || cleaned.mtu === null) {
-    cleaned.mtu = undefined
-  }
-  
-  return cleaned
 }
 
 // Save inbound
@@ -201,11 +93,11 @@ const saveInbound = async () => {
   loading.value = true
   
   try {
-    const isUpdate = !!formData.value.id
-    const url = isUpdate ? `/api/inbounds/${formData.value.id}` : '/api/inbounds'
+    const isUpdate = !!(jsonData.value as any).id
+    const url = isUpdate ? `/api/inbounds/${(jsonData.value as any).id}` : '/api/inbounds'
     const method = isUpdate ? 'PUT' : 'POST'
     
-    const cleanedData = cleanFormData(formData.value)
+    const cleanedData = jsonData.value
     
     const response = await userStore.authorizedFetch(url, {
       method,
