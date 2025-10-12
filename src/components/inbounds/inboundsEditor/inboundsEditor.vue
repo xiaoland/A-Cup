@@ -28,21 +28,36 @@
   
   <!-- Display and edit using Inbound component -->
   <div v-for="(item, idx) in displayInbounds" :key="item.id ?? `new-${idx}`" class="mt-4">
-    <Inbound :inbound="item" :editable="!item.id" @save="handleSaved($event, item)" />
+    <Inbound :form="item" @save="handleSaved($event, item)" @delete="removeInbound(item.id)" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import Inbound from '@/components/inbounds/inbound/inbound.vue'
-import type { Inbound as APIInbound } from '@/components/inbounds/inbound/types'
+import type { Inbound as APIInbound } from '@/components/inbounds/inbound/schema'
 
 const props = defineProps<{ form: any }>()
 
 const inbounds = ref<APIInbound[]>([])
 const newInbounds = ref<APIInbound[]>([])
 
-const chipLabel = (i: APIInbound) => i.type ? `${i.type}${i.address || i.port ? ` — ${i.address || ''}${i.port ? `:${i.port}` : ''}` : ''}` : `Inbound #${i.id}`
+const chipLabel = (i: APIInbound) => {
+  if (!i.type) return `Inbound #${i.id}`
+  if (i.type === 'mixed') {
+    const host = (i as any).listen
+    const port = (i as any).listen_port
+    const addr = host || port ? ` — ${host ?? ''}${port ? `:${port}` : ''}` : ''
+    return `mixed${addr}`
+  }
+  if (i.type === 'tun') {
+    const name = (i as any).interface_name
+    const addr = (i as any).address?.[0]
+    const extra = name || addr ? ` — ${name ?? addr ?? ''}` : ''
+    return `tun${extra}`
+  }
+  return `${i.type}`
+}
 
 const getId = (i: APIInbound) => (typeof i.id === 'number' ? i.id : -1)
 const selectedInbounds = computed(() =>
@@ -51,7 +66,7 @@ const selectedInbounds = computed(() =>
 
 const addInbound = () => {
   // push a new, unsaved inbound; component will be editable by default (no id)
-  newInbounds.value.push({ share: false, type: 'mixed', address: '', port: undefined, stack: 'mixed', mtu: 9000 })
+  newInbounds.value.push({ type: 'mixed' } as APIInbound)
 }
 
 const displayInbounds = computed(() => [
