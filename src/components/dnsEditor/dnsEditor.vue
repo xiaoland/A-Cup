@@ -7,58 +7,33 @@
       <!-- Servers -->
       <div class="mb-2 d-flex align-center justify-space-between">
         <div class="text-subtitle-1">Servers</div>
-        <v-btn size="small" variant="outlined" prepend-icon="mdi-plus" @click="openServerDialog()">Add DNS Server</v-btn>
+        <v-btn size="small" variant="outlined" prepend-icon="mdi-plus" @click="addServer">Add DNS Server</v-btn>
       </div>
-
-      <v-expansion-panels multiple class="mb-6">
-        <v-expansion-panel v-for="(server, sidx) in localDns.servers" :key="sidx">
-          <v-expansion-panel-title>
-            <div class="d-flex align-center w-100">
-              <span class="me-3">Server #{{ sidx + 1 }}</span>
-              <v-chip size="x-small" class="me-2">{{ server.type }}</v-chip>
-              <span class="text-caption text-medium-emphasis">{{ server.name || server.address || '—' }}</span>
-              <v-spacer />
-              <v-btn icon="mdi-pencil" size="x-small" variant="text" class="me-1" @click.stop="openServerDialog(server, sidx)" />
-              <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click.stop="removeServer(sidx)" />
-            </div>
-          </v-expansion-panel-title>
-          <v-expansion-panel-text>
-            <div class="text-caption text-medium-emphasis">{{ summarizeServer(server) }}</div>
-          </v-expansion-panel-text>
-        </v-expansion-panel>
-      </v-expansion-panels>
+      <div class="mb-6 d-flex flex-column gap-4">
+        <div v-for="(server, sidx) in localDns.servers" :key="`server-${sidx}`">
+          <div class="d-flex align-center justify-space-between mb-2">
+            <div class="text-body-2">Server #{{ sidx + 1 }}</div>
+            <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="removeServer(sidx)" />
+          </div>
+          <DnsServer v-model:dns-server="localDns.servers[sidx]" :editable="serversEditable[sidx]" @request-edit="serversEditable[sidx] = true" @save="onServerSavedInline(sidx, $event)" @cancel="onServerCancel(sidx)" />
+        </div>
+        <div v-if="(localDns.servers?.length || 0) === 0" class="text-body-2 text-medium-emphasis">No servers yet. Click Add to create one.</div>
+      </div>
 
       <v-divider class="my-4" />
 
       <!-- Rules -->
       <div class="mb-2 d-flex align-center justify-space-between">
         <div class="text-subtitle-1">Rules</div>
-        <v-btn size="small" variant="outlined" prepend-icon="mdi-plus" @click="openRuleDialog()">Add DNS Rule</v-btn>
+        <v-btn size="small" variant="outlined" prepend-icon="mdi-plus" @click="addRule">Add DNS Rule</v-btn>
       </div>
-
-      <div class="rules-list">
-        <div
-          v-for="(rule, ridx) in localDns.rules"
-          :key="ridx"
-          class="rule-item"
-          draggable="true"
-          @dragstart="onRuleDragStart(ridx)"
-          @dragover.prevent
-          @drop="onRuleDrop(ridx)"
-        >
-          <div class="rule-main">
-            <div class="rule-handle">
-              <v-icon size="small">mdi-drag</v-icon>
-            </div>
-            <div class="rule-summary">
-              <div class="text-body-2">{{ rule.name || `Rule #${ridx + 1}` }} <v-chip size="x-small" class="ms-1">{{ rule.action || 'route' }}</v-chip></div>
-              <div class="text-caption text-medium-emphasis">{{ summarizeRule(rule) }}</div>
-            </div>
-          </div>
-          <div class="rule-actions">
-            <v-btn icon="mdi-pencil" size="x-small" variant="text" class="me-1" @click="openRuleDialog(rule, ridx)" />
+      <div class="d-flex flex-column gap-4">
+        <div v-for="(rule, ridx) in localDns.rules" :key="`rule-${ridx}`">
+          <div class="d-flex align-center justify-space-between mb-2">
+            <div class="text-body-2">Rule #{{ ridx + 1 }}</div>
             <v-btn icon="mdi-delete" size="x-small" variant="text" color="error" @click="removeRule(ridx)" />
           </div>
+          <DnsRule v-model:dns-rule="localDns.rules[ridx]" :dns-servers="localDns.servers" :editable="rulesEditable[ridx]" @request-edit="rulesEditable[ridx] = true" @save="onRuleSavedInline(ridx, $event)" @cancel="onRuleCancel(ridx)" />
         </div>
         <div v-if="(localDns.rules?.length || 0) === 0" class="text-body-2 text-medium-emphasis">No rules yet. Click Add to create one.</div>
       </div>
@@ -126,31 +101,13 @@
     </v-card-text>
   </v-card>
 
-  <!-- Server Dialog -->
-  <v-dialog v-model="serverDialog.show" max-width="900px" scrollable>
-    <v-card>
-      <v-card-title>{{ serverDialog.editIndex === -1 ? 'Add DNS Server' : 'Edit DNS Server' }}</v-card-title>
-      <v-card-text>
-        <DNSServerEditor v-model:dns-server="serverDialog.data" @save="onServerSaved" @cancel="serverDialog.show = false" />
-      </v-card-text>
-    </v-card>
-  </v-dialog>
-
-  <!-- Rule Dialog -->
-  <v-dialog v-model="ruleDialog.show" max-width="900px" scrollable>
-    <v-card>
-      <v-card-title>{{ ruleDialog.editIndex === -1 ? 'Add DNS Rule' : 'Edit DNS Rule' }}</v-card-title>
-      <v-card-text>
-        <DNSRuleEditor v-model:dns-rule="ruleDialog.data" :dns-servers="localDns.servers" @save="onRuleSaved" @cancel="ruleDialog.show = false" />
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+  
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import DNSServerEditor from '@/components/dnsServerEditor/dnsServerEditor.vue'
-import DNSRuleEditor from '@/components/dnsRuleEditor/dnsRuleEditor.vue'
+import DnsServer from '@/components/dnsServerEditor/dnsServer.vue'
+import DnsRule from '@/components/dnsRuleEditor/dnsRule.vue'
 
 type DnsServer = any
 type DnsRule = any
@@ -205,57 +162,35 @@ watch([localDns, localFakeip], () => {
 }, { deep: true })
 
 // Servers
-const serverDialog = ref<{ show: boolean; editIndex: number; data: DnsServer | undefined }>({ show: false, editIndex: -1, data: undefined })
-
-const openServerDialog = (server?: DnsServer, index: number = -1) => {
-  serverDialog.value = {
-    show: true,
-    editIndex: index,
-    data: server ? { ...server } : undefined
-  }
+const serversEditable = ref<boolean[]>([])
+const addServer = () => {
+  localDns.value.servers = [...(localDns.value.servers || []), { name: '', type: 'udp', address: '', port: 53 }]
+  serversEditable.value = [...serversEditable.value, true]
 }
-
-const onServerSaved = (saved: DnsServer) => {
-  if (serverDialog.value.editIndex === -1) {
-    localDns.value.servers.push(saved)
-  } else {
-    localDns.value.servers.splice(serverDialog.value.editIndex, 1, saved)
-  }
-  serverDialog.value.show = false
+const onServerSavedInline = (index: number, saved: DnsServer) => {
+  localDns.value.servers.splice(index, 1, saved)
+  serversEditable.value.splice(index, 1, false)
+}
+const onServerCancel = (index: number) => {
+  serversEditable.value.splice(index, 1, false)
 }
 
 const removeServer = (index: number) => {
   localDns.value.servers.splice(index, 1)
 }
 
-const summarizeServer = (s: any) => {
-  const parts: string[] = []
-  if (s.type) parts.push(s.type)
-  if (s.address) parts.push(`${s.address}${s.port ? ':' + s.port : ''}`)
-  if (s.outbound_detour) parts.push(`detour#${s.outbound_detour}`)
-  if (s.wg_endpoint_detour) parts.push(`wg#${s.wg_endpoint_detour}`)
-  return parts.join(' · ')
-}
-
 // Rules
-const ruleDialog = ref<{ show: boolean; editIndex: number; data: DnsRule | undefined }>({ show: false, editIndex: -1, data: undefined })
-const draggingRuleIndex = ref<number | null>(null)
-
-const openRuleDialog = (rule?: DnsRule, index: number = -1) => {
-  ruleDialog.value = {
-    show: true,
-    editIndex: index,
-    data: rule ? { ...rule } : undefined
-  }
+const rulesEditable = ref<boolean[]>([])
+const addRule = () => {
+  localDns.value.rules = [...(localDns.value.rules || []), { name: '', server: 0, domains: [], domain_suffixes: [], domain_keywords: [], rule_sets: [] }]
+  rulesEditable.value = [...rulesEditable.value, true]
 }
-
-const onRuleSaved = (saved: DnsRule) => {
-  if (ruleDialog.value.editIndex === -1) {
-    localDns.value.rules.push(saved)
-  } else {
-    localDns.value.rules.splice(ruleDialog.value.editIndex, 1, saved)
-  }
-  ruleDialog.value.show = false
+const onRuleSavedInline = (index: number, saved: DnsRule) => {
+  localDns.value.rules.splice(index, 1, saved)
+  rulesEditable.value.splice(index, 1, false)
+}
+const onRuleCancel = (index: number) => {
+  rulesEditable.value.splice(index, 1, false)
 }
 
 const removeRule = (index: number) => {
@@ -269,19 +204,6 @@ const summarizeRule = (r: any) => {
   if (Array.isArray(r.domain_keywords) && r.domain_keywords.length) tokens.push('*' + r.domain_keywords[0])
   if (Array.isArray(r.rule_sets) && r.rule_sets.length) tokens.push(`#sets:${r.rule_sets.length}`)
   return tokens.join(' · ')
-}
-
-const onRuleDragStart = (index: number) => {
-  draggingRuleIndex.value = index
-}
-
-const onRuleDrop = (toIndex: number) => {
-  const from = draggingRuleIndex.value
-  if (from === null || from === toIndex) return
-  const list = localDns.value.rules
-  const [moved] = list.splice(from, 1)
-  list.splice(toIndex, 0, moved)
-  draggingRuleIndex.value = null
 }
 </script>
 
