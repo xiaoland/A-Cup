@@ -63,6 +63,33 @@ const IDPathParamSchema = z.object({
   id: z.string().transform(val => parseInt(val))
 });
 // Get By ID (auth via readable_by/writable_by)
+OUTBOUNDS_ROUTER.add("get", "/:id/tag", async ({
+    db, token_payload, path_params
+}) => {
+    const user_id = parseInt((token_payload?.sub || '0').toString());
+    const outbound_id = path_params.id;
+
+    const outbounds = await db.select().from(Outbounds).where(eq(Outbounds.id, outbound_id));
+
+    if (outbounds.length === 0) {
+        return Response.json({ error: "Not Found" }, { status: 404 });
+    }
+
+    const row: any = outbounds[0];
+    const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
+    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+    if (![...readable, ...writable].includes(user_id)) {
+      return new Response('Forbidden', { status: 403 });
+    }
+
+    const tag = `${row.type}.${row.provider || 'default'}.${row.region || 'default'}.${row.name || row.id}`;
+
+    return Response.json({ tag });
+}, {
+    pathParamsSchema: IDPathParamSchema,
+    allowedRoles: ['authenticated']
+});
+
 OUTBOUNDS_ROUTER.add("get", "/:id", async ({
     db, token_payload, path_params
 }) => {

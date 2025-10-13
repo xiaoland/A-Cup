@@ -123,6 +123,32 @@ RULE_SET_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload
   allowedRoles: ['authenticated']
 });
 
+// Get rule set tag
+RULE_SET_ROUTER.add('GET', '/:id/tag', async ({ path_params, db, token_payload }) => {
+  const user_id = parseInt((token_payload?.sub || '0').toString());
+  const rule_set_id = path_params.id;
+
+  const rule_sets = await db.select().from(RuleSets).where(eq(RuleSets.id, rule_set_id)).limit(1);
+  if (rule_sets.length === 0) return new Response('Rule set not found', { status: 404 });
+
+  const rs = rule_sets[0] as any;
+  const readable = (() => {
+    try {
+      const r = JSON.parse(rs.readableBy as string) as number[];
+      const w = JSON.parse(rs.writeableBy as string) as number[];
+      return (Array.isArray(r) && r.includes(user_id)) || (Array.isArray(w) && w.includes(user_id));
+    } catch {
+      return false;
+    }
+  })();
+  if (!readable) return new Response('Rule set not found', { status: 404 });
+
+  return Response.json({ tag: rs.name });
+}, {
+  pathParamsSchema: IDPathParamSchema,
+  allowedRoles: ['authenticated']
+});
+
 // Get rule set
 RULE_SET_ROUTER.add('GET', '/:id', async ({ path_params, db, token_payload }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
