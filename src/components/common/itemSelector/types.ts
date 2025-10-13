@@ -1,4 +1,6 @@
+import type { UnwrapRef } from 'vue';
+
 export interface Item<T> {
-  data: T;
+  data: UnwrapRef<T>;
   isNew: boolean;
 }

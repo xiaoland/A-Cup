@@ -1,10 +1,7 @@
-<script setup lang="ts">
-import RuleSetList from '@/components/route/ruleSets/ruleSetList/ruleSetList.vue';
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <RuleSetList />
+  <!-- TODO -->
 </template>
 
-<style>
-</style>
+<style></style>

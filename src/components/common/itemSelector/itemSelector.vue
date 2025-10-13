@@ -49,34 +49,40 @@ const items = ref<Item<T>[]>([]);
 watch(
   () => props.modelValue,
   (newVal) => {
-    items.value = newVal.map((data) => ({ data, isNew: false }));
+    items.value = newVal.map((data) => ({ data: data as any, isNew: false }));
   },
   { immediate: true }
 );
 
 const onCreate = () => {
-  items.value.push({ data: {} as T, isNew: true });
+  items.value.push({ data: {} as any, isNew: true });
 };
 
 const onSave = async (index: number, value: T) => {
   const item = items.value[index];
   if (item.isNew) {
     const newItem = await props.createItem(value);
-    items.value[index] = { data: newItem, isNew: false };
+    items.value[index] = { data: newItem as any, isNew: false };
   } else {
     const updatedItem = await props.updateItem({ ...item.data, ...value });
-    items.value[index] = { data: updatedItem, isNew: false };
+    items.value[index] = { data: updatedItem as any, isNew: false };
   }
-  emit('update:modelValue', items.value.map((i) => i.data));
+  emit(
+    'update:modelValue',
+    items.value.map((i) => i.data as any)
+  );
 };
 
 const onDelete = async (index: number) => {
   const item = items.value[index];
   if (!item.isNew) {
-    await props.deleteItem(item.data);
+    await props.deleteItem(item.data as any);
   }
   items.value.splice(index, 1);
-  emit('update:modelValue', items.value.map((i) => i.data));
+  emit(
+    'update:modelValue',
+    items.value.map((i) => i.data as any)
+  );
 };
 
 const onCancel = (index: number) => {

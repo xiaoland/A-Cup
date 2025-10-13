@@ -5,11 +5,17 @@
     :create-item="createRuleSet"
     :update-item="updateRuleSet"
     :delete-item="deleteRuleSet"
-    @update:model-value="$emit('update:modelValue', $event.map(i => i.id))"
+    @update:model-value="
+      $emit(
+        'update:modelValue',
+        $event.map((i) => i.id)
+      )
+    "
   >
-    <template #form="{ item }">
+    <!-- FIXME v-model cannot be used on v-for or v-slot scope variables because they are not writable. -->
+    <!-- <template #form="{ item }">
       <RuleSetEditor v-model="item" />
-    </template>
+    </template> -->
     <template #readonly="{ item }">
       <pre>{{ item }}</pre>
     </template>
@@ -35,7 +41,7 @@ const ruleSets = ref<RuleSet[]>([]);
 
 const fetchRuleSets = async () => {
   if (props.modelValue) {
-    const promises = props.modelValue.map(id => apiClient.get<RuleSet>(`/rule_sets/${id}`));
+    const promises = props.modelValue.map((id) => apiClient.get<RuleSet>(`/rule_sets/${id}`));
     ruleSets.value = await Promise.all(promises);
   }
 };

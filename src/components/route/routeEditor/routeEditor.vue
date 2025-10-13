@@ -11,7 +11,7 @@
 
     <v-card-text v-if="view === 'form'">
       <v-text-field label="Final" v-model="value.final" />
-      <RuleSetsSelector v-model="value.rule_set" />
+      <RuleSetsSelector v-model="ruleSets" />
       <v-divider class="my-4" />
       <AdvancedSection>
         <v-checkbox label="Auto Detect Interface" v-model="value.auto_detect_interface" />
@@ -20,26 +20,35 @@
         <v-text-field label="Default Mark" v-model="value.default_mark" type="number" />
         <v-text-field label="Default Domain Resolver" v-model="value.default_domain_resolver" />
         <v-text-field label="Default Network Strategy" v-model="value.default_network_strategy" />
-        <v-combobox label="Default Network Type" multiple chips v-model="value.default_network_type" />
-        <v-combobox label="Default Fallback Network Type" multiple chips v-model="value.default_fallback_network_type" />
+        <v-combobox
+          label="Default Network Type"
+          multiple
+          chips
+          v-model="value.default_network_type"
+        />
+        <v-combobox
+          label="Default Fallback Network Type"
+          multiple
+          chips
+          v-model="value.default_fallback_network_type"
+        />
         <v-text-field label="Default Fallback Delay" v-model="value.default_fallback_delay" />
       </AdvancedSection>
       <v-divider class="my-4" />
-      <ItemSelector
+      <!-- FIXME -->
+      <!-- <ItemSelector
         title="Rules"
-        :model-value="value.rules"
+        :model-value="value.rule_sets"
         :create-item="createRule"
-        :update-item="updateRule"
-        :delete-item="deleteRule"
-        @update:model-value="value.rules = $event"
+        @update:model-value="value.rule_sets = $event"
       >
         <template #form="{ item }">
-          <RouteRuleEditor v-model="item" />
+          <RouteRuleEditor :modelValue="item" />
         </template>
         <template #readonly="{ item }">
           <pre>{{ item }}</pre>
         </template>
-      </ItemSelector>
+      </ItemSelector> -->
     </v-card-text>
 
     <v-card-text v-else>
@@ -73,9 +82,12 @@ const value = computed({
   set: (val) => emit('update:modelValue', val),
 });
 
+const ruleSets = computed({
+  get: () => value.value.rule_sets || [],
+  set: (val) => (value.value = { ...value.value, rule_sets: val }),
+});
+
 const createRule = async (item: RouteRule) => item;
-const updateRule = async (item: RouteRule) => item;
-const deleteRule = async (item: RouteRule) => {};
 </script>
 
 <style scoped lang="scss" src="./index.scss"></style>

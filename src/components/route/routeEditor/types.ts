@@ -2,7 +2,7 @@ import type { RouteRule } from '../routeRuleEditor/types';
 
 export interface Route {
   rules?: RouteRule[];
-  rule_set?: number[];
+  rule_sets?: number[];
   final?: string;
   auto_detect_interface?: boolean;
   override_android_vpn?: boolean;

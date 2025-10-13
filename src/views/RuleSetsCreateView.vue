@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import RuleSetEditor from '@/components/route/ruleSets/ruleSetEditor/ruleSetEditor.vue';
+import { ref } from 'vue';
+import RuleSetEditor from '@/components/route/ruleSetEditor/ruleSetEditor.vue';
+import { type RuleSet } from '@/components/route/ruleSetEditor/types';
+
+const form = ref<RuleSet>({
+  name: '',
+  type: 'inline',
+  content: '',
+});
 </script>
 
 <template>
-  <RuleSetEditor mode="create" />
+  <RuleSetEditor v-model="form" />
 </template>
 
-<style>
-</style>
+<style></style>

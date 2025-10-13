@@ -1,51 +1,46 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import RuleSetEditor from '@/components/route/ruleSets/ruleSetEditor/ruleSetEditor.vue'
-import type { RuleSet } from '@/components/route/ruleSets/ruleSetEditor/types'
-import { useUserStore } from '@/stores/user'
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import RuleSetEditor from '@/components/route/ruleSetEditor/ruleSetEditor.vue';
+import type { RuleSet } from '@/components/route/ruleSetEditor/types';
+import { useUserStore } from '@/stores/user';
 
 interface Props {
-  id: string
+  id: string;
 }
 
-const props = defineProps<Props>()
-const route = useRoute()
-const userStore = useUserStore()
+const props = defineProps<Props>();
+const route = useRoute();
+const userStore = useUserStore();
 
-const ruleSet = ref<RuleSet | null>(null)
-const loading = ref(false)
+const ruleSet = ref<RuleSet | null>(null);
+const loading = ref(false);
 
 const loadRuleSet = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const ruleSetId = props.id || route.params.id
-    const response = await userStore.authorizedFetch(`/api/rule_sets/${ruleSetId}`)
+    const ruleSetId = props.id || route.params.id;
+    const response = await userStore.authorizedFetch(`/api/rule_sets/${ruleSetId}`);
     if (response.ok) {
-      ruleSet.value = await response.json()
+      ruleSet.value = await response.json();
     }
   } catch (error) {
-    console.error('Failed to load rule set:', error)
+    console.error('Failed to load rule set:', error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  loadRuleSet()
-})
+  loadRuleSet();
+});
 </script>
 
 <template>
   <div>
     <v-skeleton-loader v-if="loading" type="card" />
-    <RuleSetEditor
-      v-else-if="ruleSet"
-      :ruleSet="ruleSet"
-      mode="edit"
-    />
+    <RuleSetEditor v-if="ruleSet" v-model="ruleSet" />
   </div>
 </template>
 
-<style>
-</style>
+<style></style>
