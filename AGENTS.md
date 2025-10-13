@@ -1,19 +1,50 @@
-# Agent Quickstart: A-Cup
+# A-Cup
 
-This doc gives a coding agent the minimum, actionable info to start, build, and validate changes in this repo.
+## What is this
+
+This is a Web application provides sing-box (a proxy application) profiles editing and hosting with multi tenants support.
+
+### Key Concepts
+
+Following are composition of a Sing-Box profile:
+
+- inbound
+- outbound
+- route
+  - rules
+  - rule_sets
+- dns
+  - servers
+  - rules
+- log
+- expremental
+
+Read [Sing-Box offical configuration doc](https://sing-box.sagernet.org/configuration) for what they are and detailed configuration fields.
+
+### Features
+
+- Edit a profile in UI / JSON mode with validation, completions.
+- Host profile on Object Storage Service, user can get a pre-signed link to download newest profile to their sing-box client.
+- Outbound, RuleSet can be shared and reused in different profiles.
 
 ## Tech stack
-- Frontend: Vue 3 + Vite + TypeScript + Vuetify
-- Server utilities: TypeScript under `server/` (schemas, APIs); database via Drizzle ORM
+
+This is a fullstack app based on cloudflare worker teck stacks:
+
+- Frontend: Vue 3 (TS) + Vite + Vuetify + Pinia. Under `src/`
+- Backend: Cloudflare Worker + DrizzleORM + Cloudflare D1. Under `server/`
+- Object Storage Service: Cloudflare R2
 - Cloudflare tooling: Wrangler (for preview/deploy) and Cloudflare Workers types
 - Package manager: pnpm (pnpm-lock.yaml present)
 
 ## Prerequisites
+
 - Node.js 20+
 - pnpm 8+
 - Optional (for preview/deploy): Cloudflare `wrangler` configured with an account; local preview may require modern glibc
 
 ## Install & validate
+
 ```bash
 pnpm install --frozen-lockfile
 node -v && pnpm -v
@@ -21,75 +52,34 @@ pnpm run type-check
 pnpm run build
 ```
 
-## Common commands
-- Start dev (Vite): `pnpm run dev`
-- Type-check only: `pnpm run type-check`
-- Build (Vite): `pnpm run build`
-- Cloudflare preview (builds then wrangler dev): `pnpm run preview`
-- Cloudflare deploy (builds then wrangler deploy): `pnpm run deploy`
-- Cloudflare types generation: `pnpm run cf-typegen`
-- Drizzle migration generation: `pnpm run orm-mig-gen`
-
-Notes:
-- If `wrangler` fails locally due to `workerd`/glibc constraints, builds still complete; use CI or a supported environment for preview/deploy.
-
-## Project layout
-- `src/` Vue SPA source (components, views, router, store)
-- `server/` API-related code and schemas
-- `drizzle/` migrations and SQL helpers; `drizzle.config.ts` for tooling
-- `docs/` project documentation
-- `vite.config.ts`, `tsconfig*.json` build and TS configs
-- `wrangler.jsonc`, `worker-configuration.d.ts` Cloudflare config/types
-
-## Coding Standard
-
-Don't extract a function if there's no more than one usage.
-
-### VueJS
-
-- Vue3 + TypeScript
-- UI Lib: [Vuetify 3](https://vuetifyjs.com/en/components/all)
-- Store Lib: [Pinia](https://pinia.vuejs.org/core-concepts/)
+## Frontend Development Guidelines
 
 #### Component
 
+- In `src/components/`
 - Compositional API
 - Every component has a directory with these files:
-  - `compName.vue`: template and script
-  - `types.ts`: types and constant of this component
-  - `index.scss`: styles of this component
+  - `compName.vue`: template and script of the component
+    - should have `<style scoped lang="scss" src="./compName.scss"></style>`
+  - `compName.ts`: props, emits, types, constant of the component
+  - `compName.scss`: styles of this component
 
 ### Styles
 
 Extract common styles, mixtures into `src/styles/`
 
-#### SCSS
-
-- use `@use` to replace `@import`
-
-### TypeScript
-
-- name a variable with snake naming
-- name a function with camel naming
-- name module level constants with UPPER CASE naming
-
 ## Branching & PR workflow
-1) Create a feature branch from `master`.
-2) Make changes.
-3) Run quality checks before committing:
+
+1. Create a feature branch from `master`.
+2. Make changes.
+3. Run quality checks before committing:
    - `pnpm run type-check`
    - `pnpm run build`
-4) Commit and push the branch.
-5) Open a Pull Request. Include a short description of the change and evidence of passing checks.
+4. Commit and push the branch.
+5. Open a Pull Request. Include a short description of the change and evidence of passing checks.
 
-## Database (Drizzle)
-- Generate new SQL migrations with `pnpm run orm-mig-gen` (ensure `drizzle.config.ts` is correct).
-- Apply migrations using your normal deployment/database workflow (this repo doesn’t ship a direct migrate script).
+## Backend Development Guidelines
 
-## Environment
-- Frontend build typically needs no secrets.
-- For Cloudflare preview/deploy, configure `wrangler.jsonc` and auth (`wrangler login`).
+### Database
 
-## Troubleshooting
-- Wrangler/workerd validation errors on some Linux images: use a newer glibc or run preview/deploy in CI/Cloudflare.
-- If type-check or build fails, open a PR with the failing logs only if requested; otherwise fix and ensure both pass before PR.
+- Once Database schema changed, generate new SQL migrations with `pnpm run orm-mig-gen` (ensure `drizzle.config.ts` is correct).
