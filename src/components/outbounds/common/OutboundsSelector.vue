@@ -2,10 +2,10 @@
   <div class="d-flex flex-column" style="gap: 8px">
     <div class="d-flex align-center" style="gap: 8px">
       <v-btn color="primary" variant="outlined" @click="dialog = true">Select Outbounds</v-btn>
-      <span class="text-caption text-medium-emphasis">Selected: {{ modelValue.length }}</span>
+      <span class="text-caption text-medium-emphasis">Selected: {{ (modelValue || []).length }}</span>
     </div>
     <div class="d-flex" style="gap: 6px; flex-wrap: wrap">
-      <v-chip v-for="id in modelValue" :key="id" size="small" class="ma-1" variant="tonal">
+      <v-chip v-for="id in (modelValue || [])" :key="id" size="small" class="ma-1" variant="tonal">
         {{ nameOf(id) || `#${id}` }}
       </v-chip>
     </div>
@@ -52,7 +52,7 @@ interface OutboundItem {
   provider?: string
 }
 
-const props = defineProps<{ modelValue: number[] }>()
+const props = defineProps<{ modelValue?: number[] }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: number[]): void }>()
 
 const user = useUserStore()

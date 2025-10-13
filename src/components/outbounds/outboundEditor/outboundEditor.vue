@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import type { Outbound } from './types'
@@ -182,8 +182,21 @@ const ensureCredential = () => {
   if (m.type === 'hysteria2') {
     if (!m.credential.obfs || typeof m.credential.obfs !== 'object') m.credential.obfs = {}
   }
+  // Ensure outbounds array exists for selector and urltest types
+  if ((m.type === 'selector' || m.type === 'urltest') && !Array.isArray(m.outbounds)) {
+    m.outbounds = []
+  }
   return true
 }
+
+// Watch for type changes to ensure outbounds array is properly initialized
+watch(() => form.type, (newType) => {
+  if (newType === 'selector' || newType === 'urltest') {
+    if (!Array.isArray((form as any).outbounds)) {
+      (form as any).outbounds = []
+    }
+  }
+}, { immediate: true })
 
 const onCancel = () => {
   emit('cancel')
