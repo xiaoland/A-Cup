@@ -11,7 +11,7 @@
   </v-card>
 
   <!-- Display and edit using Inbound component -->
-  <div v-for="(item, idx) in inbounds" :key="item.tag ?? `new-${idx}`" class="mt-4">
+  <div v-for="(item, idx) in modelValue" :key="item.tag ?? `new-${idx}`" class="mt-4">
     <Inbound
       :form="item"
       :all-tags="allTags"
@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { computed } from 'vue'
 import Inbound from '@/components/inbounds/inbound/inbound.vue'
 import { defaultInbound } from '@/components/inbounds/inbound/schema'
 import type { Inbound as APIInbound } from '@/components/inbounds/inbound/schema'
@@ -30,32 +30,22 @@ import type { Inbound as APIInbound } from '@/components/inbounds/inbound/schema
 const props = defineProps<{ modelValue: APIInbound[] }>()
 const emit = defineEmits(['update:modelValue'])
 
-const inbounds = ref<APIInbound[]>([])
-const allTags = computed(() => inbounds.value.map((i) => i.tag))
-
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    if (newValue !== inbounds.value) {
-      inbounds.value = newValue
-    }
-  },
-  { immediate: true, deep: true }
-)
+const allTags = computed(() => (props.modelValue || []).map((i) => i.tag))
 
 const addInbound = () => {
-  inbounds.value.push(defaultInbound())
-  emit('update:modelValue', inbounds.value)
+  const newInbounds = [...(props.modelValue || []), defaultInbound()]
+  emit('update:modelValue', newInbounds)
 }
 
 const updateInbound = (index: number, updatedInbound: APIInbound) => {
-  inbounds.value[index] = updatedInbound
-  emit('update:modelValue', inbounds.value)
+  const newInbounds = [...(props.modelValue || [])]
+  newInbounds[index] = updatedInbound
+  emit('update:modelValue', newInbounds)
 }
 
 const removeInbound = (tag: string) => {
-  inbounds.value = inbounds.value.filter((inbound) => inbound.tag !== tag)
-  emit('update:modelValue', inbounds.value)
+  const newInbounds = (props.modelValue || []).filter((inbound) => inbound.tag !== tag)
+  emit('update:modelValue', newInbounds)
 }
 </script>
 
