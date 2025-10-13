@@ -136,68 +136,16 @@
                     <v-expansion-panel-title>Credential</v-expansion-panel-title>
                     <v-expansion-panel-text>
                       <template v-if="form.type === 'shadowsocks'">
-                        <v-row>
-                          <v-col cols="12" md="6">
-                            <v-select :items="ssMethods" v-model="form.credential.method" label="Method" variant="outlined" />
-                          </v-col>
-                          <v-col cols="12" md="6">
-                            <v-text-field v-model="form.credential.password" label="Password" variant="outlined" type="password" />
-                          </v-col>
-                          <v-col cols="12" md="6">
-                            <v-text-field v-model="form.credential.plugin" label="Plugin (optional)" variant="outlined" />
-                          </v-col>
-                          <v-col cols="12" md="6">
-                            <v-text-field v-model="form.credential.plugin_opts" label="Plugin Opts (optional)" variant="outlined" />
-                          </v-col>
-                        </v-row>
+                        <ShadowsocksOutboundForm :form="form" />
                       </template>
                       <template v-else-if="form.type === 'vmess'">
-                        <v-row>
-                          <v-col cols="12" md="6">
-                            <v-text-field v-model="form.credential.uuid" label="UUID" variant="outlined" />
-                          </v-col>
-                          <v-col cols="12" md="6">
-                            <v-select :items="vmessSecurities" v-model="form.credential.security" label="Security" variant="outlined" />
-                          </v-col>
-                          <v-col cols="12" md="4">
-                            <v-text-field type="number" v-model.number="form.credential.alter_id" label="Alter ID" variant="outlined" />
-                          </v-col>
-                          <v-col cols="12" md="4">
-                            <v-switch inset v-model="form.credential.global_padding" label="Global Padding" />
-                          </v-col>
-                          <v-col cols="12" md="4">
-                            <v-switch inset v-model="form.credential.authenticated_length" label="Authenticated Length" />
-                          </v-col>
-                        </v-row>
+                        <VmessOutboundForm :form="form" />
                       </template>
                       <template v-else-if="form.type === 'vless'">
-                        <v-row>
-                          <v-col cols="12" md="6">
-                            <v-text-field v-model="form.credential.uuid" label="UUID" variant="outlined" />
-                          </v-col>
-                          <v-col cols="12" md="6">
-                            <v-select :items="vlessFlows" v-model="form.credential.flow" label="Flow (optional)" variant="outlined" clearable />
-                          </v-col>
-                        </v-row>
+                        <VlessOutboundForm :form="form" />
                       </template>
                       <template v-else-if="form.type === 'hysteria2'">
-                        <v-row>
-                          <v-col cols="12" md="6">
-                            <v-text-field v-model="form.credential.password" label="Password" variant="outlined" type="password" />
-                          </v-col>
-                          <v-col cols="12" md="3">
-                            <v-text-field type="number" v-model.number="form.credential.up_mbps" label="Up Mbps" variant="outlined" />
-                          </v-col>
-                          <v-col cols="12" md="3">
-                            <v-text-field type="number" v-model.number="form.credential.down_mbps" label="Down Mbps" variant="outlined" />
-                          </v-col>
-                          <v-col cols="12" md="4">
-                            <v-select :items="hy2ObfsTypes" v-model="form.credential.obfs.type" label="Obfs Type" variant="outlined" clearable />
-                          </v-col>
-                          <v-col cols="12" md="8">
-                            <v-text-field v-model="form.credential.obfs.password" label="Obfs Password" variant="outlined" />
-                          </v-col>
-                        </v-row>
+                        <Hysteria2OutboundForm :form="form" />
                       </template>
                       <template v-else>
                         <div class="text-medium-emphasis">No credential fields for this type.</div>
@@ -248,6 +196,10 @@ import { typeOptions, regionOptions } from './types'
 import OutboundsSelector from '@/components/outbounds/common/OutboundsSelector.vue'
 import JSONEditor from '@/components/common/JSONEditor.vue'
 import Editor from '@/components/common/Editor.vue'
+import VmessOutboundForm from './vmessOutboundForm.vue'
+import VlessOutboundForm from './vlessOutboundForm.vue'
+import ShadowsocksOutboundForm from './shadowsocksOutboundForm.vue'
+import Hysteria2OutboundForm from './hysteria2OutboundForm.vue'
 
 const props = defineProps<{ form: Outbound }>()
 const emit = defineEmits<{ (e: 'saved', value: Outbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
@@ -275,19 +227,7 @@ const getDefaultOptions = (ids?: number[]) =>
     .filter((o: any) => Array.isArray(ids) && ids.includes(o.id))
     .map((o: any) => ({ title: o.name || `#${o.id}`, value: o.id }))
 
-// Credential helpers
-const ssMethods = [
-  '2022-blake3-aes-128-gcm',
-  '2022-blake3-aes-256-gcm',
-  '2022-blake3-chacha20-poly1305',
-  'none',
-  'aes-128-gcm', 'aes-192-gcm', 'aes-256-gcm',
-  'chacha20-ietf-poly1305', 'xchacha20-ietf-poly1305',
-  'aes-128-ctr','aes-192-ctr','aes-256-ctr','aes-128-cfb','aes-192-cfb','aes-256-cfb','rc4-md5','chacha20-ietf','xchacha20'
-]
-const vmessSecurities = ['auto','none','zero','aes-128-gcm','chacha20-poly1305']
-const vlessFlows = ['xtls-rprx-vision']
-const hy2ObfsTypes = ['salamander']
+// Credential constants moved to individual form components
 onMounted(() => { /* nested fields will be created via v-model usages as needed */ })
 
 // Ensure nested credential object exists for bindings
