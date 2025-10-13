@@ -1,9 +1,9 @@
 import { z } from 'zod'
 
-// Shared: Listen Fields for mixed inbound (subset; advanced fields kept optional)
+// Listen Fields shared by mixed and tun inbounds
 export const ListenFieldsSchema = z
   .object({
-    listen: z.string().min(1, 'listen is required').optional(),
+    listen: z.string().optional(),
     listen_port: z.number().int().min(0).max(65535).optional(),
     bind_interface: z.string().optional(),
     routing_mark: z.union([z.number().int(), z.string()]).optional(),
@@ -23,7 +23,7 @@ export const MixedInboundSchema = z
     id: z.number().int().optional(), // UI metadata
     tag: z.string().optional(),
     type: z.literal('mixed'),
-    // Listen fields merged
+    // Listen fields
     ...ListenFieldsSchema.shape,
     users: z
       .array(
@@ -46,9 +46,6 @@ export const TunInboundSchema = z
     interface_name: z.string().optional(),
     address: z.array(z.string()).optional(), // CIDRs
     mtu: z.number().int().optional(),
-    loopback_address: z.array(z.string()).optional(),
-
-    // Routing
     auto_route: z.boolean().optional(),
     strict_route: z.boolean().optional(),
     iproute2_table_index: z.number().int().optional(),
@@ -57,20 +54,13 @@ export const TunInboundSchema = z
     route_exclude_address: z.array(z.string()).optional(),
     route_address_set: z.array(z.string()).optional(),
     route_exclude_address_set: z.array(z.string()).optional(),
-
-    // Redirect (Linux-focused)
     auto_redirect: z.boolean().optional(),
     auto_redirect_input_mark: z.string().optional(),
     auto_redirect_output_mark: z.string().optional(),
-
-    // NAT/UDP
+    loopback_address: z.array(z.string()).optional(),
     endpoint_independent_nat: z.boolean().optional(),
     udp_timeout: z.string().optional(),
-
-    // Stack
     stack: z.enum(['system', 'gvisor', 'mixed']).optional(),
-
-    // Filters (Linux/Android)
     include_interface: z.array(z.string()).optional(),
     exclude_interface: z.array(z.string()).optional(),
     include_uid: z.array(z.number().int()).optional(),
@@ -80,8 +70,6 @@ export const TunInboundSchema = z
     include_android_user: z.array(z.number().int()).optional(),
     include_package: z.array(z.string()).optional(),
     exclude_package: z.array(z.string()).optional(),
-
-    // Platform
     platform: z
       .object({
         http_proxy: z
