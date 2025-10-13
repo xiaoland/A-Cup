@@ -13,7 +13,17 @@ import OutboundsEditor from '@/components/outbounds/outboundsEditor/outboundsEdi
 import RouteEditor from '@/components/route/routeEditor/routeEditor.vue';
 import DnsEditor from '@/components/dns/dnsEditor/dnsEditor.vue';
 
-defineProps<{
-  modelValue: any;
-}>();
+withDefaults(
+  defineProps<{
+    modelValue?: any;
+  }>(),
+  {
+    modelValue: () => ({
+      inbounds: [],
+      outbounds: [],
+      route: {},
+      dns: {},
+    }),
+  }
+);
 </script>
