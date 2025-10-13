@@ -1,9 +1,11 @@
 <template>
-  <div>
-    <InboundsEditor v-model="modelValue.inbounds" />
-    <OutboundsEditor v-model="modelValue.outbounds" />
-    <RouteEditor v-model="modelValue.route" />
-    <DnsEditor v-model="modelValue.dns" />
+  <div class="profile-editor">
+    <div class="form">
+      <InboundsEditor v-model="modelValue.inbounds" />
+      <OutboundsEditor v-model="modelValue.outbounds" />
+      <RouteEditor v-model="modelValue.route" />
+      <DnsEditor v-model="modelValue.dns" />
+    </div>
   </div>
 </template>
 
@@ -27,3 +29,5 @@ withDefaults(
   }
 );
 </script>
+
+<style scoped lang="scss" src="./profileEditor.scss"></style>

@@ -65,7 +65,7 @@ import AdvancedSection from '@/components/common/advancedSection/advancedSection
 import ItemSelector from '@/components/common/itemSelector/itemSelector.vue';
 import RuleSetsSelector from '../ruleSetsSelector/ruleSetsSelector.vue';
 import RouteRuleEditor from '../routeRuleEditor/routeRuleEditor.vue';
-import type { Route } from './types';
+import type { Route } from './routeEditor';
 import type { RouteRule } from '../routeRuleEditor/types';
 
 const props = defineProps<{
@@ -91,4 +91,4 @@ const ruleSets = computed({
 const createRule = async (item: RouteRule) => item;
 </script>
 
-<style scoped lang="scss" src="./index.scss"></style>
+<style scoped lang="scss" src="./routeEditor.scss"></style>
