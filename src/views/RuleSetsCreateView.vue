@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import RuleSetEditor from '@/components/ruleSetEditor/ruleSetEditor.vue';
+import RuleSetEditor from '@/components/route/ruleSets/ruleSetEditor/ruleSetEditor.vue';
 </script>
 
 <template>
