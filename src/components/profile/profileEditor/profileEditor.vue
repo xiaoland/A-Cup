@@ -1,6 +1,6 @@
 <template>
   <div>
-    <InboundsEditor :form="form" />
+    <InboundsEditor v-model="modelValue.inbounds" />
   </div>
 </template>
 
@@ -8,6 +8,6 @@
 import InboundsEditor from '@/components/inbounds/inboundsEditor/inboundsEditor.vue'
 
 defineProps<{
-  form: any
+  modelValue: any
 }>()
 </script>

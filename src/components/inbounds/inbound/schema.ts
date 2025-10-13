@@ -20,8 +20,7 @@ export const ListenFieldsSchema = z
 // Mixed inbound schema
 export const MixedInboundSchema = z
   .object({
-    id: z.number().int().optional(), // UI metadata
-    tag: z.string().optional(),
+    tag: z.string().min(1, { message: 'Tag is required' }),
     type: z.literal('mixed'),
     // Listen fields
     ...ListenFieldsSchema.shape,
@@ -40,8 +39,7 @@ export const MixedInboundSchema = z
 // Tun inbound schema
 export const TunInboundSchema = z
   .object({
-    id: z.number().int().optional(), // UI metadata
-    tag: z.string().optional(),
+    tag: z.string().min(1, { message: 'Tag is required' }),
     type: z.literal('tun'),
     interface_name: z.string().optional(),
     address: z.array(z.string()).optional(), // CIDRs
@@ -94,6 +92,6 @@ export type MixedInbound = z.infer<typeof MixedInboundSchema>
 export type TunInbound = z.infer<typeof TunInboundSchema>
 export type Inbound = z.infer<typeof InboundSchema>
 
-export const defaultMixed = (): MixedInbound => ({ type: 'mixed' })
-export const defaultTun = (): TunInbound => ({ type: 'tun', mtu: 9000, stack: 'mixed' })
+export const defaultMixed = (): MixedInbound => ({ type: 'mixed', tag: '' })
+export const defaultTun = (): TunInbound => ({ type: 'tun', tag: '', mtu: 9000, stack: 'mixed' })
 export const defaultInbound = (): Inbound => defaultMixed()

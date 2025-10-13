@@ -21,7 +21,7 @@ const handleCancel = () => {
 <template>
   <ProfileEditor
     ref="profileEditorRef"
-    :form="form"
+    v-model="form"
     mode="create"
     @save="handleSave"
     @cancel="handleCancel"

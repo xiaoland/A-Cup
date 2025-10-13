@@ -56,7 +56,7 @@ onMounted(() => {
     v-else-if="form"
     ref="profileEditorRef"
     mode="edit"
-    :form="form"
+    v-model="form"
     @save="handleSave"
     @cancel="handleCancel"
   />
