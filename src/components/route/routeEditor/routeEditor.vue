@@ -1,87 +1,85 @@
 <template>
-  <Editor
-    v-model="editableValue"
-    title="Route"
-    :start-editable="true"
-    @save="onSave"
-    @cancel="onCancel"
-  >
-    <v-text-field label="Final" v-model="editableValue.final" />
-    <RuleSetsSelector v-model="ruleSets" />
-    <!-- TODO form item for route.rules -->
-    <v-divider class="my-4" />
-    <AdvancedSection>
-      <v-checkbox label="Auto Detect Interface" v-model="editableValue.auto_detect_interface" />
-      <v-checkbox label="Override Android VPN" v-model="editableValue.override_android_vpn" />
-      <v-text-field label="Default Interface" v-model="editableValue.default_interface" />
-      <v-text-field label="Default Mark" v-model="editableValue.default_mark" type="number" />
-      <v-text-field
-        label="Default Domain Resolver"
-        v-model="editableValue.default_domain_resolver"
-      />
-      <v-text-field
-        label="Default Network Strategy"
-        v-model="editableValue.default_network_strategy"
-      />
-      <v-combobox
-        label="Default Network Type"
-        multiple
-        chips
-        v-model="editableValue.default_network_type"
-      />
-      <v-combobox
-        label="Default Fallback Network Type"
-        multiple
-        chips
-        v-model="editableValue.default_fallback_network_type"
-      />
-      <v-text-field label="Default Fallback Delay" v-model="editableValue.default_fallback_delay" />
-    </AdvancedSection>
-    <v-divider class="my-4" />
+  <Editor v-model="model" title="Route" @save="onSave">
+    <template #default>
+      <v-checkbox v-model="model.final" label="Final" />
+      <AdvancedSection>
+        <v-text-field v-model="model.auto_detect_interface" label="Auto Detect Interface" />
+        <v-text-field v-model="model.override_android_vpn" label="Override Android VPN" />
+        <v-text-field v-model="model.default_interface" label="Default Interface" />
+      </AdvancedSection>
+
+      <v-divider class="my-4" />
+
+      <div class="d-flex align-center mb-2">
+        <h3 class="text-subtitle-1">Rules</h3>
+        <v-spacer />
+        <v-btn
+          variant="text"
+          prepend-icon="mdi-plus"
+          @click="addRule"
+        >
+          New Rule
+        </v-btn>
+      </div>
+
+      <v-expansion-panels v-if="model.rules && model.rules.length">
+        <v-expansion-panel
+          v-for="(rule, i) in model.rules"
+          :key="i"
+        >
+          <v-expansion-panel-title>
+            Rule {{ i + 1 }}
+            <v-spacer />
+            <v-btn
+              icon="mdi-delete"
+              variant="text"
+              color="error"
+              size="small"
+              @click.stop="removeRule(i)"
+            />
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <RouteRuleEditor v-model="model.rules[i]" />
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
+      <div v-else class="text-center text-caption text-disabled">
+        No rules
+      </div>
+    </template>
   </Editor>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import Editor from '@/components/common/Editor.vue';
-import AdvancedSection from '@/components/common/advancedSection/advancedSection.vue';
-import RuleSetsSelector from '../ruleSetsSelector/ruleSetsSelector.vue';
-import type { Route } from './routeEditor';
-import type { RouteRule } from '../routeRuleEditor/types';
+import { useOptionalModel } from '~/composables/useOptionalModel'
+import Editor from '~/components/common/Editor.vue'
+import AdvancedSection from '~/components/common/advancedSection/advancedSection.vue'
+import RouteRuleEditor from '../routeRuleEditor/routeRuleEditor.vue'
+import type { Route } from './types'
 
 const props = defineProps<{
-  modelValue: Route;
-}>();
+  modelValue?: Route
+}>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: Route): void;
-}>();
+  (e: 'update:modelValue', v: Route): void
+  (e: 'save', v: Route): void
+}>()
 
-const editableValue = ref<Route>(JSON.parse(JSON.stringify(props.modelValue)));
+const model = useOptionalModel(props, emit)
 
-const ruleSets = computed({
-  get: () => editableValue.value.rule_sets || [],
-  set: (val) => (editableValue.value = { ...editableValue.value, rule_sets: val }),
-});
+const addRule = () => {
+  if (!model.value.rules) {
+    model.value.rules = []
+  }
+  model.value.rules.push({ action: 'accept' })
+}
 
-const createRule = async (item: RouteRule) => item;
+const removeRule = (index: number) => {
+  model.value.rules?.splice(index, 1)
+}
 
 const onSave = () => {
-  emit('update:modelValue', editableValue.value);
-};
-
-const onCancel = () => {
-  editableValue.value = JSON.parse(JSON.stringify(props.modelValue));
-};
-
-// Watch for external changes to reset the editable value
-watch(
-  () => props.modelValue,
-  (newValue) => {
-    editableValue.value = JSON.parse(JSON.stringify(newValue));
-  },
-  { deep: true }
-);
+  emit('save', model.value)
+}
 </script>
-
-<style scoped lang="scss" src="./routeEditor.scss"></style>

@@ -1,24 +1,28 @@
 <template>
-  <v-card variant="tonal">
-    <v-card-title class="d-flex align-center cursor-pointer" @click="isOpen = !isOpen">
+  <div class="advanced-section">
+    <v-btn
+      variant="text"
+      :prepend-icon="isOpen ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+      @click="isOpen = !isOpen"
+    >
       Advanced
-      <v-spacer />
-      <v-icon :icon="isOpen ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
-    </v-card-title>
+    </v-btn>
     <v-expand-transition>
-      <div v-show="isOpen">
-        <v-card-text>
-          <slot />
-        </v-card-text>
+      <div v-show="isOpen" class="pt-2 pl-4">
+        <slot />
       </div>
     </v-expand-transition>
-  </v-card>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
 
-const isOpen = ref(false);
+const isOpen = ref(false)
 </script>
 
-<style scoped lang="scss" src="./index.scss"></style>
+<style scoped>
+.advanced-section {
+  margin-top: 16px;
+}
+</style>
