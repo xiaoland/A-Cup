@@ -10,6 +10,8 @@
       @delete="onDelete"
     >
       <template #default="{ model }">
+        <!-- Ensure credential structure exists for nested bindings -->
+        <span v-if="ensureModelCredential(model)" style="display:none" />
         <v-form @submit.prevent="() => onEditorSave(model)">
           <template v-if="model.type === 'selector'">
             <v-row>
@@ -287,6 +289,16 @@ const vmessSecurities = ['auto','none','zero','aes-128-gcm','chacha20-poly1305']
 const vlessFlows = ['xtls-rprx-vision']
 const hy2ObfsTypes = ['salamander']
 onMounted(() => { /* nested fields will be created via v-model usages as needed */ })
+
+// Ensure nested credential object exists for bindings
+const ensureModelCredential = (m: any) => {
+  if (!m || typeof m !== 'object') return true
+  if (!m.credential || typeof m.credential !== 'object') m.credential = {}
+  if (m.type === 'hysteria2') {
+    if (!m.credential.obfs || typeof m.credential.obfs !== 'object') m.credential.obfs = {}
+  }
+  return true
+}
 
 const onCancel = () => {
   emit('cancel')
