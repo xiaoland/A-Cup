@@ -9,15 +9,15 @@
       @save="onEditorSave"
       @delete="onDelete"
     >
-      <template #default="{ model }">
+      <template #default>
         <!-- Ensure credential structure exists for nested bindings -->
-        <span v-if="ensureModelCredential(model)" style="display:none" />
-        <v-form @submit.prevent="() => onEditorSave(model)">
-          <template v-if="model.type === 'selector'">
+        <span v-if="ensureCredential()" style="display:none" />
+        <v-form @submit.prevent="() => onEditorSave(form)">
+          <template v-if="form.type === 'selector'">
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="model.type"
+                  v-model="form.type"
                   :items="typeOptions"
                   item-title="title"
                   item-value="value"
@@ -27,12 +27,12 @@
                 />
               </v-col>
               <v-col cols="12">
-                <OutboundsSelector v-model="model.outbounds" />
+                <OutboundsSelector v-model="(form as any).outbounds" />
               </v-col>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="model.default"
-                  :items="getDefaultOptions(model.outbounds)"
+                  v-model="(form as any).default"
+                  :items="getDefaultOptions((form as any).outbounds)"
                   item-title="title"
                   item-value="value"
                   label="Default (optional)"
@@ -41,15 +41,15 @@
                 />
               </v-col>
               <v-col cols="12">
-                <v-switch inset v-model="model.interrupt_exist_connections" label="Interrupt existing connections" />
+                <v-switch inset v-model="(form as any).interrupt_exist_connections" label="Interrupt existing connections" />
               </v-col>
             </v-row>
           </template>
-          <template v-else-if="model.type === 'urltest'">
+          <template v-else-if="form.type === 'urltest'">
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="model.type"
+                  v-model="form.type"
                   :items="typeOptions"
                   item-title="title"
                   item-value="value"
@@ -59,22 +59,22 @@
                 />
               </v-col>
               <v-col cols="12">
-                <OutboundsSelector v-model="model.outbounds" />
+                <OutboundsSelector v-model="(form as any).outbounds" />
               </v-col>
               <v-col cols="12" md="4">
-                <v-switch inset v-model="model.interrupt_exist_connections" label="Interrupt existing connections" />
+                <v-switch inset v-model="(form as any).interrupt_exist_connections" label="Interrupt existing connections" />
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field v-model="model.url" label="Test URL (optional)" variant="outlined" />
+                <v-text-field v-model="(form as any).url" label="Test URL (optional)" variant="outlined" />
               </v-col>
               <v-col cols="12" md="3">
-                <v-text-field v-model="model.interval" label="Interval (e.g. 3m)" variant="outlined" />
+                <v-text-field v-model="(form as any).interval" label="Interval (e.g. 3m)" variant="outlined" />
               </v-col>
               <v-col cols="12" md="3">
-                <v-text-field type="number" v-model.number="model.tolerance" label="Tolerance (ms)" variant="outlined" />
+                <v-text-field type="number" v-model.number="(form as any).tolerance" label="Tolerance (ms)" variant="outlined" />
               </v-col>
               <v-col cols="12" md="4">
-                <v-text-field v-model="model.idle_timeout" label="Idle Timeout (e.g. 30m)" variant="outlined" />
+                <v-text-field v-model="(form as any).idle_timeout" label="Idle Timeout (e.g. 30m)" variant="outlined" />
               </v-col>
             </v-row>
           </template>
@@ -82,7 +82,7 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="model.type"
+                  v-model="form.type"
                   :items="typeOptions"
                   item-title="title"
                   item-value="value"
@@ -100,11 +100,11 @@
                     <v-expansion-panel-text>
                       <v-row>
                         <v-col cols="12" md="4">
-                          <v-text-field v-model="model.name" label="Name" variant="outlined" required />
+                          <v-text-field v-model="form.name" label="Name" variant="outlined" required />
                         </v-col>
                         <v-col cols="12" md="4">
                           <v-select
-                            v-model="model.region"
+                            v-model="form.region"
                             :items="regionOptions"
                             item-title="title"
                             item-value="value"
@@ -114,7 +114,7 @@
                           />
                         </v-col>
                         <v-col cols="12" md="4">
-                          <v-text-field v-model="model.provider" label="Provider" variant="outlined" />
+                          <v-text-field v-model="form.provider" label="Provider" variant="outlined" />
                         </v-col>
                       </v-row>
                     </v-expansion-panel-text>
@@ -123,10 +123,10 @@
               </v-col>
 
               <v-col cols="12" md="8">
-                <v-text-field v-model="model.server" label="Server" variant="outlined" required />
+                <v-text-field v-model="form.server" label="Server" variant="outlined" required />
               </v-col>
               <v-col cols="12" md="4">
-                <v-text-field v-model.number="model.server_port" label="Port" type="number" variant="outlined" required />
+                <v-text-field v-model.number="form.server_port" label="Port" type="number" variant="outlined" required />
               </v-col>
 
               <!-- Credential (default expanded) -->
@@ -135,67 +135,67 @@
                   <v-expansion-panel>
                     <v-expansion-panel-title>Credential</v-expansion-panel-title>
                     <v-expansion-panel-text>
-                      <template v-if="model.type === 'shadowsocks'">
+                      <template v-if="form.type === 'shadowsocks'">
                         <v-row>
                           <v-col cols="12" md="6">
-                            <v-select :items="ssMethods" v-model="model.credential.method" label="Method" variant="outlined" />
+                            <v-select :items="ssMethods" v-model="form.credential.method" label="Method" variant="outlined" />
                           </v-col>
                           <v-col cols="12" md="6">
-                            <v-text-field v-model="model.credential.password" label="Password" variant="outlined" type="password" />
+                            <v-text-field v-model="form.credential.password" label="Password" variant="outlined" type="password" />
                           </v-col>
                           <v-col cols="12" md="6">
-                            <v-text-field v-model="model.credential.plugin" label="Plugin (optional)" variant="outlined" />
+                            <v-text-field v-model="form.credential.plugin" label="Plugin (optional)" variant="outlined" />
                           </v-col>
                           <v-col cols="12" md="6">
-                            <v-text-field v-model="model.credential.plugin_opts" label="Plugin Opts (optional)" variant="outlined" />
+                            <v-text-field v-model="form.credential.plugin_opts" label="Plugin Opts (optional)" variant="outlined" />
                           </v-col>
                         </v-row>
                       </template>
-                      <template v-else-if="model.type === 'vmess'">
+                      <template v-else-if="form.type === 'vmess'">
                         <v-row>
                           <v-col cols="12" md="6">
-                            <v-text-field v-model="model.credential.uuid" label="UUID" variant="outlined" />
+                            <v-text-field v-model="form.credential.uuid" label="UUID" variant="outlined" />
                           </v-col>
                           <v-col cols="12" md="6">
-                            <v-select :items="vmessSecurities" v-model="model.credential.security" label="Security" variant="outlined" />
+                            <v-select :items="vmessSecurities" v-model="form.credential.security" label="Security" variant="outlined" />
                           </v-col>
                           <v-col cols="12" md="4">
-                            <v-text-field type="number" v-model.number="model.credential.alter_id" label="Alter ID" variant="outlined" />
+                            <v-text-field type="number" v-model.number="form.credential.alter_id" label="Alter ID" variant="outlined" />
                           </v-col>
                           <v-col cols="12" md="4">
-                            <v-switch inset v-model="model.credential.global_padding" label="Global Padding" />
+                            <v-switch inset v-model="form.credential.global_padding" label="Global Padding" />
                           </v-col>
                           <v-col cols="12" md="4">
-                            <v-switch inset v-model="model.credential.authenticated_length" label="Authenticated Length" />
+                            <v-switch inset v-model="form.credential.authenticated_length" label="Authenticated Length" />
                           </v-col>
                         </v-row>
                       </template>
-                      <template v-else-if="model.type === 'vless'">
+                      <template v-else-if="form.type === 'vless'">
                         <v-row>
                           <v-col cols="12" md="6">
-                            <v-text-field v-model="model.credential.uuid" label="UUID" variant="outlined" />
+                            <v-text-field v-model="form.credential.uuid" label="UUID" variant="outlined" />
                           </v-col>
                           <v-col cols="12" md="6">
-                            <v-select :items="vlessFlows" v-model="model.credential.flow" label="Flow (optional)" variant="outlined" clearable />
+                            <v-select :items="vlessFlows" v-model="form.credential.flow" label="Flow (optional)" variant="outlined" clearable />
                           </v-col>
                         </v-row>
                       </template>
-                      <template v-else-if="model.type === 'hysteria2'">
+                      <template v-else-if="form.type === 'hysteria2'">
                         <v-row>
                           <v-col cols="12" md="6">
-                            <v-text-field v-model="model.credential.password" label="Password" variant="outlined" type="password" />
+                            <v-text-field v-model="form.credential.password" label="Password" variant="outlined" type="password" />
                           </v-col>
                           <v-col cols="12" md="3">
-                            <v-text-field type="number" v-model.number="model.credential.up_mbps" label="Up Mbps" variant="outlined" />
+                            <v-text-field type="number" v-model.number="form.credential.up_mbps" label="Up Mbps" variant="outlined" />
                           </v-col>
                           <v-col cols="12" md="3">
-                            <v-text-field type="number" v-model.number="model.credential.down_mbps" label="Down Mbps" variant="outlined" />
+                            <v-text-field type="number" v-model.number="form.credential.down_mbps" label="Down Mbps" variant="outlined" />
                           </v-col>
                           <v-col cols="12" md="4">
-                            <v-select :items="hy2ObfsTypes" v-model="model.credential.obfs.type" label="Obfs Type" variant="outlined" clearable />
+                            <v-select :items="hy2ObfsTypes" v-model="form.credential.obfs.type" label="Obfs Type" variant="outlined" clearable />
                           </v-col>
                           <v-col cols="12" md="8">
-                            <v-text-field v-model="model.credential.obfs.password" label="Obfs Password" variant="outlined" />
+                            <v-text-field v-model="form.credential.obfs.password" label="Obfs Password" variant="outlined" />
                           </v-col>
                         </v-row>
                       </template>
@@ -215,16 +215,16 @@
                     <v-expansion-panel-text>
                       <v-row>
                         <v-col cols="12" md="6">
-                          <JSONEditor v-model="model.transport" label="Transport (JSON)" :rows="6" />
+                          <JSONEditor v-model="form.transport" label="Transport (JSON)" :rows="6" />
                         </v-col>
                         <v-col cols="12" md="6">
-                          <JSONEditor v-model="model.tls" label="TLS (JSON)" :rows="6" />
+                          <JSONEditor v-model="form.tls" label="TLS (JSON)" :rows="6" />
                         </v-col>
                         <v-col cols="12" md="6">
-                          <JSONEditor v-model="model.mux" label="Mux (JSON)" :rows="6" />
+                          <JSONEditor v-model="form.mux" label="Mux (JSON)" :rows="6" />
                         </v-col>
                         <v-col cols="12" md="6">
-                          <JSONEditor v-model="model.other" label="Other (JSON)" :rows="6" />
+                          <JSONEditor v-model="form.other" label="Other (JSON)" :rows="6" />
                         </v-col>
                       </v-row>
                     </v-expansion-panel-text>
@@ -291,7 +291,9 @@ const hy2ObfsTypes = ['salamander']
 onMounted(() => { /* nested fields will be created via v-model usages as needed */ })
 
 // Ensure nested credential object exists for bindings
-const ensureModelCredential = (m: any) => {
+const form = props.form
+const ensureCredential = () => {
+  const m: any = form
   if (!m || typeof m !== 'object') return true
   if (!m.credential || typeof m.credential !== 'object') m.credential = {}
   if (m.type === 'hysteria2') {
