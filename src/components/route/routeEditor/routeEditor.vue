@@ -8,6 +8,7 @@
   >
     <v-text-field label="Final" v-model="editableValue.final" />
     <RuleSetsSelector v-model="ruleSets" />
+    <!-- TODO form item for route.rules -->
     <v-divider class="my-4" />
     <AdvancedSection>
       <v-checkbox label="Auto Detect Interface" v-model="editableValue.auto_detect_interface" />
@@ -37,20 +38,6 @@
       <v-text-field label="Default Fallback Delay" v-model="editableValue.default_fallback_delay" />
     </AdvancedSection>
     <v-divider class="my-4" />
-    <!-- FIXME -->
-    <!-- <ItemSelector
-      title="Rules"
-      :model-value="editableValue.rule_sets"
-      :create-item="createRule"
-      @update:model-value="editableValue.rule_sets = $event"
-    >
-      <template #form="{ item }">
-        <RouteRuleEditor :modelValue="item" />
-      </template>
-      <template #readonly="{ item }">
-        <pre>{{ item }}</pre>
-      </template>
-    </ItemSelector> -->
   </Editor>
 </template>
 
@@ -58,9 +45,7 @@
 import { ref, computed, watch } from 'vue';
 import Editor from '@/components/common/Editor.vue';
 import AdvancedSection from '@/components/common/advancedSection/advancedSection.vue';
-import ItemSelector from '@/components/common/itemSelector/itemSelector.vue';
 import RuleSetsSelector from '../ruleSetsSelector/ruleSetsSelector.vue';
-import RouteRuleEditor from '../routeRuleEditor/routeRuleEditor.vue';
 import type { Route } from './routeEditor';
 import type { RouteRule } from '../routeRuleEditor/types';
 
