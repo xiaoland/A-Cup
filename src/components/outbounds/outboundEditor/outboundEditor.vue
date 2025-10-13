@@ -25,12 +25,12 @@
                 />
               </v-col>
               <v-col cols="12">
-                <OutboundsSelector v-model="selectorConfig.outbounds" />
+                <OutboundsSelector v-model="model.outbounds" />
               </v-col>
               <v-col cols="12" md="6">
                 <v-select
-                  v-model="selectorConfig.default"
-                  :items="selectorDefaultOptions"
+                  v-model="model.default"
+                  :items="getDefaultOptions(model.outbounds)"
                   item-title="title"
                   item-value="value"
                   label="Default (optional)"
@@ -39,7 +39,7 @@
                 />
               </v-col>
               <v-col cols="12">
-                <v-switch inset v-model="selectorConfig.interrupt_exist_connections" label="Interrupt existing connections" />
+                <v-switch inset v-model="model.interrupt_exist_connections" label="Interrupt existing connections" />
               </v-col>
             </v-row>
           </template>
@@ -57,22 +57,22 @@
                 />
               </v-col>
               <v-col cols="12">
-                <OutboundsSelector v-model="urltestConfig.outbounds" />
+                <OutboundsSelector v-model="model.outbounds" />
               </v-col>
               <v-col cols="12" md="4">
-                <v-switch inset v-model="urltestConfig.interrupt_exist_connections" label="Interrupt existing connections" />
+                <v-switch inset v-model="model.interrupt_exist_connections" label="Interrupt existing connections" />
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field v-model="urltestConfig.url" label="Test URL (optional)" variant="outlined" />
+                <v-text-field v-model="model.url" label="Test URL (optional)" variant="outlined" />
               </v-col>
               <v-col cols="12" md="3">
-                <v-text-field v-model="urltestConfig.interval" label="Interval (e.g. 3m)" variant="outlined" />
+                <v-text-field v-model="model.interval" label="Interval (e.g. 3m)" variant="outlined" />
               </v-col>
               <v-col cols="12" md="3">
-                <v-text-field type="number" v-model.number="urltestConfig.tolerance" label="Tolerance (ms)" variant="outlined" />
+                <v-text-field type="number" v-model.number="model.tolerance" label="Tolerance (ms)" variant="outlined" />
               </v-col>
               <v-col cols="12" md="4">
-                <v-text-field v-model="urltestConfig.idle_timeout" label="Idle Timeout (e.g. 30m)" variant="outlined" />
+                <v-text-field v-model="model.idle_timeout" label="Idle Timeout (e.g. 30m)" variant="outlined" />
               </v-col>
             </v-row>
           </template>
@@ -255,8 +255,6 @@ const userStore = useUserStore()
 
 const saving = ref(false)
 const deleting = ref(false)
-const selectorConfig = ref<{ outbounds: number[]; default: number | null; interrupt_exist_connections: boolean }>({ outbounds: [], default: null, interrupt_exist_connections: false })
-const urltestConfig = ref<{ outbounds: number[]; url: string; interval: string; tolerance: number; idle_timeout: string; interrupt_exist_connections: boolean }>({ outbounds: [], url: '', interval: '', tolerance: 0, idle_timeout: '', interrupt_exist_connections: false })
 
 // for default options, fetch all outbounds for name lookup
 const allOutbounds = ref<any[]>([])
@@ -270,11 +268,10 @@ const loadAllOutbounds = async () => {
   } catch (e) { console.error(e) }
 }
 onMounted(loadAllOutbounds)
-const selectorDefaultOptions = computed(() =>
+const getDefaultOptions = (ids?: number[]) =>
   allOutbounds.value
-    .filter((o: any) => selectorConfig.value.outbounds.includes(o.id))
+    .filter((o: any) => Array.isArray(ids) && ids.includes(o.id))
     .map((o: any) => ({ title: o.name || `#${o.id}`, value: o.id }))
-)
 
 // Credential helpers
 const ssMethods = [
@@ -301,10 +298,10 @@ const onEditorSave = async (value: any) => {
   if (value?.type === 'selector') {
     const obj: any = {
       type: 'selector',
-      outbounds: selectorConfig.value.outbounds,
-      interrupt_exist_connections: !!selectorConfig.value.interrupt_exist_connections,
+      outbounds: value.outbounds ?? [],
+      interrupt_exist_connections: !!value.interrupt_exist_connections,
     }
-    if (selectorConfig.value.default) obj.default = selectorConfig.value.default
+    if (value.default) obj.default = value.default
     emit('saved', obj as any)
     router.push('/outbounds')
     return
@@ -312,12 +309,12 @@ const onEditorSave = async (value: any) => {
   if (value?.type === 'urltest') {
     const obj: any = {
       type: 'urltest',
-      outbounds: urltestConfig.value.outbounds,
-      url: urltestConfig.value.url || undefined,
-      interval: urltestConfig.value.interval || undefined,
-      tolerance: urltestConfig.value.tolerance || undefined,
-      idle_timeout: urltestConfig.value.idle_timeout || undefined,
-      interrupt_exist_connections: !!urltestConfig.value.interrupt_exist_connections,
+      outbounds: value.outbounds ?? [],
+      url: value.url || undefined,
+      interval: value.interval || undefined,
+      tolerance: value.tolerance || undefined,
+      idle_timeout: value.idle_timeout || undefined,
+      interrupt_exist_connections: !!value.interrupt_exist_connections,
     }
     emit('saved', obj as any)
     router.push('/outbounds')
