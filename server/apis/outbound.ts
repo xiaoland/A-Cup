@@ -1,21 +1,25 @@
-import { z } from "zod";
-import { Router } from "../fund/router";
-import { Outbounds, Profiles } from "../db/schema";
-import { and, eq } from "drizzle-orm";
+import { z } from 'zod';
+import { Router } from '../fund/router';
+import { Outbounds, Profiles } from '../db/schema';
+import { and, eq } from 'drizzle-orm';
 import { DrizzleD1Database } from 'drizzle-orm/d1';
 import { OutboundInSingBoxSchema, type OutboundInSingBox } from '../schemas/export';
 
 export const OUTBOUNDS_ROUTER = new Router('/outbounds');
 
 // Export function for sing-box format
-export async function exportOutbound(db: DrizzleD1Database, id: number, type: "sing-box" = "sing-box"): Promise<OutboundInSingBox | null> {
+export async function exportOutbound(
+  db: DrizzleD1Database,
+  id: number,
+  type: 'sing-box' = 'sing-box'
+): Promise<OutboundInSingBox | null> {
   const outbounds = await db.select().from(Outbounds).where(eq(Outbounds.id, id)).limit(1);
   if (outbounds.length === 0) return null;
-  
+
   const outbound = outbounds[0];
   const config: OutboundInSingBox = {
     type: outbound.type,
-    tag: `out.${outbound.type}.${(outbound as any).region || 'default'}.${(outbound as any).name || (outbound as any).id}`
+    tag: `out.${outbound.type}.${(outbound as any).region || 'default'}.${(outbound as any).name || (outbound as any).id}`,
   };
 
   // Map core connection fields
@@ -41,7 +45,6 @@ export async function exportOutbound(db: DrizzleD1Database, id: number, type: "s
   return OutboundInSingBoxSchema.parse(config);
 }
 
-
 const CreateOutboundBody = z.object({
   name: z.string().min(1),
   region: z.string().optional(),
@@ -60,95 +63,159 @@ const CreateOutboundBody = z.object({
 });
 
 const IDPathParamSchema = z.object({
-  id: z.string().transform(val => parseInt(val))
+  id: z.string().transform((val) => parseInt(val)),
 });
 // Get By ID (auth via readable_by/writable_by)
-OUTBOUNDS_ROUTER.add("get", "/:id", async ({
-    db, token_payload, path_params
-}) => {
+OUTBOUNDS_ROUTER.add(
+  'get',
+  '/:id',
+  async ({ db, token_payload, path_params }) => {
     const user_id = parseInt((token_payload?.sub || '0').toString());
     const outbound_id = path_params.id;
 
     const outbounds = await db.select().from(Outbounds).where(eq(Outbounds.id, outbound_id));
-    
+
     if (outbounds.length === 0) {
-        return Response.json({ error: "Not Found" }, { status: 404 });
+      return Response.json({ error: 'Not Found' }, { status: 404 });
     }
 
     const row: any = outbounds[0];
-    const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
-    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+    const readable = Array.isArray(row.readable_by)
+      ? row.readable_by
+      : JSON.parse(row.readable_by || '[]');
+    const writable = Array.isArray(row.writable_by)
+      ? row.writable_by
+      : JSON.parse(row.writable_by || '[]');
     if (![...readable, ...writable].includes(user_id)) {
       return new Response('Forbidden', { status: 403 });
     }
 
     return Response.json(row);
-}, {
+  },
+  {
     pathParamsSchema: IDPathParamSchema,
-    allowedRoles: ['authenticated']
-});
+    allowedRoles: ['authenticated'],
+  }
+);
+
+// Get outbound tag (format: type.provider.region.name)
+OUTBOUNDS_ROUTER.add(
+  'get',
+  '/:id/tag',
+  async ({ db, token_payload, path_params }) => {
+    const user_id = parseInt((token_payload?.sub || '0').toString());
+    const outbound_id = path_params.id;
+
+    const outbounds = await db.select().from(Outbounds).where(eq(Outbounds.id, outbound_id));
+
+    if (outbounds.length === 0) {
+      return Response.json({ error: 'Not Found' }, { status: 404 });
+    }
+
+    const row: any = outbounds[0];
+    const readable = Array.isArray(row.readable_by)
+      ? row.readable_by
+      : JSON.parse(row.readable_by || '[]');
+    const writable = Array.isArray(row.writable_by)
+      ? row.writable_by
+      : JSON.parse(row.writable_by || '[]');
+    if (![...readable, ...writable].includes(user_id)) {
+      return new Response('Forbidden', { status: 403 });
+    }
+
+    const tag = `out.${row.type}.${row.region || 'default'}.${row.name || row.id}`;
+    return Response.json({ tag });
+  },
+  {
+    pathParamsSchema: IDPathParamSchema,
+    allowedRoles: ['authenticated'],
+  }
+);
 
 // Get all (filter by membership in readable_by/writable_by on the server side)
-OUTBOUNDS_ROUTER.add("get", "", async ({
-    db, token_payload
-}) => {
+OUTBOUNDS_ROUTER.add(
+  'get',
+  '',
+  async ({ db, token_payload }) => {
     const user_id = parseInt((token_payload?.sub || '0').toString());
 
     const outbounds = await db.select().from(Outbounds);
     const filtered = outbounds.filter((row: any) => {
-      const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
-      const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+      const readable = Array.isArray(row.readable_by)
+        ? row.readable_by
+        : JSON.parse(row.readable_by || '[]');
+      const writable = Array.isArray(row.writable_by)
+        ? row.writable_by
+        : JSON.parse(row.writable_by || '[]');
       return [...readable, ...writable].includes(user_id);
     });
 
     return Response.json(filtered);
-}, {
-    allowedRoles: ['authenticated']
-});
+  },
+  {
+    allowedRoles: ['authenticated'],
+  }
+);
 
-OUTBOUNDS_ROUTER.add("post", "", async ({
-    db, token_payload, body
-}) => {
+OUTBOUNDS_ROUTER.add(
+  'post',
+  '',
+  async ({ db, token_payload, body }) => {
     const user_id = parseInt((token_payload?.sub || '0').toString());
 
     const readable_by = body.readable_by && body.readable_by.length ? body.readable_by : [user_id];
     const writable_by = body.writable_by && body.writable_by.length ? body.writable_by : [user_id];
 
-    const result = await db.insert(Outbounds).values({
-      ...body,
-      readable_by: JSON.stringify(readable_by),
-      writable_by: JSON.stringify(writable_by),
-    }).returning();
+    const result = await db
+      .insert(Outbounds)
+      .values({
+        ...body,
+        readable_by: JSON.stringify(readable_by),
+        writable_by: JSON.stringify(writable_by),
+      })
+      .returning();
 
     return Response.json(result[0]);
-}, {
+  },
+  {
     bodySchema: CreateOutboundBody,
-    allowedRoles: ['authenticated']
-})
+    allowedRoles: ['authenticated'],
+  }
+);
 
+const EditOutboundBody = CreateOutboundBody.partial();
+import { exportProfileToR2 } from '../fund/profile-export';
 
-const EditOutboundBody = CreateOutboundBody.partial()
-import { exportProfileToR2 } from "../fund/profile-export";
-
-OUTBOUNDS_ROUTER.add("put", "/:id", async ({
-    body, db, path_params, token_payload, env
-}) => {
+OUTBOUNDS_ROUTER.add(
+  'put',
+  '/:id',
+  async ({ body, db, path_params, token_payload, env }) => {
     const user_id = parseInt((token_payload?.sub || '0').toString());
     // Permission check
-    const existing = await db.select().from(Outbounds).where(eq(Outbounds.id, path_params.id)).limit(1);
+    const existing = await db
+      .select()
+      .from(Outbounds)
+      .where(eq(Outbounds.id, path_params.id))
+      .limit(1);
     if (existing.length === 0) {
       return new Response('Not Found', { status: 404 });
     }
     const row: any = existing[0];
-    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+    const writable = Array.isArray(row.writable_by)
+      ? row.writable_by
+      : JSON.parse(row.writable_by || '[]');
     if (!writable.includes(user_id)) {
       return new Response('Forbidden', { status: 403 });
     }
 
-    const result = await db.update(Outbounds).set({
-      ...body,
-      updated_at: Math.floor(Date.now() / 1000)
-    }).where(eq(Outbounds.id, path_params.id)).returning();
+    const result = await db
+      .update(Outbounds)
+      .set({
+        ...body,
+        updated_at: Math.floor(Date.now() / 1000),
+      })
+      .where(eq(Outbounds.id, path_params.id))
+      .returning();
 
     // Re-export and upload all profiles referencing this outbound (in outbounds[])
     const allProfiles = await db.select().from(Profiles);
@@ -165,62 +232,84 @@ OUTBOUNDS_ROUTER.add("put", "/:id", async ({
     }
 
     return Response.json(result[0]);
-}, {
+  },
+  {
     bodySchema: EditOutboundBody,
     pathParamsSchema: IDPathParamSchema,
-    allowedRoles: ['authenticated']
-})
+    allowedRoles: ['authenticated'],
+  }
+);
 
 // Delete outbound
-OUTBOUNDS_ROUTER.add('DELETE', '/:id', async ({ 
-    path_params, db, token_payload 
-}) => {
-  const user_id = parseInt((token_payload?.sub || '0').toString());
-  const outbound_id = path_params.id;
+OUTBOUNDS_ROUTER.add(
+  'DELETE',
+  '/:id',
+  async ({ path_params, db, token_payload }) => {
+    const user_id = parseInt((token_payload?.sub || '0').toString());
+    const outbound_id = path_params.id;
 
-  // Check writable permission
-  const existing = await db.select().from(Outbounds).where(eq(Outbounds.id, outbound_id)).limit(1);
-  if (existing.length === 0) {
-    return new Response('Outbound not found', { status: 404 });
-  }
-  const row: any = existing[0];
-  const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
-  if (!writable.includes(user_id)) {
-    return new Response('Forbidden', { status: 403 });
-  }
+    // Check writable permission
+    const existing = await db
+      .select()
+      .from(Outbounds)
+      .where(eq(Outbounds.id, outbound_id))
+      .limit(1);
+    if (existing.length === 0) {
+      return new Response('Outbound not found', { status: 404 });
+    }
+    const row: any = existing[0];
+    const writable = Array.isArray(row.writable_by)
+      ? row.writable_by
+      : JSON.parse(row.writable_by || '[]');
+    if (!writable.includes(user_id)) {
+      return new Response('Forbidden', { status: 403 });
+    }
 
-  await db.delete(Outbounds).where(eq(Outbounds.id, outbound_id));
-  return new Response('', { status: 204 });
-}, {
-  pathParamsSchema: IDPathParamSchema,
-  allowedRoles: ['authenticated']
-});
+    await db.delete(Outbounds).where(eq(Outbounds.id, outbound_id));
+    return new Response('', { status: 204 });
+  },
+  {
+    pathParamsSchema: IDPathParamSchema,
+    allowedRoles: ['authenticated'],
+  }
+);
 
 // Export outbound
-OUTBOUNDS_ROUTER.add('GET', '/:id/export', async ({ 
-    path_params, db, token_payload 
-}) => {
-  const user_id = parseInt((token_payload?.sub || '0').toString());
-  const outbound_id = path_params.id;
+OUTBOUNDS_ROUTER.add(
+  'GET',
+  '/:id/export',
+  async ({ path_params, db, token_payload }) => {
+    const user_id = parseInt((token_payload?.sub || '0').toString());
+    const outbound_id = path_params.id;
 
-  const existing = await db.select().from(Outbounds).where(eq(Outbounds.id, outbound_id)).limit(1);
-  if (existing.length === 0) {
-    return new Response('Outbound not found', { status: 404 });
-  }
-  const row: any = existing[0];
-  const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
-  const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
-  if (![...readable, ...writable].includes(user_id)) {
-    return new Response('Forbidden', { status: 403 });
-  }
+    const existing = await db
+      .select()
+      .from(Outbounds)
+      .where(eq(Outbounds.id, outbound_id))
+      .limit(1);
+    if (existing.length === 0) {
+      return new Response('Outbound not found', { status: 404 });
+    }
+    const row: any = existing[0];
+    const readable = Array.isArray(row.readable_by)
+      ? row.readable_by
+      : JSON.parse(row.readable_by || '[]');
+    const writable = Array.isArray(row.writable_by)
+      ? row.writable_by
+      : JSON.parse(row.writable_by || '[]');
+    if (![...readable, ...writable].includes(user_id)) {
+      return new Response('Forbidden', { status: 403 });
+    }
 
-  const exported = await exportOutbound(db, outbound_id);
-  if (!exported) {
-    return new Response('Export failed', { status: 500 });
-  }
+    const exported = await exportOutbound(db, outbound_id);
+    if (!exported) {
+      return new Response('Export failed', { status: 500 });
+    }
 
-  return Response.json(exported);
-}, {
-  pathParamsSchema: IDPathParamSchema,
-  allowedRoles: ['authenticated']
-});
+    return Response.json(exported);
+  },
+  {
+    pathParamsSchema: IDPathParamSchema,
+    allowedRoles: ['authenticated'],
+  }
+);
