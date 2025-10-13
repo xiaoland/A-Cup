@@ -33,7 +33,7 @@
 		{
 			"binding": "DB",
 			"database_name": "a-cup",
-			"database_id": "08960812-dcb3-44d2-84a9-109b566257c3",
+			"database_id": "d896b805-feb0-4710-b0d1-096efb176611",
 			"migrations_dir": "./drizzle/migrations"
 		}
 	],

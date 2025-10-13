@@ -2,48 +2,30 @@ import { z } from 'zod';
 import { Router } from '../fund/router';
 import { 
   Profiles, 
-  Inbounds, 
   Outbounds, 
-  EndpointWireguards, 
-  RouteRules, 
-  RuleSets, 
-  DNSRules, 
-  DNSServers 
+  RuleSets
 } from '../db/schema';
 import { eq, and, or, inArray } from 'drizzle-orm';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { 
-  SingBoxProfileSchema, 
+  SingBoxProfileSchema,
+  SingBoxProfileRequestSchema,
   ProfileExportResponseSchema,
   type SingBoxProfile,
   type ProfileExportResponse
 } from '../schemas/export';
+import { exportProfileToR2 } from '../fund/profile-export';
+import { validateSingBoxConfig } from '../fund/ajv';
 
 // Import export functions from other modules
-import { exportInbound } from './inbound';
 import { exportOutbound } from './outbound';
-import { exportWireguardEndpoint } from './endpoint';
-import { exportRouteRule } from './route-rule';
 import { exportRuleSet } from './rule-set';
-import { exportDNSRule } from './dns-rule';
-import { exportDNSServer } from './dns-server';
 
 export const PROFILE_ROUTER = new Router('/profiles');
 
-const CreateProfileSchema = z.object({
-  name: z.string().min(1),
-  tags: z.array(z.string()).default([]),
-  inbounds: z.array(z.number().int().positive()).default([]),
-  outbounds: z.array(z.number().int().positive()).default([]),
-  route_final: z.number().int().positive().optional(),
-  wg_endpoints: z.array(z.number().int().positive()).default([]),
-  rules: z.array(z.number().int().positive()).default([]),
-  rule_sets: z.array(z.number().int().positive()).default([]),
-  dns_rules: z.array(z.number().int().positive()).default([]),
-  dns: z.array(z.number().int().positive()).default([])
-});
-
-const UpdateProfileSchema = CreateProfileSchema.partial();
+// Request body schema derived from Sing-Box JSON Schema with adapted ID arrays
+const CreateProfileSchema = SingBoxProfileRequestSchema;
+const UpdateProfileSchema = SingBoxProfileRequestSchema.partial();
 
 const IDPathParamSchema = z.object({
   id: z.string().transform(val => parseInt(val))
@@ -76,38 +58,33 @@ async function validateEntityAccess(db: any, user_id: number, entityIds: number[
 }
 
 // Create Profile
-PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload }) => {
+PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
   
   try {
     // Validate all referenced entities exist and are accessible
-    await validateEntityAccess(db, user_id, body.inbounds, Inbounds, 'inbounds');
     await validateEntityAccess(db, user_id, body.outbounds, Outbounds, 'outbounds');
-    await validateEntityAccess(db, user_id, body.wg_endpoints, EndpointWireguards, 'WireGuard endpoints');
-    await validateEntityAccess(db, user_id, body.rules, RouteRules, 'route rules');
-    await validateEntityAccess(db, user_id, body.rule_sets, RuleSets, 'rule sets');
-    await validateEntityAccess(db, user_id, body.dns_rules, DNSRules, 'DNS rules');
-    await validateEntityAccess(db, user_id, body.dns, DNSServers, 'DNS servers');
-    
-    // Validate route_final if provided
-    if (body.route_final) {
-      await validateEntityAccess(db, user_id, [body.route_final], Outbounds, 'route final outbound');
-    }
+    const ruleSetIds: number[] = body.route?.rule_set ?? [];
+    await validateEntityAccess(db, user_id, ruleSetIds, RuleSets, 'rule sets');
     
     const result = await db.insert(Profiles).values({
       created_by: user_id,
       name: body.name,
       tags: JSON.stringify(body.tags),
-      inbounds: JSON.stringify(body.inbounds),
       outbounds: JSON.stringify(body.outbounds),
-      route_final: body.route_final,
-      wg_endpoints: JSON.stringify(body.wg_endpoints),
-      rules: JSON.stringify(body.rules),
-      rule_sets: JSON.stringify(body.rule_sets),
-      dns_rules: JSON.stringify(body.dns_rules),
-      dns: JSON.stringify(body.dns)
+      rule_sets: JSON.stringify(ruleSetIds),
     }).returning();
     
+    // Upload exported profile to R2 (private)
+    if (!env.OSS) {
+      return new Response('Object storage not configured', { status: 501 });
+    }
+    // Remove DB-only fields from base config
+    const baseConfig = { ...body };
+    delete (baseConfig as any).name;
+    delete (baseConfig as any).tags;
+    await exportProfileToR2(db, env, (result[0] as any).id, baseConfig);
+
     return Response.json(result[0]);
   } catch (error) {
     return new Response(error instanceof Error ? error.message : 'Validation failed', { status: 400 });
@@ -129,13 +106,8 @@ PROFILE_ROUTER.add('GET', '', async ({ db, token_payload }) => {
   const parsedProfiles = profiles.map((profile: any) => ({
     ...profile,
     tags: JSON.parse(profile.tags as string),
-    inbounds: JSON.parse(profile.inbounds as string),
     outbounds: JSON.parse(profile.outbounds as string),
-    wg_endpoints: JSON.parse(profile.wg_endpoints as string),
-    rules: JSON.parse(profile.rules as string),
     rule_sets: JSON.parse(profile.rule_sets as string),
-    dns_rules: JSON.parse(profile.dns_rules as string),
-    dns: JSON.parse(profile.dns as string)
   }));
   
   return Response.json(parsedProfiles);
@@ -163,13 +135,8 @@ PROFILE_ROUTER.add('GET', '/:id', async ({ path_params, db, token_payload }) => 
   const parsedProfile = {
     ...profileData,
     tags: JSON.parse(profileData.tags as string),
-    inbounds: JSON.parse(profileData.inbounds as string),
     outbounds: JSON.parse(profileData.outbounds as string),
-    wg_endpoints: JSON.parse(profileData.wg_endpoints as string),
-    rules: JSON.parse(profileData.rules as string),
     rule_sets: JSON.parse(profileData.rule_sets as string),
-    dns_rules: JSON.parse(profileData.dns_rules as string),
-    dns: JSON.parse(profileData.dns as string)
   };
   
   return Response.json(parsedProfile);
@@ -179,7 +146,7 @@ PROFILE_ROUTER.add('GET', '/:id', async ({ path_params, db, token_payload }) => 
 });
 
 // Update Profile
-PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload }) => {
+PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
   
   // Check if profile exists and is owned by user
@@ -196,48 +163,36 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload 
   
   try {
     // Validate all referenced entities if they are being updated
-    if (body.inbounds) await validateEntityAccess(db, user_id, body.inbounds, Inbounds, 'inbounds');
     if (body.outbounds) await validateEntityAccess(db, user_id, body.outbounds, Outbounds, 'outbounds');
-    if (body.wg_endpoints) await validateEntityAccess(db, user_id, body.wg_endpoints, EndpointWireguards, 'WireGuard endpoints');
-    if (body.rules) await validateEntityAccess(db, user_id, body.rules, RouteRules, 'route rules');
-    if (body.rule_sets) await validateEntityAccess(db, user_id, body.rule_sets, RuleSets, 'rule sets');
-    if (body.dns_rules) await validateEntityAccess(db, user_id, body.dns_rules, DNSRules, 'DNS rules');
-    if (body.dns) await validateEntityAccess(db, user_id, body.dns, DNSServers, 'DNS servers');
-    
-    // Validate route_final if provided
-    if (body.route_final) {
-      await validateEntityAccess(db, user_id, [body.route_final], Outbounds, 'route final outbound');
-    }
+    if (body.route?.rule_set) await validateEntityAccess(db, user_id, body.route.rule_set, RuleSets, 'rule sets');
     
     const updateData: any = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.tags !== undefined) updateData.tags = JSON.stringify(body.tags);
-    if (body.inbounds !== undefined) updateData.inbounds = JSON.stringify(body.inbounds);
     if (body.outbounds !== undefined) updateData.outbounds = JSON.stringify(body.outbounds);
-    if (body.route_final !== undefined) updateData.route_final = body.route_final;
-    if (body.wg_endpoints !== undefined) updateData.wg_endpoints = JSON.stringify(body.wg_endpoints);
-    if (body.rules !== undefined) updateData.rules = JSON.stringify(body.rules);
-    if (body.rule_sets !== undefined) updateData.rule_sets = JSON.stringify(body.rule_sets);
-    if (body.dns_rules !== undefined) updateData.dns_rules = JSON.stringify(body.dns_rules);
-    if (body.dns !== undefined) updateData.dns = JSON.stringify(body.dns);
+    if (body.route?.rule_set !== undefined) updateData.rule_sets = JSON.stringify(body.route.rule_set);
     
     const result = await db.update(Profiles)
       .set(updateData)
       .where(eq(Profiles.id, path_params.id))
       .returning();
     
+    // Upload updated profile export to R2 (private)
+    if (!env.OSS) {
+      return new Response('Object storage not configured', { status: 501 });
+    }
+    const baseConfig = { ...body };
+    delete (baseConfig as any).name;
+    delete (baseConfig as any).tags;
+    await exportProfileToR2(db, env, path_params.id, baseConfig);
+
     // Parse JSON fields for response
     const resultData = result[0] as any;
     const parsedProfile = {
       ...resultData,
       tags: JSON.parse(resultData.tags as string),
-      inbounds: JSON.parse(resultData.inbounds as string),
       outbounds: JSON.parse(resultData.outbounds as string),
-      wg_endpoints: JSON.parse(resultData.wg_endpoints as string),
-      rules: JSON.parse(resultData.rules as string),
       rule_sets: JSON.parse(resultData.rule_sets as string),
-      dns_rules: JSON.parse(resultData.dns_rules as string),
-      dns: JSON.parse(resultData.dns as string)
     };
     
     return Response.json(parsedProfile);
@@ -288,37 +243,18 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, query_params, db,
   }
   
   const profileData = profile[0] as any;
-  const inboundIds = JSON.parse(profileData.inbounds as string) as number[];
   const outboundIds = JSON.parse(profileData.outbounds as string) as number[];
-  const wgEndpointIds = JSON.parse(profileData.wg_endpoints as string) as number[];
-  const ruleIds = JSON.parse(profileData.rules as string) as number[];
   const ruleSetIds = JSON.parse(profileData.rule_sets as string) as number[];
-  const dnsRuleIds = JSON.parse(profileData.dns_rules as string) as number[];
-  const dnsServerIds = JSON.parse(profileData.dns as string) as number[];
   
   try {
     // Use individual module export methods to generate configurations
-    const [inbounds, outbounds, wgEndpoints, rules, ruleSets, dnsRules, dnsServers] = await Promise.all([
-      Promise.all(inboundIds.map(id => exportInbound(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
+    const [outbounds, ruleSets] = await Promise.all([
       Promise.all(outboundIds.map(id => exportOutbound(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
-      Promise.all(wgEndpointIds.map(id => exportWireguardEndpoint(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
-      Promise.all(ruleIds.map(id => exportRouteRule(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
       Promise.all(ruleSetIds.map(id => exportRuleSet(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
-      Promise.all(dnsRuleIds.map(id => exportDNSRule(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
-      Promise.all(dnsServerIds.map(id => exportDNSServer(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null))
     ]);
     
     // Determine the final outbound with proper tag format
-    let finalOutbound = "direct";
-    if (profileData.route_final) {
-      // Find the route_final outbound in our exported outbounds
-      const finalOutboundData = outbounds.find(out => out.tag.endsWith(`.${profileData.route_final}`));
-      if (finalOutboundData) {
-        finalOutbound = finalOutboundData.tag;
-      }
-    } else if (outbounds.length > 0) {
-      finalOutbound = outbounds[0]?.tag || "direct";
-    }
+    const finalOutbound = outbounds[0]?.tag || 'direct';
     
     // Generate sing-box configuration
     const singBoxConfig: SingBoxProfile = {
@@ -333,26 +269,16 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, query_params, db,
           store_rdrc: false
         }
       },
-      inbounds: inbounds,
       outbounds: outbounds,
-      endpoints: wgEndpoints,
       route: {
         rule_set: ruleSets,
-        rules: rules,
         final: finalOutbound,
         auto_detect_interface: true
-      },
-      dns: {
-        disable_cache: false,
-        disable_expire: false,
-        independent_cache: false,
-        servers: dnsServers,
-        rules: dnsRules
       }
     };
 
-    // Validate the complete configuration with Zod schema
-    const validatedConfig = SingBoxProfileSchema.parse(singBoxConfig);
+    // Validate the complete configuration with official JSON Schema (Ajv)
+    await validateSingBoxConfig(singBoxConfig);
     
     const configJson = JSON.stringify(singBoxConfig, null, 2);
     

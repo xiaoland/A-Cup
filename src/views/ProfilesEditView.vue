@@ -2,19 +2,18 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import ProfileEditor from '@/components/profileEditor/profileEditor.vue'
-import type { Profile } from '@/components/profileEditor/types'
+import ProfileEditor from '@/components/profile/profileEditor/profileEditor.vue'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const profileEditorRef = ref<InstanceType<typeof ProfileEditor> | null>(null)
-const currentProfile = ref<Profile | undefined>()
+const form = ref<any | undefined>()
 const loading = ref(false)
 
 const profileId = computed(() => route.params.id as string)
 
-const handleSave = (profile: Profile) => {
+const handleSave = (profile: any) => {
   // Profile update is handled by the ProfileEditor component
   console.log('Profile updated:', profile)
   router.push('/profiles')
@@ -30,7 +29,7 @@ const loadProfile = async () => {
     const response = await userStore.authorizedFetch(`/api/profiles/${profileId.value}`)
     
     if (response.ok) {
-      currentProfile.value = await response.json()
+      form.value = await response.json()
     } else if (response.status === 404) {
       console.error('Profile not found')
       router.push('/profiles')
@@ -54,10 +53,10 @@ onMounted(() => {
     <v-progress-circular indeterminate color="primary" />
   </div>
   <ProfileEditor 
-    v-else-if="currentProfile"
+    v-else-if="form"
     ref="profileEditorRef"
     mode="edit"
-    :profile="currentProfile"
+    v-model="form"
     @save="handleSave"
     @cancel="handleCancel"
   />

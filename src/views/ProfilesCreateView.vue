@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import ProfileEditor from '@/components/profileEditor/profileEditor.vue'
-import type { Profile } from '@/components/profileEditor/types'
+import ProfileEditor from '@/components/profile/profileEditor/profileEditor.vue'
 
 const router = useRouter()
 const profileEditorRef = ref<InstanceType<typeof ProfileEditor> | null>(null)
+const form = ref({})
 
-const handleSave = (profile: Profile) => {
+const handleSave = (profile: any) => {
   // Profile creation is handled by the ProfileEditor component
   console.log('Profile created:', profile)
   router.push('/profiles')
@@ -19,8 +19,9 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <ProfileEditor 
+  <ProfileEditor
     ref="profileEditorRef"
+    v-model="form"
     mode="create"
     @save="handleSave"
     @cancel="handleCancel"

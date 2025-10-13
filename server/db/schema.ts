@@ -1,109 +1,78 @@
 import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 
 export const Users = sqliteTable("users", {
   id: int().primaryKey({ autoIncrement: true }),
   username: text().notNull(),
   password: text().notNull(),
-  roles: text("roles", {mode: "json"}).notNull().default("[]"), 
-});
-
-export const Inbounds = sqliteTable("inbounds", {
-  id: int().primaryKey({ autoIncrement: true }),
-  owner: int().notNull().references(() => Users.id),
-  share: int({ mode: "boolean" }).notNull().default(false),
-  type: text().notNull(),
-  address: text(),
-  port: int(),
-  stack: text().default("mixed"),
-  mtu: int().default(9000),
 });
 
 export const Outbounds = sqliteTable("outbounds", {
+  // 主键，自增整数 ID
   id: int("id").primaryKey({ autoIncrement: true }),
-  owner: int("owner")
-    .notNull()
-    .references(() => Users.id),
-  share: int("share", { mode: "boolean" }).notNull().default(false),
-  name: text("name"),
-  type: text("type").notNull(),
-  outbounds: text("outbounds", { mode: "json" }), // int[] FK to outbounds.id
-  region: text("region"),
-  address: text("address"),
-  port: int("port"),
-  network: text("network"), // 'udp' or 'tcp'
-  encryption: text("encryption"),
-  packet_encoding: text("packet_encoding"),
-  uuid: text("uuid"),
-  password: text("password"),
-  alter_id: int("alter_id"),
-  flow: text("flow"),
-  transport: text("transport", { mode: "json" }),
-  tls: text("tls", { mode: "json" }),
-});
 
-export const RouteRules = sqliteTable("route_rules", {
-  id: int().primaryKey({ autoIncrement: true }),
-  owner: int().notNull().references(() => Users.id),
-  share: int({ mode: "boolean" }).notNull().default(false),
-  name: text().notNull(),
-  action: text().notNull(),
-  outbound: int().references(() => Outbounds.id),
-  domains: text({ mode: "json" }),
-  domain_suffixes: text({ mode: "json" }),
-  domain_keywords: text({ mode: "json" }),
-  domain_regexes: text({ mode: "json" }),
-  rule_sets: text({ mode: "json" }), // int[] FK to rule_sets.id
+  // 节点名称（用于展示或标识）
+  name: text("name").notNull(),
+
+  // 节点所属地区，如 "HK"、"JP"、"US"
+  region: text("region"),
+
+  // 节点提供方，如 "自建"、"机场A"、"供应商X"
+  provider: text("provider"),
+
+  // 节点标签，如 "低延迟"、"游戏"、"备用"
+  tag: text("tag"),
+
+  // 出站类型（协议）
+  type: text("type").notNull(),
+
+  // 服务器地址（域名或 IP）
+  server: text("server").notNull(),
+
+  // 服务器端口号
+  server_port: int("server_port").notNull(),
+
+  // 认证信息（JSON）
+  credential: text("credential", { mode: "json" }).notNull(),
+
+  // 传输层配置（JSON）
+  transport: text("transport", { mode: "json" }).default(sql`'{}'`),
+
+  // TLS 配置（JSON）
+  tls: text("tls", { mode: "json" }).default(sql`'{}'`),
+
+  // 连接复用配置（JSON）
+  mux: text("mux", { mode: "json" }).default(sql`'{}'`),
+
+  // 其他未覆盖的协议字段（JSON）
+  other: text("other", { mode: "json" }).default(sql`'{}'`),
+
+  // 可读取的用户或组（JSON 数组）
+  readable_by: text("readable_by", { mode: "json" }).default(sql`'[]'`),
+
+  // 可修改的用户或组（JSON 数组）
+  writable_by: text("writable_by", { mode: "json" }).default(sql`'[]'`),
+
+  // 创建时间/更新时间（Unix 秒）
+  created_at: int("created_at").default(sql`(strftime('%s', 'now'))`),
+  updated_at: int("updated_at").default(sql`(strftime('%s', 'now'))`),
 });
 
 export const RuleSets = sqliteTable("rule_sets", {
-  id: int().primaryKey({ autoIncrement: true }),
-  owner: int().notNull().references(() => Users.id),
-  share: int({ mode: "boolean" }).notNull().default(false),
-  type: text().notNull().default("remote"),
-  name: text().notNull(),
-  rules: text({ mode: "json" }), // array of headless rule objects
-  url: text(),
-});
+  // Core fields
+  id: int("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // "remote" | "inline"
+  format: text("format").notNull(), // e.g. "source" | "binary"
+  content: text("content").notNull(),
 
-export const EndpointWireguards = sqliteTable("endpoint_wireguards", {
-  id: int().primaryKey({ autoIncrement: true }),
-  owner: int().notNull().references(() => Users.id),
-  share: int({ mode: "boolean" }).notNull().default(false),
-  name: text().notNull(),
-  system: int({ mode: "boolean" }).notNull().default(false),
-  addresses: text({ mode: "json" }).notNull(), // text[]
-  private_key: text().notNull(),
-  public_key: text().notNull(),
-  preshared_key: text(),
-  peers: text({ mode: "json" }).notNull().default("[]"), // json array
-  mtu: int().default(1408),
-});
+  // Access control lists (JSON arrays of userId: int)
+  readableBy: text("readable_by", { mode: "json" }).notNull(),
+  writeableBy: text("writeable_by", { mode: "json" }).notNull(),
 
-export const DNSServers = sqliteTable("dns_servers", {
-  id: int().primaryKey({ autoIncrement: true }),
-  owner: int().notNull().references(() => Users.id),
-  share: int({ mode: "boolean" }).notNull().default(false),
-  name: text().notNull(),
-  type: text().notNull(),
-  address: text().notNull(),
-  port: int(),
-  outbound_detour: int().references(() => Outbounds.id),
-  wg_endpoint_detour: int().references(() => EndpointWireguards.id),
-  tls: text({ mode: "json" }),
-  https: text({ mode: "json" }),
-});
-
-export const DNSRules = sqliteTable("dns_rules", {
-  id: int().primaryKey({ autoIncrement: true }),
-  owner: int().notNull().references(() => Users.id),
-  share: int({ mode: "boolean" }).notNull().default(false),
-  name: text().notNull(),
-  action: text(),
-  server: int().notNull().references(() => DNSServers.id),
-  domains: text({ mode: "json" }),
-  domain_suffixes: text({ mode: "json" }),
-  domain_keywords: text({ mode: "json" }),
-  rule_sets: text({ mode: "json" }), // int[] FK to rule_sets.id
+  // Optional fields for remote updates
+  download_detour: text("download_detour"),
+  update_interval: text("update_interval"),
 });
 
 export const Profiles = sqliteTable("profiles", {
@@ -111,12 +80,6 @@ export const Profiles = sqliteTable("profiles", {
   created_by: int().notNull().references(() => Users.id),
   name: text().notNull(),
   tags: text({ mode: "json" }).notNull().default("[]"), // text[] for what system,device,etc.
-  inbounds: text({ mode: "json" }).notNull().default("[]"), // int[] FK to inbounds.id
   outbounds: text({ mode: "json" }).notNull().default("[]"), // int[] FK to outbounds.id
-  route_final: int().references(() => Outbounds.id), // FK to outbounds.id
-  wg_endpoints: text({ mode: "json" }).notNull().default("[]"), // int[] FK to endpoint_wireguards.id
-  rules: text({ mode: "json" }).notNull().default("[]"), // int[] FK to route_rules.id
   rule_sets: text({ mode: "json" }).notNull().default("[]"), // int[] FK to rule_sets.id
-  dns_rules: text({ mode: "json" }).notNull().default("[]"), // int[] FK to dns_rules.id
-  dns: text({ mode: "json" }).notNull().default("[]"), // int[] FK to dns_servers.id
 });
