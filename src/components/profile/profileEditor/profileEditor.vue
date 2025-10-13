@@ -1,5 +1,13 @@
 <template>
-	<div>
-		<!-- TODO: Implement profile editor UI -->
-	</div>
+  <div>
+    <InboundsEditor :form="form" />
+  </div>
 </template>
+
+<script setup lang="ts">
+import InboundsEditor from '@/components/inbounds/inboundsEditor/inboundsEditor.vue'
+
+defineProps<{
+  form: any
+}>()
+</script>

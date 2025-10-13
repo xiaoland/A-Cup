@@ -5,6 +5,7 @@ import ProfileEditor from '@/components/profile/profileEditor/profileEditor.vue'
 
 const router = useRouter()
 const profileEditorRef = ref<InstanceType<typeof ProfileEditor> | null>(null)
+const form = ref({})
 
 const handleSave = (profile: any) => {
   // Profile creation is handled by the ProfileEditor component
@@ -18,8 +19,9 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <ProfileEditor 
+  <ProfileEditor
     ref="profileEditorRef"
+    :form="form"
     mode="create"
     @save="handleSave"
     @cancel="handleCancel"
