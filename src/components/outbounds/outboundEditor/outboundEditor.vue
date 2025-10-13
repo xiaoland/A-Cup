@@ -14,69 +14,10 @@
         <span v-if="ensureCredential()" style="display:none" />
         <v-form @submit.prevent="() => onEditorSave(form)">
           <template v-if="form.type === 'selector'">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="form.type"
-                  :items="typeOptions"
-                  item-title="title"
-                  item-value="value"
-                  label="Type"
-                  variant="outlined"
-                  required
-                />
-              </v-col>
-              <v-col cols="12">
-                <OutboundsSelector v-model="(form as any).outbounds" />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="(form as any).default"
-                  :items="getDefaultOptions((form as any).outbounds)"
-                  item-title="title"
-                  item-value="value"
-                  label="Default (optional)"
-                  clearable
-                  variant="outlined"
-                />
-              </v-col>
-              <v-col cols="12">
-                <v-switch inset v-model="(form as any).interrupt_exist_connections" label="Interrupt existing connections" />
-              </v-col>
-            </v-row>
+            <SelectorOutboundForm :form="form" />
           </template>
           <template v-else-if="form.type === 'urltest'">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="form.type"
-                  :items="typeOptions"
-                  item-title="title"
-                  item-value="value"
-                  label="Type"
-                  variant="outlined"
-                  required
-                />
-              </v-col>
-              <v-col cols="12">
-                <OutboundsSelector v-model="(form as any).outbounds" />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-switch inset v-model="(form as any).interrupt_exist_connections" label="Interrupt existing connections" />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="(form as any).url" label="Test URL (optional)" variant="outlined" />
-              </v-col>
-              <v-col cols="12" md="3">
-                <v-text-field v-model="(form as any).interval" label="Interval (e.g. 3m)" variant="outlined" />
-              </v-col>
-              <v-col cols="12" md="3">
-                <v-text-field type="number" v-model.number="(form as any).tolerance" label="Tolerance (ms)" variant="outlined" />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field v-model="(form as any).idle_timeout" label="Idle Timeout (e.g. 30m)" variant="outlined" />
-              </v-col>
-            </v-row>
+            <UrltestOutboundForm :form="form" />
           </template>
           <template v-else>
             <v-row>
@@ -200,6 +141,8 @@ import VmessOutboundForm from './vmessOutboundForm.vue'
 import VlessOutboundForm from './vlessOutboundForm.vue'
 import ShadowsocksOutboundForm from './shadowsocksOutboundForm.vue'
 import Hysteria2OutboundForm from './hysteria2OutboundForm.vue'
+import SelectorOutboundForm from './selectorOutboundForm.vue'
+import UrltestOutboundForm from './urltestOutboundForm.vue'
 
 const props = defineProps<{ form: Outbound }>()
 const emit = defineEmits<{ (e: 'saved', value: Outbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
@@ -224,7 +167,7 @@ const loadAllOutbounds = async () => {
 onMounted(loadAllOutbounds)
 const getDefaultOptions = (ids?: number[]) =>
   allOutbounds.value
-    .filter((o: any) => Array.isArray(ids) && ids.includes(o.id))
+    .filter((o: any) => Array.isArray(ids) && ids.length > 0 && ids.includes(o.id))
     .map((o: any) => ({ title: o.name || `#${o.id}`, value: o.id }))
 
 // Credential constants moved to individual form components
