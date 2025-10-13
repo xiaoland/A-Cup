@@ -1,13 +1,14 @@
 <template>
-  <v-card>
-    <v-toolbar>
-      <v-toolbar-title>Route</v-toolbar-title>
-      <v-spacer />
-      <v-btn-toggle v-model="view" density="compact" mandatory>
-        <v-btn value="form">Form</v-btn>
-        <v-btn value="json">JSON</v-btn>
-      </v-btn-toggle>
-    </v-toolbar>
+  <v-card variant="outlined" class="form-section">
+    <v-card-title class="text-h6 d-flex align-center justify-space-between">
+      Route
+      <div class="d-flex" style="gap: 8px">
+        <v-btn-toggle v-model="view" density="compact" mandatory>
+          <v-btn value="form">Form</v-btn>
+          <v-btn value="json">JSON</v-btn>
+        </v-btn-toggle>
+      </div>
+    </v-card-title>
 
     <v-card-text v-if="view === 'form'">
       <v-text-field label="Final" v-model="value.final" />
