@@ -1,25 +1,28 @@
 <template>
   <Editor
-    v-model="form"
-    title="Inbound"
+    v-model="editableForm"
+    :title="`Inbound: ${form.tag}`"
     :show-delete="true"
     @delete="$emit('delete', form.tag)"
+    @save="onSave"
+    @cancel="resetForm"
+    :start-editable="!form.tag"
   >
     <v-row dense>
       <v-col cols="12" md="6">
-        <v-select :items="types" v-model="form.type" label="Type" />
+        <v-select :items="types" v-model="editableForm.type" label="Type" />
       </v-col>
       <v-col cols="12" md="6">
         <v-text-field
-          v-model="form.tag"
+          v-model="editableForm.tag"
           label="Tag"
           :error-messages="tagErrors"
         />
       </v-col>
     </v-row>
 
-    <MixedInboundForm v-if="form.type === 'mixed'" :form="form as MixedInbound" @update:form="onFormUpdate" />
-    <TunInboundForm v-else-if="form.type === 'tun'" :form="form as TunInbound" @update:form="onFormUpdate" />
+    <MixedInboundForm v-if="editableForm.type === 'mixed'" :form="editableForm as MixedInbound" @update:form="onFormUpdate" />
+    <TunInboundForm v-else-if="editableForm.type === 'tun'" :form="editableForm as TunInbound" @update:form="onFormUpdate" />
   </Editor>
 </template>
 
@@ -34,7 +37,7 @@ import { z } from 'zod'
 const props = defineProps<{ form: Inbound, allTags: string[] }>()
 const emit = defineEmits<{ (e: 'update:form', v: Inbound): void; (e: 'delete', tag: string): void }>()
 
-const form = ref<Inbound>(props.form)
+const editableForm = ref<Inbound>(JSON.parse(JSON.stringify(props.form)))
 const types = ['mixed', 'tun']
 const tagErrors = ref<string[]>([])
 
@@ -49,32 +52,40 @@ const validationSchema = InboundSchema.superRefine((data, ctx) => {
 });
 
 const validateTag = () => {
-  const result = validationSchema.safeParse(form.value);
+  const result = validationSchema.safeParse(editableForm.value);
   if (result.success) {
     tagErrors.value = [];
+    return true;
   } else {
     tagErrors.value = result.error.flatten().fieldErrors.tag ?? [];
+    return false;
   }
 };
+
+watch(() => editableForm.value.tag, () => {
+  validateTag();
+}, { deep: true });
 
 watch(
   () => props.form,
   (newValue) => {
-    if (JSON.stringify(newValue) !== JSON.stringify(form.value)) {
-      form.value = newValue
-    }
+    resetForm();
   },
-  { immediate: true, deep: true }
+  { deep: true }
 )
 
-watch(form, (newValue) => {
-  validateTag();
-  emit('update:form', newValue);
-}, { deep: true });
-
-
 const onFormUpdate = (updatedForm: Inbound) => {
-  form.value = updatedForm;
+  editableForm.value = updatedForm;
+}
+
+const onSave = () => {
+  if (validateTag()) {
+    emit('update:form', editableForm.value);
+  }
+}
+
+const resetForm = () => {
+  editableForm.value = JSON.parse(JSON.stringify(props.form));
 }
 </script>
 
