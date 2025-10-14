@@ -15,6 +15,13 @@
       "when": 1760425236260,
       "tag": "0001_tranquil_vector",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1760439093535,
+      "tag": "0002_real_joshua_kane",
+      "breakpoints": true
     }
   ]
 }
