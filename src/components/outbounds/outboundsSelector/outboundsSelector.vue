@@ -2,6 +2,7 @@
   <v-select
     v-model="selected"
     :items="outbounds"
+    :multiple="multiple"
     item-title="name"
     item-value="tag"
     label="Outbound"
@@ -24,6 +25,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  multiple: {
+    type: Boolean,
+    default: false,
+  }
 });
 
 const emit = defineEmits(['update:modelValue']);
