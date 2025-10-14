@@ -9,10 +9,10 @@
     <v-form>
       <v-select
         v-model="rule.action"
-        :items="['proxy', 'direct', 'block']"
+        :items="['route', 'reject', 'hijack-dns']"
         label="Action"
       ></v-select>
-      <outbounds-selector v-if="rule.action === 'proxy'" v-model="rule.outbound" />
+      <outbounds-selector v-if="rule.action === 'route'" v-model="rule.outbound" />
       <v-text-field
         :model-value="rule.domain?.join(', ')"
         label="Domains (comma-separated)"

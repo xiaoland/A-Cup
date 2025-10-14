@@ -10,7 +10,7 @@
       <div v-if="route.rules" v-for="(rule, index) in route.rules" :key="index">
         <route-rule-editor v-model="route.rules[index]" @remove="removeRule(index)" />
       </div>
-      <v-btn @click="addRule">Add Rule</v-btn>
+      <v-btn class="my-1" @click="addRule">Add Rule</v-btn>
 
       <v-divider class="my-4"></v-divider>
 
