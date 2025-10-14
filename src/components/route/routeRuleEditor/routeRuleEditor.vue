@@ -18,26 +18,37 @@
         :model-value="rule.domain?.join(', ')"
         label="Domains (comma-separated)"
         @update:model-value="updateField('domain', $event)"
+        append-icon="mdi-close"
+        @click:append="hideField('domain')"
       ></v-text-field>
       <v-text-field
         v-if="isFieldVisible('domain_suffix')"
         :model-value="rule.domain_suffix?.join(', ')"
         label="Domain Suffixes (comma-separated)"
         @update:model-value="updateField('domain_suffix', $event)"
+        append-icon="mdi-close"
+        @click:append="hideField('domain_suffix')"
       ></v-text-field>
       <v-text-field
         v-if="isFieldVisible('domain_keyword')"
         :model-value="rule.domain_keyword?.join(', ')"
         label="Domain Keywords (comma-separated)"
         @update:model-value="updateField('domain_keyword', $event)"
+        append-icon="mdi-close"
+        @click:append="hideField('domain_keyword')"
       ></v-text-field>
       <v-text-field
         v-if="isFieldVisible('domain_regex')"
         :model-value="rule.domain_regex?.join(', ')"
         label="Domain Regex (comma-separated)"
         @update:model-value="updateField('domain_regex', $event)"
+        append-icon="mdi-close"
+        @click:append="hideField('domain_regex')"
       ></v-text-field>
-      <rule-sets-selector v-if="isFieldVisible('rule_set')" v-model="rule.rule_set" />
+      <div v-if="isFieldVisible('rule_set')" class="d-flex align-center">
+        <rule-sets-selector v-model="rule.rule_set" />
+        <v-btn icon="mdi-close" variant="text" @click="hideField('rule_set')"></v-btn>
+      </div>
 
       <v-menu>
         <template v-slot:activator="{ props }">
@@ -104,6 +115,13 @@ const showField = (condition: { value: string }) => {
   const field = condition.value as keyof RouteRule;
   if (!visibleFields.value.includes(field)) {
     visibleFields.value.push(field);
+  }
+};
+
+const hideField = (field: keyof RouteRule) => {
+  visibleFields.value = visibleFields.value.filter((f) => f !== field);
+  if (field in rule.value) {
+    delete rule.value[field];
   }
 };
 
