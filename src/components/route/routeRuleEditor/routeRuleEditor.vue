@@ -20,6 +20,7 @@
         @update:model-value="updateField('domain', $event)"
         append-icon="mdi-close"
         @click:append="hideField('domain')"
+        class="my-2"
       ></v-text-field>
       <v-text-field
         v-if="isFieldVisible('domain_suffix')"
@@ -28,6 +29,7 @@
         @update:model-value="updateField('domain_suffix', $event)"
         append-icon="mdi-close"
         @click:append="hideField('domain_suffix')"
+        class="my-2"
       ></v-text-field>
       <v-text-field
         v-if="isFieldVisible('domain_keyword')"
@@ -36,6 +38,7 @@
         @update:model-value="updateField('domain_keyword', $event)"
         append-icon="mdi-close"
         @click:append="hideField('domain_keyword')"
+        class="my-2"
       ></v-text-field>
       <v-text-field
         v-if="isFieldVisible('domain_regex')"
@@ -44,9 +47,10 @@
         @update:model-value="updateField('domain_regex', $event)"
         append-icon="mdi-close"
         @click:append="hideField('domain_regex')"
+        class="my-2"
       ></v-text-field>
-      <div v-if="isFieldVisible('rule_set')" class="d-flex align-center">
-        <rule-sets-selector v-model="rule.rule_set" />
+      <div v-if="isFieldVisible('rule_set')" class="d-flex align-center my-2">
+        <rule-sets-selector v-model="rule.rule_set" class="flex-grow-1" />
         <v-btn icon="mdi-close" variant="text" @click="hideField('rule_set')"></v-btn>
       </div>
 

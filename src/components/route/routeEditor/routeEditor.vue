@@ -11,12 +11,12 @@
       <v-divider class="my-4"></v-divider>
 
       <h3>Rule Sets</h3>
-      <rule-sets-selector v-model="route.rule_set" />
+      <rule-sets-selector v-model="route.rule_set" class="mb-4" />
 
       <v-divider class="my-4"></v-divider>
 
-      <outbounds-selector v-model="route.final" label="Final Outbound" />
-      <v-expansion-panels>
+      <outbounds-selector v-model="route.final" label="Final Outbound" class="mb-4" />
+      <v-expansion-panels class="mb-4">
         <v-expansion-panel>
           <v-expansion-panel-title>Advanced</v-expansion-panel-title>
           <v-expansion-panel-text>
