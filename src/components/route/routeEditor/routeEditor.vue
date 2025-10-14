@@ -3,14 +3,6 @@
   <Editor v-model="route" title="Route">
     <template #default>
       <v-checkbox v-model="route.auto_detect_interface" label="Auto Detect Interface"></v-checkbox>
-      <v-text-field v-model="route.final" label="Final Outbound"></v-text-field>
-      <v-text-field v-model="route.default_interface" label="Default Interface"></v-text-field>
-      <v-text-field v-model="route.default_mark" label="Default Mark" type="number"></v-text-field>
-      <v-text-field v-model="route.default_domain_resolver" label="Default Domain Resolver"></v-text-field>
-      <v-text-field v-model="route.default_network_strategy" label="Default Network Strategy"></v-text-field>
-      <v-text-field v-model="route.default_network_type" label="Default Network Type"></v-text-field>
-      <v-text-field v-model="route.default_fallback_network_type" label="Default Fallback Network Type"></v-text-field>
-      <v-text-field v-model="route.default_fallback_delay" label="Default Fallback Delay" type="number"></v-text-field>
 
       <v-divider class="my-4"></v-divider>
 
@@ -24,6 +16,24 @@
 
       <h3>Rule Sets</h3>
       <rule-sets-selector v-model="route.rule_set" />
+
+      <v-divider class="my-4"></v-divider>
+
+      <v-expansion-panels>
+        <v-expansion-panel>
+          <v-expansion-panel-title>Advanced</v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <v-text-field v-model="route.final" label="Final Outbound"></v-text-field>
+            <v-text-field v-model="route.default_interface" label="Default Interface"></v-text-field>
+            <v-text-field v-model="route.default_mark" label="Default Mark" type="number"></v-text-field>
+            <v-text-field v-model="route.default_domain_resolver" label="Default Domain Resolver"></v-text-field>
+            <v-text-field v-model="route.default_network_strategy" label="Default Network Strategy"></v-text-field>
+            <v-text-field v-model="route.default_network_type" label="Default Network Type"></v-text-field>
+            <v-text-field v-model="route.default_fallback_network_type" label="Default Fallback Network Type"></v-text-field>
+            <v-text-field v-model="route.default_fallback_delay" label="Default Fallback Delay" type="number"></v-text-field>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
     </template>
 
     <template #readonly>
