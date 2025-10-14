@@ -65,6 +65,7 @@ RULE_SET_ROUTER.add('POST', '', async ({ body, db, token_payload }) => {
     writeableBy: JSON.stringify(writeableBy) as unknown as any,
     download_detour: body.download_detour,
     update_interval: body.update_interval,
+    owner: currentUser,
   }).returning();
 
   return Response.json((result[0]), {status: 201}); 
