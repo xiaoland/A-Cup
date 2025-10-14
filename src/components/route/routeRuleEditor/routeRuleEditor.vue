@@ -1,6 +1,12 @@
 <template>
-  <v-card class="mb-4">
-    <v-card-text>
+  <Editor
+    v-model="rule"
+    title="Route Rule"
+    :show-delete="true"
+    @delete="emit('remove')"
+    :start-editable="true"
+  >
+    <v-form>
       <v-select
         v-model="rule.action"
         :items="['proxy', 'direct', 'block']"
@@ -28,11 +34,8 @@
         @update:model-value="rule.domain_regex = $event.split(', ')"
       ></v-text-field>
       <rule-sets-selector v-model="rule.rule_set" />
-    </v-card-text>
-    <v-card-actions>
-      <v-btn @click="emit('remove')">Remove Rule</v-btn>
-    </v-card-actions>
-  </v-card>
+    </v-form>
+  </Editor>
 </template>
 
 <script setup lang="ts">
@@ -40,6 +43,7 @@ import { ref, watch } from 'vue';
 import { type RouteRule } from '@/schemas/route';
 import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue';
 import RuleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue';
+import Editor from '@/components/common/Editor.vue';
 
 const props = defineProps({
   modelValue: {

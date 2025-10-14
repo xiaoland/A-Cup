@@ -1,25 +1,32 @@
 <template>
-  <v-form @submit.prevent="save">
-    <v-text-field v-model="form.name" label="Name"></v-text-field>
-    <v-select v-model="form.type" :items="['inline', 'remote']" label="Type"></v-select>
-    <v-combobox
-      v-model="form.format"
-      :items="['binary', 'source']"
-      label="Format"
-      hint="Select a format or type a custom one"
-      persistent-hint
-    ></v-combobox>
-    <v-textarea
-      v-if="form.type === 'inline'"
-      v-model="form.content"
-      label="Content (JSON array of headless rules)"
-    ></v-textarea>
-    <v-text-field v-if="form.type === 'remote'" v-model="form.content" label="URL"></v-text-field>
-    <outbounds-selector v-model="form.download_detour" />
-    <v-text-field v-model="form.update_interval" label="Update Interval"></v-text-field>
-    <v-btn type="submit" color="primary">Save</v-btn>
-    <v-btn @click="emit('close')">Cancel</v-btn>
-  </v-form>
+  <Editor
+    v-model="form"
+    :title="`Rule Set: ${form.name}`"
+    @save="save"
+    @cancel="emit('close')"
+    @delete="deleteRuleSet"
+    :show-delete="!!form.id"
+  >
+    <v-form>
+      <v-text-field v-model="form.name" label="Name"></v-text-field>
+      <v-select v-model="form.type" :items="['inline', 'remote']" label="Type"></v-select>
+      <v-combobox
+        v-model="form.format"
+        :items="['binary', 'source']"
+        label="Format"
+        hint="Select a format or type a custom one"
+        persistent-hint
+      ></v-combobox>
+      <v-textarea
+        v-if="form.type === 'inline'"
+        v-model="form.content"
+        label="Content (JSON array of headless rules)"
+      ></v-textarea>
+      <v-text-field v-if="form.type === 'remote'" v-model="form.content" label="URL"></v-text-field>
+      <outbounds-selector v-model="form.download_detour" />
+      <v-text-field v-model="form.update_interval" label="Update Interval"></v-text-field>
+    </v-form>
+  </Editor>
 </template>
 
 <script setup lang="ts">
@@ -27,6 +34,7 @@ import { ref } from 'vue';
 import { useRuleSetStore } from '@/stores/ruleSet';
 import { RuleSetSchema, type RuleSet } from '@/schemas/route';
 import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue';
+import Editor from '@/components/common/Editor.vue';
 
 const props = defineProps({
   ruleSet: {
@@ -40,14 +48,14 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['close', 'created']);
+const emit = defineEmits(['close', 'created', 'deleted']);
 
 const form = ref(props.ruleSet);
 const ruleSetStore = useRuleSetStore();
 
-const save = async () => {
+const save = async (data: RuleSet) => {
   try {
-    const validatedData = RuleSetSchema.parse(form.value);
+    const validatedData = RuleSetSchema.parse(data);
     if (props.ruleSet.id) {
       await ruleSetStore.updateRuleSet(props.ruleSet.id, validatedData);
     } else {
@@ -57,6 +65,14 @@ const save = async () => {
     emit('close');
   } catch (error) {
     console.error('Validation error:', error);
+  }
+};
+
+const deleteRuleSet = async () => {
+  if (props.ruleSet.id) {
+    await ruleSetStore.deleteRuleSet(props.ruleSet.id);
+    emit('deleted');
+    emit('close');
   }
 };
 </script>
