@@ -11,7 +11,8 @@
     "type-check": "vue-tsc --build",
     "deploy": "pnpm run build && wrangler deploy && wrangler d1 migrations apply a-cup --remote",
     "cf-typegen": "wrangler types",
-    "orm-mig-gen": "drizzle-kit generate"
+    "orm-mig-gen": "drizzle-kit generate",
+    "prepare": "husky"
   },
   "dependencies": {
     "ajv": "^8.17.1",

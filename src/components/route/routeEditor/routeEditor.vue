@@ -31,11 +31,13 @@ import { type Route, type RouteRule } from '@/schemas/route';
 import RouteRuleEditor from '../routeRuleEditor/routeRuleEditor.vue';
 import RuleSetsSelector from '../ruleSets/ruleSetsSelector.vue';
 
-const props = defineProps({
-  modelValue: {
-    type: Object as () => Route,
-    required: true,
-  },
+const props = withDefaults(defineProps<{
+  modelValue: Route;
+}>(), {
+  modelValue: () => ({
+    rules: [],
+    rule_set: [],
+  }),
 });
 
 const emit = defineEmits(['update:modelValue']);
