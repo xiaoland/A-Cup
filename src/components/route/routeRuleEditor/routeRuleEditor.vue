@@ -13,43 +13,47 @@
         label="Action"
       ></v-select>
       <outbounds-selector v-if="rule.action === 'route'" v-model="rule.outbound" />
-      <v-text-field
-        v-if="isFieldVisible('domain')"
-        :model-value="rule.domain?.join(', ')"
-        label="Domains (comma-separated)"
-        @update:model-value="updateField('domain', $event)"
-        append-icon="mdi-close"
-        @click:append="hideField('domain')"
-        class="my-2"
-      ></v-text-field>
-      <v-text-field
-        v-if="isFieldVisible('domain_suffix')"
-        :model-value="rule.domain_suffix?.join(', ')"
-        label="Domain Suffixes (comma-separated)"
-        @update:model-value="updateField('domain_suffix', $event)"
-        append-icon="mdi-close"
-        @click:append="hideField('domain_suffix')"
-        class="my-2"
-      ></v-text-field>
-      <v-text-field
-        v-if="isFieldVisible('domain_keyword')"
-        :model-value="rule.domain_keyword?.join(', ')"
-        label="Domain Keywords (comma-separated)"
-        @update:model-value="updateField('domain_keyword', $event)"
-        append-icon="mdi-close"
-        @click:append="hideField('domain_keyword')"
-        class="my-2"
-      ></v-text-field>
-      <v-text-field
-        v-if="isFieldVisible('domain_regex')"
-        :model-value="rule.domain_regex?.join(', ')"
-        label="Domain Regex (comma-separated)"
-        @update:model-value="updateField('domain_regex', $event)"
-        append-icon="mdi-close"
-        @click:append="hideField('domain_regex')"
-        class="my-2"
-      ></v-text-field>
-      <div v-if="isFieldVisible('rule_set')" class="d-flex align-center my-2">
+      <div v-if="isFieldVisible('domain')" class="d-flex align-center my-2" style="gap: 8px;">
+        <v-text-field
+          :model-value="rule.domain?.join(', ')"
+          label="Domains (comma-separated)"
+          @update:model-value="updateField('domain', $event)"
+          class="flex-grow-1"
+          hide-details
+        ></v-text-field>
+        <v-btn icon="mdi-close" variant="text" @click="hideField('domain')"></v-btn>
+      </div>
+      <div v-if="isFieldVisible('domain_suffix')" class="d-flex align-center my-2" style="gap: 8px;">
+        <v-text-field
+          :model-value="rule.domain_suffix?.join(', ')"
+          label="Domain Suffixes (comma-separated)"
+          @update:model-value="updateField('domain_suffix', $event)"
+          class="flex-grow-1"
+          hide-details
+        ></v-text-field>
+        <v-btn icon="mdi-close" variant="text" @click="hideField('domain_suffix')"></v-btn>
+      </div>
+      <div v-if="isFieldVisible('domain_keyword')" class="d-flex align-center my-2" style="gap: 8px;">
+        <v-text-field
+          :model-value="rule.domain_keyword?.join(', ')"
+          label="Domain Keywords (comma-separated)"
+          @update:model-value="updateField('domain_keyword', $event)"
+          class="flex-grow-1"
+          hide-details
+        ></v-text-field>
+        <v-btn icon="mdi-close" variant="text" @click="hideField('domain_keyword')"></v-btn>
+      </div>
+      <div v-if="isFieldVisible('domain_regex')" class="d-flex align-center my-2" style="gap: 8px;">
+        <v-text-field
+          :model-value="rule.domain_regex?.join(', ')"
+          label="Domain Regex (comma-separated)"
+          @update:model-value="updateField('domain_regex', $event)"
+          class="flex-grow-1"
+          hide-details
+        ></v-text-field>
+        <v-btn icon="mdi-close" variant="text" @click="hideField('domain_regex')"></v-btn>
+      </div>
+      <div v-if="isFieldVisible('rule_set')" class="d-flex align-center my-2" style="gap: 8px;">
         <rule-sets-selector v-model="rule.rule_set" class="flex-grow-1" />
         <v-btn icon="mdi-close" variant="text" @click="hideField('rule_set')"></v-btn>
       </div>

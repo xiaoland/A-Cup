@@ -1,16 +1,18 @@
 <template>
-  <div class="d-flex align-center">
-    <v-select
-      v-model="selected"
-      :items="outboundsWithTags"
-      :multiple="multiple"
-      item-title="name"
-      item-value="tag"
-      label="Outbound"
-      @update:modelValue="onSelection"
-      class="flex-grow-1"
-    ></v-select>
-    <v-btn @click="showCreateDialog = true" icon="mdi-plus" variant="text" class="ml-2"></v-btn>
+  <div class="d-flex align-center" style="gap: 8px;">
+    <div class="flex-grow-1">
+      <v-select
+        v-model="selected"
+        :items="outboundsWithTags"
+        :multiple="multiple"
+        item-title="name"
+        item-value="tag"
+        label="Outbound"
+        @update:modelValue="onSelection"
+        hide-details
+      ></v-select>
+    </div>
+    <v-btn @click="showCreateDialog = true" icon="mdi-plus" variant="text"></v-btn>
     <v-dialog v-model="showCreateDialog" max-width="600px">
       <v-card>
         <v-card-title>Create New Outbound</v-card-title>
