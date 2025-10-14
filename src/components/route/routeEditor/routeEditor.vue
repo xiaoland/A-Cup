@@ -68,7 +68,10 @@ const addRule = () => {
   if (!route.value.rules) {
     route.value.rules = [];
   }
-  route.value.rules.push({} as RouteRule);
+  route.value.rules.push({
+    action: 'route',
+    outbound: '',
+  } as RouteRule);
 };
 
 const removeRule = (index: number) => {
