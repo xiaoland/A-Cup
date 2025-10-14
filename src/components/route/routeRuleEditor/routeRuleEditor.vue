@@ -78,16 +78,16 @@ if (!rule.value.rule_set) {
   rule.value.rule_set = [];
 }
 
-const visibleFields = ref<Array<keyof RouteRule>>(([] as Array<keyof RouteRule>).concat(
-  Object.keys(props.modelValue).filter(k => allConditions.some(c => c.value === k)) as Array<keyof RouteRule>
-));
-
 const allConditions = [
   { title: 'Domains', value: 'domain' },
   { title: 'Domain Suffixes', value: 'domain_suffix' },
   { title: 'Domain Keywords', value: 'domain_keyword' },
   { title: 'Domain Regex', value: 'domain_regex' },
 ];
+
+const visibleFields = ref<Array<keyof RouteRule>>(([] as Array<keyof RouteRule>).concat(
+  Object.keys(props.modelValue).filter(k => allConditions.some(c => c.value === k)) as Array<keyof RouteRule>
+));
 
 const availableConditions = computed(() => {
   return allConditions.filter(
