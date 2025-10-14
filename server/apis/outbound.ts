@@ -101,7 +101,12 @@ OUTBOUNDS_ROUTER.add("get", "", async ({
       return [...readable, ...writable].includes(user_id);
     });
 
-    return Response.json(filtered);
+    const tagged = filtered.map((row: any) => ({
+      ...row,
+      tag: `${row.type}.${row.provider || 'default'}.${row.region || 'default'}.${row.name || row.id}`
+    }));
+
+    return Response.json(tagged);
 }, {
     allowedRoles: ['authenticated']
 });
@@ -191,6 +196,30 @@ OUTBOUNDS_ROUTER.add('DELETE', '/:id', async ({
 
   await db.delete(Outbounds).where(eq(Outbounds.id, outbound_id));
   return new Response('', { status: 204 });
+}, {
+  pathParamsSchema: IDPathParamSchema,
+  allowedRoles: ['authenticated']
+});
+
+OUTBOUNDS_ROUTER.add('GET', '/:id/tag', async ({
+  path_params, db, token_payload
+}) => {
+  const user_id = parseInt((token_payload?.sub || '0').toString());
+  const outbound_id = path_params.id;
+
+  const existing = await db.select().from(Outbounds).where(eq(Outbounds.id, outbound_id)).limit(1);
+  if (existing.length === 0) {
+    return new Response('Outbound not found', { status: 404 });
+  }
+  const row: any = existing[0];
+  const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
+  const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+  if (![...readable, ...writable].includes(user_id)) {
+    return new Response('Forbidden', { status: 403 });
+  }
+
+  const tag = `${row.type}.${row.provider || 'default'}.${row.region || 'default'}.${row.name || row.id}`;
+  return Response.json({ tag });
 }, {
   pathParamsSchema: IDPathParamSchema,
   allowedRoles: ['authenticated']

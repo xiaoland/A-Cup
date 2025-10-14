@@ -1,9 +1,68 @@
 <template>
-  <!-- TODO -->
+  <v-card class="mb-4">
+    <v-card-text>
+      <v-select
+        v-model="rule.action"
+        :items="['proxy', 'direct', 'block']"
+        label="Action"
+      ></v-select>
+      <outbounds-selector v-if="rule.action === 'proxy'" v-model="rule.outbound" />
+      <v-text-field
+        :model-value="rule.domain?.join(', ')"
+        label="Domains (comma-separated)"
+        @update:model-value="rule.domain = $event.split(', ')"
+      ></v-text-field>
+      <v-text-field
+        :model-value="rule.domain_suffix?.join(', ')"
+        label="Domain Suffixes (comma-separated)"
+        @update:model-value="rule.domain_suffix = $event.split(', ')"
+      ></v-text-field>
+      <v-text-field
+        :model-value="rule.domain_keyword?.join(', ')"
+        label="Domain Keywords (comma-separated)"
+        @update:model-value="rule.domain_keyword = $event.split(', ')"
+      ></v-text-field>
+      <v-text-field
+        :model-value="rule.domain_regex?.join(', ')"
+        label="Domain Regex (comma-separated)"
+        @update:model-value="rule.domain_regex = $event.split(', ')"
+      ></v-text-field>
+      <rule-sets-selector v-model="rule.rule_set" />
+    </v-card-text>
+    <v-card-actions>
+      <v-btn @click="emit('remove')">Remove Rule</v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script setup lang="ts">
-// TODO
+import { ref, watch } from 'vue';
+import { type RouteRule } from '@/schemas/route';
+import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue';
+import RuleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue';
+
+const props = defineProps({
+  modelValue: {
+    type: Object as () => RouteRule,
+    required: true,
+  },
+});
+
+const emit = defineEmits(['update:modelValue', 'remove']);
+
+const rule = ref(props.modelValue);
+if (!rule.value.rule_set) {
+  rule.value.rule_set = [];
+}
+
+
+watch(
+  rule,
+  (newValue) => {
+    emit('update:modelValue', newValue);
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped lang="scss" src="./routeRuleEditor.scss"></style>
