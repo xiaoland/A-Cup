@@ -46,7 +46,6 @@ const CreateOutboundBody = z.object({
   name: z.string().min(1),
   region: z.string().optional(),
   provider: z.string().optional(),
-  tag: z.string().optional(),
   type: z.string().min(1),
   server: z.string().min(1),
   server_port: z.number().int().positive(),

@@ -11,12 +11,12 @@
       <v-divider class="my-4"></v-divider>
 
       <h3>Rule Sets</h3>
-      <rule-sets-selector v-model="route.rule_set" />
+      <rule-sets-selector v-model="route.rule_set" class="mb-4" />
 
       <v-divider class="my-4"></v-divider>
 
-      <v-text-field v-model="route.final" label="Final Outbound"></v-text-field>
-      <v-expansion-panels>
+      <outbounds-selector v-model="route.final" label="Final Outbound" class="mb-4" />
+      <v-expansion-panels class="mb-4">
         <v-expansion-panel>
           <v-expansion-panel-title>Advanced</v-expansion-panel-title>
           <v-expansion-panel-text>
@@ -45,13 +45,14 @@ import { type Route, type RouteRule } from '@/schemas/route';
 import Editor from '@/components/common/Editor.vue';
 import RouteRuleEditor from '../routeRuleEditor/routeRuleEditor.vue';
 import RuleSetsSelector from '../ruleSets/ruleSetsSelector.vue';
+import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue';
 
 const props = withDefaults(defineProps<{
   modelValue: Route;
 }>(), {
   modelValue: () => ({
     rules: [],
-    rule_set: [],
+    rule_set: [] as string[],
   }),
 });
 
@@ -67,7 +68,10 @@ const addRule = () => {
   if (!route.value.rules) {
     route.value.rules = [];
   }
-  route.value.rules.push({} as RouteRule);
+  route.value.rules.push({
+    action: 'route',
+    outbound: '',
+  } as RouteRule);
 };
 
 const removeRule = (index: number) => {
