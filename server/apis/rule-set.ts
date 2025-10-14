@@ -134,8 +134,8 @@ RULE_SET_ROUTER.add('GET', '/:id', async ({ path_params, db, token_payload }) =>
   const rs = rule_sets[0] as any;
   const readable = (() => {
     try {
-      const r = JSON.parse(rs.readableBy as string) as number[];
-      const w = JSON.parse(rs.writeableBy as string) as number[];
+      const r = JSON.parse(rs.readable_by as string) as number[];
+      const w = JSON.parse(rs.writable_by as string) as number[];
       return (Array.isArray(r) && r.includes(user_id)) || (Array.isArray(w) && w.includes(user_id));
     } catch {
       return false;
@@ -144,6 +144,34 @@ RULE_SET_ROUTER.add('GET', '/:id', async ({ path_params, db, token_payload }) =>
   if (!readable) return new Response('Rule set not found', { status: 404 });
 
   return Response.json(rs);
+}, {
+  pathParamsSchema: IDPathParamSchema,
+  allowedRoles: ['authenticated']
+});
+
+RULE_SET_ROUTER.add('GET', '/:id/tag', async ({
+  path_params, db, token_payload
+}) => {
+  const user_id = parseInt((token_payload?.sub || '0').toString());
+  const rule_set_id = path_params.id;
+
+  const existing = await db.select().from(RuleSets).where(eq(RuleSets.id, rule_set_id)).limit(1);
+  if (existing.length === 0) {
+    return new Response('Rule set not found', { status: 404 });
+  }
+  const row: any = existing[0];
+  const readable = (() => {
+    try {
+      const r = JSON.parse(row.readableBy as string) as number[];
+      const w = JSON.parse(row.writeableBy as string) as number[];
+      return (Array.isArray(r) && r.includes(user_id)) || (Array.isArray(w) && w.includes(user_id));
+    } catch {
+      return false;
+    }
+  })();
+  if (!readable) return new Response('Forbidden', { status: 403 });
+
+  return Response.json({ tag: row.name });
 }, {
   pathParamsSchema: IDPathParamSchema,
   allowedRoles: ['authenticated']

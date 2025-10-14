@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import RuleSetEditor from '@/components/route/ruleSets/ruleSetEditor/ruleSetEditor.vue'
-import type { RuleSet } from '@/components/route/ruleSets/ruleSetEditor/types'
+import type { RuleSet } from '@/schemas/route'
 import { useUserStore } from '@/stores/user'
 
 interface Props {
@@ -41,8 +41,7 @@ onMounted(() => {
     <v-skeleton-loader v-if="loading" type="card" />
     <RuleSetEditor
       v-else-if="ruleSet"
-      :ruleSet="ruleSet"
-      mode="edit"
+      :rule-set="ruleSet"
     />
   </div>
 </template>

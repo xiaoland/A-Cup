@@ -312,6 +312,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useProfileStore } from '@/stores/profile'
 import { useUserStore } from '@/stores/user'
 import type { 
   Profile, 
@@ -337,6 +338,7 @@ const emit = defineEmits<{
 }>()
 
 // Store
+const profileStore = useProfileStore()
 const userStore = useUserStore()
 
 // Reactive data
@@ -362,25 +364,15 @@ const deleteDialog = ref({
 })
 
 // Computed
-const profiles = computed(() => props.profiles.length > 0 ? props.profiles : localProfiles.value)
+const profiles = computed(() => profileStore.profiles)
 const loading = computed(() => props.loading || localLoading.value)
 const exportMode = computed(() => localExportMode.value)
 
 // Methods
 const loadProfiles = async () => {
   localLoading.value = true
-  try {
-    const response = await userStore.authorizedFetch('/api/profiles')
-    if (response.ok) {
-      localProfiles.value = await response.json()
-    } else {
-      console.error('Failed to load profiles:', response.statusText)
-    }
-  } catch (error) {
-    console.error('Error loading profiles:', error)
-  } finally {
-    localLoading.value = false
-  }
+  await profileStore.fetchProfiles()
+  localLoading.value = false
 }
 
 const toggleExportMode = () => {
@@ -461,30 +453,13 @@ const closeExportDialog = () => {
 }
 
 const duplicateProfile = async (profile: Profile) => {
-  try {
-    const { id, created_by, ...profileData } = profile
-    const duplicateData = {
-      ...profileData,
-      name: `${profile.name} (Copy)`
-    }
-    
-    const response = await userStore.authorizedFetch('/api/profiles', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(duplicateData)
-    })
-    
-    if (response.ok) {
-      await loadProfiles() // Refresh the list
-      emit('duplicate', profile)
-    } else {
-      console.error('Failed to duplicate profile:', response.statusText)
-    }
-  } catch (error) {
-    console.error('Error duplicating profile:', error)
+  const { id, created_by, ...profileData } = profile
+  const duplicateData = {
+    ...profileData,
+    name: `${profile.name} (Copy)`
   }
+  await profileStore.createProfile(duplicateData)
+  emit('duplicate', profile)
 }
 
 const confirmDelete = (profile: Profile) => {
@@ -497,21 +472,9 @@ const confirmDelete = (profile: Profile) => {
 const deleteProfile = async () => {
   if (!deleteDialog.value.profile) return
   
-  try {
-    const response = await userStore.authorizedFetch(`/api/profiles/${deleteDialog.value.profile.id}`, {
-      method: 'DELETE'
-    })
-    
-    if (response.ok) {
-      await loadProfiles() // Refresh the list
-      emit('delete', deleteDialog.value.profile.id)
-      deleteDialog.value.show = false
-    } else {
-      console.error('Failed to delete profile:', response.statusText)
-    }
-  } catch (error) {
-    console.error('Error deleting profile:', error)
-  }
+  await profileStore.deleteProfile(deleteDialog.value.profile.id)
+  emit('delete', deleteDialog.value.profile.id)
+  deleteDialog.value.show = false
 }
 
 // Initialize

@@ -208,18 +208,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useOutboundStore } from '@/stores/outbound'
 import { useUserStore } from '@/stores/user'
 import type { Outbound } from '../outboundEditor/types'
 import { typeOptions, regionOptions } from '../outboundEditor/types'
 import { exportTypes, type ExportType } from './types'
 
 const router = useRouter()
+const outboundStore = useOutboundStore()
 const userStore = useUserStore()
 
 // Reactive state
-const outbounds = ref<Outbound[]>([])
+const outbounds = computed(() => outboundStore.outbounds)
 const loading = ref(false)
 const deleteDialog = ref(false)
 const deleteLoading = ref(false)
@@ -231,19 +233,8 @@ const exportedConfig = ref('')
 // Load outbounds from API
 const loadOutbounds = async () => {
   loading.value = true
-  try {
-    const response = await userStore.authorizedFetch('/api/outbounds')
-    
-    if (response.ok) {
-      outbounds.value = await response.json()
-    } else {
-      console.error('Failed to load outbounds')
-    }
-  } catch (error) {
-    console.error('Error loading outbounds:', error)
-  } finally {
-    loading.value = false
-  }
+  await outboundStore.fetchOutbounds()
+  loading.value = false
 }
 
 // Navigate to create new outbound
@@ -267,24 +258,10 @@ const confirmDelete = async () => {
   if (!selectedOutbound.value?.id) return
   
   deleteLoading.value = true
-  try {
-    const response = await userStore.authorizedFetch(`/api/outbounds/${selectedOutbound.value.id}`, {
-      method: 'DELETE'
-    })
-    
-    if (response.ok) {
-      // Remove from local list
-      outbounds.value = outbounds.value.filter((o: Outbound) => o.id !== selectedOutbound.value?.id)
-      deleteDialog.value = false
-      selectedOutbound.value = null
-    } else {
-      console.error('Failed to delete outbound')
-    }
-  } catch (error) {
-    console.error('Error deleting outbound:', error)
-  } finally {
-    deleteLoading.value = false
-  }
+  await outboundStore.deleteOutbound(selectedOutbound.value.id)
+  deleteLoading.value = false
+  deleteDialog.value = false
+  selectedOutbound.value = null
 }
 
 // Export outbound configuration
