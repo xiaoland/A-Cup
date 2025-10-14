@@ -232,19 +232,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import type { RuleSet } from './types'
 import { exportTypes } from './types'
+import { useRuleSetStore } from '@/stores/ruleSet'
 import { useUserStore } from '@/stores/user'
 
 // Store and router
 const userStore = useUserStore()
+const ruleSetStore = useRuleSetStore()
 const router = useRouter()
 
 // State
 const loading = ref(false)
-const ruleSets = ref<RuleSet[]>([])
+const ruleSets = computed(() => ruleSetStore.ruleSets)
 
 // Export dialog state
 const exportDialog = ref({
@@ -265,16 +267,8 @@ const deleteDialog = ref({
 // Load rule sets
 const loadRuleSets = async () => {
   loading.value = true
-  try {
-    const response = await userStore.authorizedFetch('/api/rule_sets')
-    if (response.ok) {
-      ruleSets.value = await response.json()
-    }
-  } catch (error) {
-    console.error('Failed to load rule sets:', error)
-  } finally {
-    loading.value = false
-  }
+  await ruleSetStore.fetchRuleSets()
+  loading.value = false
 }
 
 // Navigation methods
@@ -327,49 +321,20 @@ const deleteRuleSet = async () => {
   if (!deleteDialog.value.ruleSet) return
   
   deleteDialog.value.deleting = true
-  try {
-    const response = await userStore.authorizedFetch(
-      `/api/rule_sets/${deleteDialog.value.ruleSet.id}`, 
-      { method: 'DELETE' }
-    )
-    
-    if (response.ok) {
-      // Remove from local list
-      ruleSets.value = ruleSets.value.filter(rs => rs.id !== deleteDialog.value.ruleSet?.id)
-      deleteDialog.value.show = false
-    }
-  } catch (error) {
-    console.error('Failed to delete rule set:', error)
-  } finally {
-    deleteDialog.value.deleting = false
-  }
+  await ruleSetStore.deleteRuleSet(deleteDialog.value.ruleSet.id)
+  deleteDialog.value.deleting = false
+  deleteDialog.value.show = false
 }
 
 // Duplicate functionality
 const duplicateRuleSet = async (ruleSet: RuleSet) => {
-  try {
-    const { id, owner, ...ruleSetData } = ruleSet
-    const duplicate = {
-      ...ruleSetData,
-      name: `${ruleSet.name} (Copy)`,
-      share: false
-    }
-    
-    const response = await userStore.authorizedFetch('/api/rule_sets', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(duplicate)
-    })
-    
-    if (response.ok) {
-      // Reload the list to show the new duplicate
-      loadRuleSets()
-    }
-  } catch (error) {
-    console.error('Failed to duplicate rule set:', error)
+  const { id, owner, ...ruleSetData } = ruleSet
+  const duplicate = {
+    ...ruleSetData,
+    name: `${ruleSet.name} (Copy)`,
+    share: false
   }
+  await ruleSetStore.createRuleSet(duplicate)
 }
 
 // Utility functions

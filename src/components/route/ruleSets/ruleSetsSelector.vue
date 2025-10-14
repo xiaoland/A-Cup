@@ -23,8 +23,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { api } from '@/api';
+import { ref, onMounted, computed } from 'vue';
+import { useRuleSetStore } from '@/stores/ruleSet';
 import RuleSetEditor from './ruleSetEditor/ruleSetEditor.vue';
 import type { RuleSet } from '@/schemas/route';
 
@@ -37,13 +37,13 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const ruleSets = ref<RuleSet[]>([]);
+const ruleSetStore = useRuleSetStore();
+const ruleSets = computed(() => ruleSetStore.ruleSets);
 const selected = ref<number[]>(props.modelValue);
 const showCreateDialog = ref(false);
 
 const fetchRuleSets = async () => {
-  const response = await api.get<RuleSet[]>('/rule_sets');
-  ruleSets.value = response.data;
+  await ruleSetStore.fetchRuleSets();
 };
 
 onMounted(fetchRuleSets);

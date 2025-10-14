@@ -10,8 +10,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { api } from '@/api';
+import { ref, onMounted, computed } from 'vue';
+import { useOutboundStore } from '@/stores/outbound';
 
 interface OutboundItem {
   id: number;
@@ -28,12 +28,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const outbounds = ref<OutboundItem[]>([]);
+const outboundStore = useOutboundStore();
+const outbounds = computed(() => outboundStore.outbounds);
 const selected = ref(props.modelValue);
 
 onMounted(async () => {
-  const response = await api.get<OutboundItem[]>('/outbounds');
-  outbounds.value = response.data;
+  await outboundStore.fetchOutbounds();
 });
 
 const onSelection = (value: string) => {

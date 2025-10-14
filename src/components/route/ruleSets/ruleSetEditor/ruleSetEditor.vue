@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { api } from '@/api';
+import { useRuleSetStore } from '@/stores/ruleSet';
 import { RuleSetSchema, type RuleSet } from '@/schemas/route';
 
 const props = defineProps({
@@ -32,15 +32,16 @@ const props = defineProps({
 const emit = defineEmits(['close', 'created']);
 
 const form = ref(props.ruleSet);
+const ruleSetStore = useRuleSetStore();
 
 const save = async () => {
   try {
     const validatedData = RuleSetSchema.parse(form.value);
     if (props.ruleSet.id) {
-      await api.put(`/rule_sets/${props.ruleSet.id}`, validatedData);
+      await ruleSetStore.updateRuleSet(props.ruleSet.id, validatedData);
     } else {
-      const response = await api.post('/rule_sets', validatedData);
-      emit('created', response.data);
+      await ruleSetStore.createRuleSet(validatedData);
+      emit('created', validatedData);
     }
     emit('close');
   } catch (error) {
