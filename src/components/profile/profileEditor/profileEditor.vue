@@ -1,9 +1,11 @@
 <template>
-  <div>
-    <InboundsEditor v-model="modelValue.inbounds" />
-    <OutboundsEditor v-model="modelValue.outbounds" />
-    <RouteEditor v-model="modelValue.route" />
-    <DnsEditor v-model="modelValue.dns" />
+  <div class="profile-editor">
+    <div class="form">
+      <InboundsEditor v-model="modelValue.inbounds" />
+      <OutboundsEditor v-model="modelValue.outbounds" />
+      <RouteEditor v-model="modelValue.route" />
+      <DnsEditor v-model="modelValue.dns" />
+    </div>
   </div>
 </template>
 
@@ -17,3 +19,5 @@ defineProps<{
   modelValue: any;
 }>();
 </script>
+
+<style lang="sass" scoped src="./profileEditor.scss"></style>
