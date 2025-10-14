@@ -27,9 +27,9 @@ import { ref, onMounted, computed, watch } from 'vue';
 import { useRuleSetStore } from '@/stores/ruleSet';
 import { useUserStore } from '@/stores/user';
 import RuleSetEditor from './ruleSetEditor/ruleSetEditor.vue';
-import type { RuleSet } from '@/schemas/route';
+import type { RuleSet as RuleSetSchemaType } from '@/schemas/route';
 
-interface RuleSetWithTag extends RuleSet {
+interface RuleSetWithTag extends RuleSetSchemaType {
   tag: string;
 }
 
@@ -63,7 +63,17 @@ const fetchRuleSets = async () => {
   });
 
   const resolvedTags = await Promise.all(tagsPromises);
-  ruleSetsWithTags.value = resolvedTags.filter((rs) => rs !== null) as RuleSetWithTag[];
+  ruleSetsWithTags.value = resolvedTags
+    .filter((rs) => rs !== null)
+    .map((rs) => {
+      const ruleSet = rs as any;
+      return {
+        ...ruleSet,
+        type: ruleSet.type || 'remote',
+        format: ruleSet.format || null,
+        tag: ruleSet.tag,
+      } as RuleSetWithTag;
+    });
 };
 
 onMounted(fetchRuleSets);

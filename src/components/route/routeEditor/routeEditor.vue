@@ -51,7 +51,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   modelValue: () => ({
     rules: [],
-    rule_set: [],
+    rule_set: [] as string[],
   }),
 });
 

@@ -22,7 +22,7 @@ interface OutboundWithTag extends Outbound {
 
 const props = defineProps({
   modelValue: {
-    type: [String, Array] as () => string | string[],
+    type: [String, Array] as import('vue').PropType<string | string[]>,
     default: '',
   },
   multiple: {

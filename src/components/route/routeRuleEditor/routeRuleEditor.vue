@@ -41,13 +41,13 @@
 
       <v-menu>
         <template v-slot:activator="{ props }">
-          <v-btn v-bind="props">Add Condition</v-btn>
+          <v-btn v-bind="props" :disabled="availableConditions.length === 0">Add Condition</v-btn>
         </template>
         <v-list>
           <v-list-item
             v-for="condition in availableConditions"
             :key="condition.value"
-            @click="showField(condition.value)"
+            @click="showField(condition)"
           >
             <v-list-item-title>{{ condition.title }}</v-list-item-title>
           </v-list-item>
@@ -78,7 +78,9 @@ if (!rule.value.rule_set) {
   rule.value.rule_set = [];
 }
 
-const visibleFields = ref<Array<keyof RouteRule>>([]);
+const visibleFields = ref<Array<keyof RouteRule>>(([] as Array<keyof RouteRule>).concat(
+  Object.keys(props.modelValue).filter(k => allConditions.some(c => c.value === k)) as Array<keyof RouteRule>
+));
 
 const allConditions = [
   { title: 'Domains', value: 'domain' },
@@ -97,20 +99,22 @@ const isFieldVisible = (field: keyof RouteRule) => {
   return visibleFields.value.includes(field);
 };
 
-const showField = (field: keyof RouteRule) => {
+const showField = (condition: { value: string }) => {
+  const field = condition.value as keyof RouteRule;
   if (!visibleFields.value.includes(field)) {
     visibleFields.value.push(field);
   }
 };
 
 const updateField = (field: keyof RouteRule, value: string) => {
-  const newRule = { ...rule.value };
-  if (value) {
-    (newRule[field] as string[]) = value.split(',').map((s) => s.trim());
-  } else {
-    (newRule[field] as string[]) = [];
+  const arrayFields: (keyof RouteRule)[] = ['domain', 'domain_suffix', 'domain_keyword', 'domain_regex'];
+  if (arrayFields.includes(field)) {
+    if (value) {
+      (rule.value[field] as string[]) = value.split(',').map((s) => s.trim());
+    } else {
+      (rule.value[field] as string[]) = [];
+    }
   }
-  rule.value = newRule;
 };
 
 
