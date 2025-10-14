@@ -33,7 +33,7 @@ export const RuleSetSchema = z.object({
   id: z.number().optional(),
   name: z.string().min(1),
   type: z.enum(['inline', 'remote']),
-  format: z.string().min(1),
+  format: z.string().nullable(),
   content: z.string().optional(),
   download_detour: z.string().optional(),
   update_interval: z.string().optional(),
