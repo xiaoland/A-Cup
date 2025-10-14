@@ -2,15 +2,11 @@
 <template>
   <Editor v-model="route" title="Route">
     <template #default>
-      <v-checkbox v-model="route.auto_detect_interface" label="Auto Detect Interface"></v-checkbox>
-
-      <v-divider class="my-4"></v-divider>
-
       <h3>Rules</h3>
       <div v-if="route.rules" v-for="(rule, index) in route.rules" :key="index">
-        <route-rule-editor v-model="route.rules[index]" @remove="removeRule(index)" />
+        <route-rule-editor :class="{'my-2': index !== 0}" v-model="route.rules[index]" @remove="removeRule(index)" />
       </div>
-      <v-btn class="my-1" @click="addRule">Add Rule</v-btn>
+      <v-btn class="my-4" @click="addRule">Add Rule</v-btn>
 
       <v-divider class="my-4"></v-divider>
 
@@ -19,11 +15,12 @@
 
       <v-divider class="my-4"></v-divider>
 
+      <v-text-field v-model="route.final" label="Final Outbound"></v-text-field>
       <v-expansion-panels>
         <v-expansion-panel>
           <v-expansion-panel-title>Advanced</v-expansion-panel-title>
           <v-expansion-panel-text>
-            <v-text-field v-model="route.final" label="Final Outbound"></v-text-field>
+            <v-checkbox v-model="route.auto_detect_interface" label="Auto Detect Interface"></v-checkbox>
             <v-text-field v-model="route.default_interface" label="Default Interface"></v-text-field>
             <v-text-field v-model="route.default_mark" label="Default Mark" type="number"></v-text-field>
             <v-text-field v-model="route.default_domain_resolver" label="Default Domain Resolver"></v-text-field>
