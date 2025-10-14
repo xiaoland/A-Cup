@@ -8,7 +8,7 @@ export const useRuleSetStore = defineStore('ruleSet', () => {
   const userStore = useUserStore()
 
   async function fetchRuleSets() {
-    const response = await userStore.authorizedFetch('/api/rule-sets')
+    const response = await userStore.authorizedFetch('/api/rule_sets')
     if (response.ok) {
       ruleSets.value = await response.json()
     } else {
@@ -17,7 +17,7 @@ export const useRuleSetStore = defineStore('ruleSet', () => {
   }
 
   async function createRuleSet(ruleSetData: any) {
-    const response = await userStore.authorizedFetch('/api/rule-sets', {
+    const response = await userStore.authorizedFetch('/api/rule_sets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(ruleSetData),
@@ -30,7 +30,7 @@ export const useRuleSetStore = defineStore('ruleSet', () => {
   }
 
   async function updateRuleSet(id: number, ruleSetData: any) {
-    const response = await userStore.authorizedFetch(`/api/rule-sets/${id}`, {
+    const response = await userStore.authorizedFetch(`/api/rule_sets/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(ruleSetData),
@@ -43,7 +43,7 @@ export const useRuleSetStore = defineStore('ruleSet', () => {
   }
 
   async function deleteRuleSet(id: number) {
-    const response = await userStore.authorizedFetch(`/api/rule-sets/${id}`, {
+    const response = await userStore.authorizedFetch(`/api/rule_sets/${id}`, {
       method: 'DELETE',
     })
     if (response.ok) {
