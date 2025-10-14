@@ -37,7 +37,7 @@
         label="Domain Regex (comma-separated)"
         @update:model-value="updateField('domain_regex', $event)"
       ></v-text-field>
-      <rule-sets-selector v-model="rule.rule_set" />
+      <rule-sets-selector v-if="isFieldVisible('rule_set')" v-model="rule.rule_set" />
 
       <v-menu>
         <template v-slot:activator="{ props }">
@@ -83,6 +83,7 @@ const allConditions = [
   { title: 'Domain Suffixes', value: 'domain_suffix' },
   { title: 'Domain Keywords', value: 'domain_keyword' },
   { title: 'Domain Regex', value: 'domain_regex' },
+  { title: 'Rule Sets', value: 'rule_set' },
 ];
 
 const visibleFields = ref<Array<keyof RouteRule>>(([] as Array<keyof RouteRule>).concat(
