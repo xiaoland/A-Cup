@@ -11,7 +11,7 @@
       @update:modelValue="onSelection"
       class="flex-grow-1"
     ></v-select>
-    <v-btn @click="showCreateDialog = true" class="ml-2">Create New</v-btn>
+    <v-btn @click="showCreateDialog = true" icon="mdi-plus" variant="text" class="ml-2"></v-btn>
     <v-dialog v-model="showCreateDialog" max-width="600px">
       <v-card>
         <v-card-title>Create New Rule Set</v-card-title>
