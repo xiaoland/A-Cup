@@ -1,33 +1,41 @@
+
 <template>
-  <div>
-    <v-checkbox v-model="route.auto_detect_interface" label="Auto Detect Interface"></v-checkbox>
-    <v-text-field v-model="route.final" label="Final Outbound"></v-text-field>
-    <v-text-field v-model="route.default_interface" label="Default Interface"></v-text-field>
-    <v-text-field v-model="route.default_mark" label="Default Mark" type="number"></v-text-field>
-    <v-text-field v-model="route.default_domain_resolver" label="Default Domain Resolver"></v-text-field>
-    <v-text-field v-model="route.default_network_strategy" label="Default Network Strategy"></v-text-field>
-    <v-text-field v-model="route.default_network_type" label="Default Network Type"></v-text-field>
-    <v-text-field v-model="route.default_fallback_network_type" label="Default Fallback Network Type"></v-text-field>
-    <v-text-field v-model="route.default_fallback_delay" label="Default Fallback Delay" type="number"></v-text-field>
+  <Editor v-model="route" title="Route">
+    <template #default>
+      <v-checkbox v-model="route.auto_detect_interface" label="Auto Detect Interface"></v-checkbox>
+      <v-text-field v-model="route.final" label="Final Outbound"></v-text-field>
+      <v-text-field v-model="route.default_interface" label="Default Interface"></v-text-field>
+      <v-text-field v-model="route.default_mark" label="Default Mark" type="number"></v-text-field>
+      <v-text-field v-model="route.default_domain_resolver" label="Default Domain Resolver"></v-text-field>
+      <v-text-field v-model="route.default_network_strategy" label="Default Network Strategy"></v-text-field>
+      <v-text-field v-model="route.default_network_type" label="Default Network Type"></v-text-field>
+      <v-text-field v-model="route.default_fallback_network_type" label="Default Fallback Network Type"></v-text-field>
+      <v-text-field v-model="route.default_fallback_delay" label="Default Fallback Delay" type="number"></v-text-field>
 
-    <v-divider class="my-4"></v-divider>
+      <v-divider class="my-4"></v-divider>
 
-    <h3>Rules</h3>
-    <div v-if="route.rules" v-for="(rule, index) in route.rules" :key="index">
-      <route-rule-editor v-model="route.rules[index]" @remove="removeRule(index)" />
-    </div>
-    <v-btn @click="addRule">Add Rule</v-btn>
+      <h3>Rules</h3>
+      <div v-if="route.rules" v-for="(rule, index) in route.rules" :key="index">
+        <route-rule-editor v-model="route.rules[index]" @remove="removeRule(index)" />
+      </div>
+      <v-btn @click="addRule">Add Rule</v-btn>
 
-    <v-divider class="my-4"></v-divider>
+      <v-divider class="my-4"></v-divider>
 
-    <h3>Rule Sets</h3>
-    <rule-sets-selector v-model="route.rule_set" />
-  </div>
+      <h3>Rule Sets</h3>
+      <rule-sets-selector v-model="route.rule_set" />
+    </template>
+
+    <template #readonly>
+      <pre class="readonly-json">{{ pretty(route) }}</pre>
+    </template>
+  </Editor>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { type Route, type RouteRule } from '@/schemas/route';
+import Editor from '@/components/common/Editor.vue';
 import RouteRuleEditor from '../routeRuleEditor/routeRuleEditor.vue';
 import RuleSetsSelector from '../ruleSets/ruleSetsSelector.vue';
 
@@ -68,6 +76,10 @@ watch(
   },
   { deep: true }
 );
+
+const pretty = (v: any) => {
+  try { return JSON.stringify(v ?? {}, null, 2) } catch { return '' }
+}
 </script>
 
 <style scoped></style>
