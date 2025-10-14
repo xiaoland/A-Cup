@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const RouteRuleSchema = z.object({
   action: z.string().optional(), // 'proxy' or 'direct' or 'block'
   outbound: z.string().optional(), // outbound tag
-  rule_set: z.array(z.number()).optional(),
+  rule_set: z.array(z.string()).optional(),
   domain: z.array(z.string()).optional(),
   domain_suffix: z.array(z.string()).optional(),
   domain_keyword: z.array(z.string()).optional(),
@@ -14,7 +14,7 @@ export const RouteRuleSchema = z.object({
 // Schema for the main route object
 export const RouteSchema = z.object({
   rules: z.array(RouteRuleSchema).optional(),
-  rule_set: z.array(z.number().int().positive()).optional(), // array of rule-set IDs
+  rule_set: z.array(z.string()).optional(), // array of rule-set tags
   final: z.string().optional(),
   auto_detect_interface: z.boolean().optional(),
   default_interface: z.string().optional(),

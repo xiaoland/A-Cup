@@ -20,9 +20,6 @@ export const Outbounds = sqliteTable("outbounds", {
   // 节点提供方，如 "自建"、"机场A"、"供应商X"
   provider: text("provider"),
 
-  // 节点标签，如 "低延迟"、"游戏"、"备用"
-  tag: text("tag"),
-
   // 出站类型（协议）
   type: text("type").notNull(),
 

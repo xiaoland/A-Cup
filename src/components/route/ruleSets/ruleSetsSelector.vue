@@ -2,9 +2,9 @@
   <div>
     <v-select
       v-model="selected"
-      :items="ruleSets"
+      :items="ruleSetsWithTags"
       item-title="name"
-      item-value="id"
+      item-value="tag"
       label="Rule Sets"
       multiple
       chips
@@ -23,14 +23,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRuleSetStore } from '@/stores/ruleSet';
+import { useUserStore } from '@/stores/user';
 import RuleSetEditor from './ruleSetEditor/ruleSetEditor.vue';
-import type { RuleSet } from '@/schemas/route';
+import type { RuleSet as RuleSetSchemaType } from '@/schemas/route';
+
+interface RuleSetWithTag extends RuleSetSchemaType {
+  tag: string;
+}
 
 const props = defineProps({
   modelValue: {
-    type: Array as () => number[],
+    type: Array as () => string[],
     default: () => [],
   },
 });
@@ -38,17 +43,42 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const ruleSetStore = useRuleSetStore();
-const ruleSets = computed(() => ruleSetStore.ruleSets);
-const selected = ref<number[]>(props.modelValue);
+const userStore = useUserStore();
+const ruleSetsWithTags = ref<RuleSetWithTag[]>([]);
+const selected = ref<string[]>(props.modelValue);
 const showCreateDialog = ref(false);
 
 const fetchRuleSets = async () => {
   await ruleSetStore.fetchRuleSets();
+  const ruleSets = ruleSetStore.ruleSets;
+  const tagsPromises = ruleSets.map(async (ruleSet) => {
+    if (ruleSet.id) {
+      const response = await userStore.authorizedFetch(`/api/rule_sets/${ruleSet.id}/tag`);
+      if (response.ok) {
+        const data = await response.json();
+        return { ...ruleSet, tag: data.tag };
+      }
+    }
+    return null;
+  });
+
+  const resolvedTags = await Promise.all(tagsPromises);
+  ruleSetsWithTags.value = resolvedTags
+    .filter((rs) => rs !== null)
+    .map((rs) => {
+      const ruleSet = rs as any;
+      return {
+        ...ruleSet,
+        type: ruleSet.type || 'remote',
+        format: ruleSet.format || null,
+        tag: ruleSet.tag,
+      } as RuleSetWithTag;
+    });
 };
 
 onMounted(fetchRuleSets);
 
-const onSelection = (value: number[]) => {
+const onSelection = (value: string[]) => {
   emit('update:modelValue', value);
 };
 
@@ -56,6 +86,13 @@ const onRuleSetCreated = () => {
   fetchRuleSets();
   showCreateDialog.value = false;
 };
+
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    selected.value = newValue;
+  }
+);
 </script>
 
 <style scoped></style>

@@ -14,32 +14,51 @@
       ></v-select>
       <outbounds-selector v-if="rule.action === 'route'" v-model="rule.outbound" />
       <v-text-field
+        v-if="isFieldVisible('domain')"
         :model-value="rule.domain?.join(', ')"
         label="Domains (comma-separated)"
-        @update:model-value="rule.domain = $event.split(', ')"
+        @update:model-value="updateField('domain', $event)"
       ></v-text-field>
       <v-text-field
+        v-if="isFieldVisible('domain_suffix')"
         :model-value="rule.domain_suffix?.join(', ')"
         label="Domain Suffixes (comma-separated)"
-        @update:model-value="rule.domain_suffix = $event.split(', ')"
+        @update:model-value="updateField('domain_suffix', $event)"
       ></v-text-field>
       <v-text-field
+        v-if="isFieldVisible('domain_keyword')"
         :model-value="rule.domain_keyword?.join(', ')"
         label="Domain Keywords (comma-separated)"
-        @update:model-value="rule.domain_keyword = $event.split(', ')"
+        @update:model-value="updateField('domain_keyword', $event)"
       ></v-text-field>
       <v-text-field
+        v-if="isFieldVisible('domain_regex')"
         :model-value="rule.domain_regex?.join(', ')"
         label="Domain Regex (comma-separated)"
-        @update:model-value="rule.domain_regex = $event.split(', ')"
+        @update:model-value="updateField('domain_regex', $event)"
       ></v-text-field>
       <rule-sets-selector v-model="rule.rule_set" />
+
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-btn v-bind="props" :disabled="availableConditions.length === 0">Add Condition</v-btn>
+        </template>
+        <v-list>
+          <v-list-item
+            v-for="condition in availableConditions"
+            :key="condition.value"
+            @click="showField(condition)"
+          >
+            <v-list-item-title>{{ condition.title }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </v-form>
   </Editor>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { type RouteRule } from '@/schemas/route';
 import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue';
 import RuleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue';
@@ -58,6 +77,45 @@ const rule = ref(props.modelValue);
 if (!rule.value.rule_set) {
   rule.value.rule_set = [];
 }
+
+const allConditions = [
+  { title: 'Domains', value: 'domain' },
+  { title: 'Domain Suffixes', value: 'domain_suffix' },
+  { title: 'Domain Keywords', value: 'domain_keyword' },
+  { title: 'Domain Regex', value: 'domain_regex' },
+];
+
+const visibleFields = ref<Array<keyof RouteRule>>(([] as Array<keyof RouteRule>).concat(
+  Object.keys(props.modelValue).filter(k => allConditions.some(c => c.value === k)) as Array<keyof RouteRule>
+));
+
+const availableConditions = computed(() => {
+  return allConditions.filter(
+    (condition) => !visibleFields.value.includes(condition.value as keyof RouteRule)
+  );
+});
+
+const isFieldVisible = (field: keyof RouteRule) => {
+  return visibleFields.value.includes(field);
+};
+
+const showField = (condition: { value: string }) => {
+  const field = condition.value as keyof RouteRule;
+  if (!visibleFields.value.includes(field)) {
+    visibleFields.value.push(field);
+  }
+};
+
+const updateField = (field: keyof RouteRule, value: string) => {
+  const arrayFields: (keyof RouteRule)[] = ['domain', 'domain_suffix', 'domain_keyword', 'domain_regex'];
+  if (arrayFields.includes(field)) {
+    if (value) {
+      (rule.value[field] as string[]) = value.split(',').map((s) => s.trim());
+    } else {
+      (rule.value[field] as string[]) = [];
+    }
+  }
+};
 
 
 watch(

@@ -15,7 +15,7 @@
 
       <v-divider class="my-4"></v-divider>
 
-      <v-text-field v-model="route.final" label="Final Outbound"></v-text-field>
+      <outbounds-selector v-model="route.final" label="Final Outbound" />
       <v-expansion-panels>
         <v-expansion-panel>
           <v-expansion-panel-title>Advanced</v-expansion-panel-title>
@@ -45,13 +45,14 @@ import { type Route, type RouteRule } from '@/schemas/route';
 import Editor from '@/components/common/Editor.vue';
 import RouteRuleEditor from '../routeRuleEditor/routeRuleEditor.vue';
 import RuleSetsSelector from '../ruleSets/ruleSetsSelector.vue';
+import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue';
 
 const props = withDefaults(defineProps<{
   modelValue: Route;
 }>(), {
   modelValue: () => ({
     rules: [],
-    rule_set: [],
+    rule_set: [] as string[],
   }),
 });
 
