@@ -6,7 +6,7 @@
       <v-tab value="advanced">Advanced</v-tab>
     </v-tabs>
     <v-window v-model="tab">
-      <v-window-item value="servers">
+      <v-window-item value="servers" class="pa-4">
         <div class="d-flex flex-column" style="gap: 16px;">
           <dnsServerEditor
             v-for="(server, i) in dns.servers"
@@ -17,7 +17,7 @@
         </div>
         <v-btn class="mt-4" @click="addServer">Add Server</v-btn>
       </v-window-item>
-      <v-window-item value="rules">
+      <v-window-item value="rules" class="pa-4">
         <div class="d-flex flex-column" style="gap: 16px;">
           <dnsRuleEditor
             v-if="dns.rules"
@@ -30,7 +30,7 @@
         </div>
         <v-btn class="mt-4" @click="addRule">Add Rule</v-btn>
       </v-window-item>
-      <v-window-item value="advanced">
+      <v-window-item value="advanced" class="pa-4">
         <outboundsSelector v-model="dns.final" label="Final" />
         <v-select
           v-model="dns.strategy"

@@ -7,29 +7,29 @@
     :start-editable="true"
   >
     <v-form>
-      <v-select v-model="type" label="Type" :items="['udp', 'https', 'fakeip']" />
-      <v-text-field v-model="server.tag" label="Tag" />
-      <v-text-field v-if="type !== 'fakeip'" v-model="server.address" label="Address" />
+      <v-select v-model="type" label="Type" :items="['udp', 'https', 'fakeip']" class="my-2" />
+      <v-text-field v-model="server.tag" label="Tag" class="my-2" />
+      <v-text-field v-if="type !== 'fakeip'" v-model="server.address" label="Address" class="my-2" />
 
       <!-- UDP Fields -->
       <div v-if="type === 'udp'">
-        <v-text-field v-model.number="server.server_port" label="Server Port" />
+        <v-text-field v-model.number="server.server_port" label="Server Port" class="my-2" />
       </div>
 
       <!-- HTTPS Fields -->
       <div v-if="type === 'https'">
-        <v-text-field v-model.number="server.server_port" label="Server Port" />
-        <v-text-field v-model="server.path" label="Path" />
+        <v-text-field v-model.number="server.server_port" label="Server Port" class="my-2" />
+        <v-text-field v-model="server.path" label="Path" class="my-2" />
         <!-- A simple key-value editor for headers can be implemented here -->
       </div>
 
       <!-- FakeIP Fields -->
       <div v-if="type === 'fakeip'">
-        <v-text-field v-model="server.inet4_range" label="IPv4 Range" />
-        <v-text-field v-model="server.inet6_range" label="IPv6 Range" />
+        <v-text-field v-model="server.inet4_range" label="IPv4 Range" class="my-2" />
+        <v-text-field v-model="server.inet6_range" label="IPv6 Range" class="my-2" />
       </div>
 
-      <dialEditor v-model="server.dial_fields" />
+      <dialEditor v-model="server.dial_fields" class="my-2" />
     </v-form>
   </Editor>
 </template>

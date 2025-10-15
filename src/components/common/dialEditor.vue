@@ -1,7 +1,7 @@
 <template>
   <div>
-    <outboundsSelector v-model="dial.detour" label="Detour" />
-    <v-text-field v-model="dial.address_resolver" label="Address Resolver" />
+    <outboundsSelector v-model="dial.detour" label="Detour" class="my-2" />
+    <v-text-field v-model="dial.address_resolver" label="Address Resolver" class="my-2" />
   </div>
 </template>
 
