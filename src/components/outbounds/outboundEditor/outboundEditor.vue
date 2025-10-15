@@ -34,33 +34,22 @@
               </v-col>
 
               <!-- Basic Info (default expanded) -->
-              <v-col cols="12">
-                <v-expansion-panels variant="accordion" :model-value="[0]">
-                  <v-expansion-panel>
-                    <v-expansion-panel-title>Basic Info</v-expansion-panel-title>
-                    <v-expansion-panel-text>
-                      <v-row>
-                        <v-col cols="12" md="4">
-                          <v-text-field v-model="form.name" label="Name" variant="outlined" required />
-                        </v-col>
-                        <v-col cols="12" md="4">
-                          <v-select
-                            v-model="form.region"
-                            :items="regionOptions"
-                            item-title="title"
-                            item-value="value"
-                            label="Region"
-                            variant="outlined"
-                            clearable
-                          />
-                        </v-col>
-                        <v-col cols="12" md="4">
-                          <v-text-field v-model="form.provider" label="Provider" variant="outlined" />
-                        </v-col>
-                      </v-row>
-                    </v-expansion-panel-text>
-                  </v-expansion-panel>
-                </v-expansion-panels>
+              <v-col cols="12" md="4">
+                <v-text-field v-model="form.name" label="Name" variant="outlined" required />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="form.region"
+                  :items="regionOptions"
+                  item-title="title"
+                  item-value="value"
+                  label="Region"
+                  variant="outlined"
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field v-model="form.provider" label="Provider" variant="outlined" />
               </v-col>
 
               <v-col cols="12" md="8">
