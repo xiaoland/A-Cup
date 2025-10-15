@@ -6,7 +6,7 @@ export const dialSchema = z.object({
 })
 
 export const dnsServerSchema = z.object({
-  type: z.enum(['udp', 'https', 'fakeip']),
+  type: z.enum(['udp', 'https', 'fakeip']).default('udp'),
   tag: z.string(),
   address: z.string().optional(),
   server: z.string().optional(),

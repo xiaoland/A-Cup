@@ -49,7 +49,7 @@ const emit = defineEmits<{
   (e: 'remove'): void
 }>()
 
-const server = ref(props.modelValue || dnsServerSchema.parse({ type: 'udp', tag: '', address: '' }))
+const server = ref(props.modelValue || dnsServerSchema.parse({ tag: '', address: '' }))
 
 watch(
   () => server.value.type,
