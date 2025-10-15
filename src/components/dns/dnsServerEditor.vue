@@ -18,12 +18,12 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { type DnsServer } from '@/schemas/dns'
+import { type DnsServer, dnsServerSchema } from '@/schemas/dns'
 import Editor from '@/components/common/Editor.vue'
 import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
 
 const props = defineProps<{
-  modelValue: DnsServer
+  modelValue?: DnsServer
 }>()
 
 const emit = defineEmits<{
@@ -31,7 +31,7 @@ const emit = defineEmits<{
   (e: 'remove'): void
 }>()
 
-const server = ref(props.modelValue)
+const server = ref(props.modelValue || dnsServerSchema.parse({ tag: '', address: '' }))
 const type = computed({
   get: () => {
     if (server.value.address?.startsWith('https')) {

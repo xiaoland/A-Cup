@@ -77,18 +77,18 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { type DnsRule } from '@/schemas/dns'
+import { type DnsRule, dnsRuleSchema } from '@/schemas/dns'
 import Editor from '@/components/common/Editor.vue'
 import ruleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue'
 
 const props = defineProps<{
-  modelValue: DnsRule,
+  modelValue?: DnsRule,
   dnsServers: string[],
 }>()
 
 const emit = defineEmits(['update:modelValue', 'remove'])
 
-const rule = ref(props.modelValue)
+const rule = ref(props.modelValue || dnsRuleSchema.parse({ server: '' }))
 
 const allConditions = [
   { title: 'Domains', value: 'domain' },
@@ -99,7 +99,7 @@ const allConditions = [
 ]
 
 const visibleFields = ref<Array<keyof DnsRule>>(([] as Array<keyof DnsRule>).concat(
-  Object.keys(props.modelValue).filter(k => allConditions.some(c => c.value === k)) as Array<keyof DnsRule>
+  (props.modelValue ? Object.keys(props.modelValue) : []).filter(k => allConditions.some(c => c.value === k)) as Array<keyof DnsRule>
 ))
 
 const availableConditions = computed(() => {
