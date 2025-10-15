@@ -244,7 +244,6 @@ const onEditorSave = async (value: any) => {
     if (!res.ok) throw new Error(`Save failed: ${res.status}`)
     const saved = await res.json()
     emit('saved', saved)
-    router.push('/outbounds')
   } catch (e) {
     console.error(e)
   } finally {
@@ -259,7 +258,6 @@ const onDelete = async () => {
     const res = await userStore.authorizedFetch(`/api/outbounds/${props.form.id}`, { method: 'DELETE' })
     if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`)
     emit('deleted', props.form.id as number)
-    router.push('/outbounds')
   } catch (e) {
     console.error(e)
   } finally {
