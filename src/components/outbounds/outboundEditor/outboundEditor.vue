@@ -200,7 +200,6 @@ watch(() => form.type, (newType) => {
 
 const onCancel = () => {
   emit('cancel')
-  router.back()
 }
 
 const onEditorSave = async (value: any) => {
