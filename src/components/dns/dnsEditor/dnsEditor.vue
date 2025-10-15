@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <Editor title="DNS" :model-value="dns">
     <v-tabs v-model="tab" color="primary">
       <v-tab value="servers">Servers</v-tab>
       <v-tab value="rules">Rules</v-tab>
@@ -41,12 +41,13 @@
         <v-checkbox v-model="dns.disable_expire" label="Disable Expire" />
       </v-window-item>
     </v-window>
-  </v-card>
+  </Editor>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { type Dns, dnsSchema } from '@/schemas/dns'
+import Editor from '@/components/common/Editor.vue'
 import dnsServerEditor from '../dnsServerEditor.vue'
 import dnsRuleEditor from '../dnsRuleEditor/dnsRuleEditor.vue'
 import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
