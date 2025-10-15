@@ -4,7 +4,7 @@
       :model-value="form"
       title="Outbound Editor"
       :start-editable="true"
-      :show-delete="!!form.id"
+      :show-delete="props.showDelete"
       @cancel="onCancel"
       @save="onEditorSave"
       @delete="onDelete"
@@ -144,7 +144,7 @@ import Hysteria2OutboundForm from './hysteria2OutboundForm.vue'
 import SelectorOutboundForm from './selectorOutboundForm.vue'
 import UrltestOutboundForm from './urltestOutboundForm.vue'
 
-const props = defineProps<{ form: Outbound }>()
+const props = withDefaults(defineProps<{ form: Outbound, showDelete?: boolean }>(), { showDelete: false })
 const emit = defineEmits<{ (e: 'saved', value: Outbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
 
 const router = useRouter()
@@ -250,18 +250,9 @@ const onEditorSave = async (value: any) => {
   }
 }
 
-const onDelete = async () => {
+const onDelete = () => {
   if (!props.form.id) return
-  deleting.value = true
-  try {
-    const res = await userStore.authorizedFetch(`/api/outbounds/${props.form.id}`, { method: 'DELETE' })
-    if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`)
-    emit('deleted', props.form.id as number)
-  } catch (e) {
-    console.error(e)
-  } finally {
-    deleting.value = false
-  }
+  emit('deleted', props.form.id as number)
 }
 </script>
 

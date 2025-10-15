@@ -14,6 +14,7 @@
     <OutboundEditor
       :form="item"
       :start-editable="editingStates[idx]"
+      :show-delete="true"
       @saved="updateOutbound(idx, $event)"
       @deleted="removeOutbound(idx)"
       @cancel="editingStates[idx] = false"
