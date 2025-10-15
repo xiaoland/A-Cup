@@ -8,7 +8,7 @@ const form = ref<Outbound>({
   region: undefined,
   provider: undefined,
   tag: undefined,
-  type: 'direct',
+  type: 'vmess',
   server: '',
   server_port: 0,
   credential: {},

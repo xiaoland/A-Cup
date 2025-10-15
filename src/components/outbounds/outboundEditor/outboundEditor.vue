@@ -4,7 +4,7 @@
       :model-value="form"
       title="Outbound Editor"
       :start-editable="true"
-      :show-delete="!!form.id"
+      :show-delete="props.showDelete"
       @cancel="onCancel"
       @save="onEditorSave"
       @delete="onDelete"
@@ -34,33 +34,22 @@
               </v-col>
 
               <!-- Basic Info (default expanded) -->
-              <v-col cols="12">
-                <v-expansion-panels variant="accordion" :model-value="[0]">
-                  <v-expansion-panel>
-                    <v-expansion-panel-title>Basic Info</v-expansion-panel-title>
-                    <v-expansion-panel-text>
-                      <v-row>
-                        <v-col cols="12" md="4">
-                          <v-text-field v-model="form.name" label="Name" variant="outlined" required />
-                        </v-col>
-                        <v-col cols="12" md="4">
-                          <v-select
-                            v-model="form.region"
-                            :items="regionOptions"
-                            item-title="title"
-                            item-value="value"
-                            label="Region"
-                            variant="outlined"
-                            clearable
-                          />
-                        </v-col>
-                        <v-col cols="12" md="4">
-                          <v-text-field v-model="form.provider" label="Provider" variant="outlined" />
-                        </v-col>
-                      </v-row>
-                    </v-expansion-panel-text>
-                  </v-expansion-panel>
-                </v-expansion-panels>
+              <v-col cols="12" md="4">
+                <v-text-field v-model="form.name" label="Name" variant="outlined" required />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-select
+                  v-model="form.region"
+                  :items="regionOptions"
+                  item-title="title"
+                  item-value="value"
+                  label="Region"
+                  variant="outlined"
+                  clearable
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field v-model="form.provider" label="Provider" variant="outlined" />
               </v-col>
 
               <v-col cols="12" md="8">
@@ -144,7 +133,7 @@ import Hysteria2OutboundForm from './hysteria2OutboundForm.vue'
 import SelectorOutboundForm from './selectorOutboundForm.vue'
 import UrltestOutboundForm from './urltestOutboundForm.vue'
 
-const props = defineProps<{ form: Outbound }>()
+const props = withDefaults(defineProps<{ form: Outbound, showDelete?: boolean }>(), { showDelete: false })
 const emit = defineEmits<{ (e: 'saved', value: Outbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
 
 const router = useRouter()
@@ -200,7 +189,6 @@ watch(() => form.type, (newType) => {
 
 const onCancel = () => {
   emit('cancel')
-  router.back()
 }
 
 const onEditorSave = async (value: any) => {
@@ -251,18 +239,9 @@ const onEditorSave = async (value: any) => {
   }
 }
 
-const onDelete = async () => {
+const onDelete = () => {
   if (!props.form.id) return
-  deleting.value = true
-  try {
-    const res = await userStore.authorizedFetch(`/api/outbounds/${props.form.id}`, { method: 'DELETE' })
-    if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`)
-    emit('deleted', props.form.id as number)
-  } catch (e) {
-    console.error(e)
-  } finally {
-    deleting.value = false
-  }
+  emit('deleted', props.form.id as number)
 }
 </script>
 
