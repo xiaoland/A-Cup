@@ -13,9 +13,12 @@
   <div v-for="(item, idx) in props.modelValue" :key="item.tag ?? `new-${idx}`" class="mt-4">
     <OutboundEditor
       :form="item"
+      :start-editable="editingStates[idx]"
       @saved="updateOutbound(idx, $event)"
       @deleted="removeOutbound(idx)"
+      @cancel="editingStates[idx] = false"
     />
+    <v-btn v-if="!editingStates[idx]" @click="editingStates[idx] = true" class="mt-2">Edit</v-btn>
   </div>
   <v-dialog v-model="showAddDialog" max-width="500px">
     <v-card>
@@ -28,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import OutboundEditor from '../outboundEditor/outboundEditor.vue'
 import OutboundPicker from '../outboundPicker/outboundPicker.vue'
 import type { Outbound } from '../outboundEditor/types'
@@ -47,6 +50,15 @@ const emit = defineEmits<Emits>()
 
 const outboundStore = useOutboundStore()
 const showAddDialog = ref(false)
+const editingStates = ref<boolean[]>([])
+
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    editingStates.value = newVal.map(() => false)
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   await outboundStore.fetchOutbounds()
