@@ -1,10 +1,22 @@
 import { z } from 'zod'
 
+export const dialSchema = z.object({
+  detour: z.string().optional(),
+  address_resolver: z.string().optional(),
+})
+
 export const dnsServerSchema = z.object({
   tag: z.string(),
   address: z.string(),
-  address_resolver: z.string().optional(),
   detour: z.string().optional(),
+  server: z.string().optional(),
+  server_port: z.number().optional(),
+  path: z.string().optional(),
+  headers: z.record(z.string(), z.string()).optional(),
+  tls: z.object({}).optional(),
+  inet4_range: z.string().optional(),
+  inet6_range: z.string().optional(),
+  dial_fields: dialSchema.optional(),
 })
 
 export const dnsRuleSchema = z.object({

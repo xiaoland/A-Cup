@@ -10,8 +10,26 @@
       <v-select v-model="type" label="Type" :items="['udp', 'https', 'fakeip']" />
       <v-text-field v-model="server.tag" label="Tag" />
       <v-text-field v-if="type !== 'fakeip'" v-model="server.address" label="Address" />
-      <v-text-field v-if="type === 'https'" v-model="server.address_resolver" label="Address Resolver" />
-      <outboundsSelector v-model="server.detour" label="Detour" />
+
+      <!-- UDP Fields -->
+      <div v-if="type === 'udp'">
+        <v-text-field v-model.number="server.server_port" label="Server Port" />
+      </div>
+
+      <!-- HTTPS Fields -->
+      <div v-if="type === 'https'">
+        <v-text-field v-model.number="server.server_port" label="Server Port" />
+        <v-text-field v-model="server.path" label="Path" />
+        <!-- A simple key-value editor for headers can be implemented here -->
+      </div>
+
+      <!-- FakeIP Fields -->
+      <div v-if="type === 'fakeip'">
+        <v-text-field v-model="server.inet4_range" label="IPv4 Range" />
+        <v-text-field v-model="server.inet6_range" label="IPv6 Range" />
+      </div>
+
+      <dialEditor v-model="server.dial_fields" />
     </v-form>
   </Editor>
 </template>
@@ -20,7 +38,7 @@
 import { ref, watch, computed } from 'vue'
 import { type DnsServer, dnsServerSchema } from '@/schemas/dns'
 import Editor from '@/components/common/Editor.vue'
-import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
+import dialEditor from '@/components/common/dialEditor.vue'
 
 const props = defineProps<{
   modelValue?: DnsServer
