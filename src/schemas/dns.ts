@@ -31,8 +31,7 @@ export const dnsServerSchema = z.object({
   tls: z.object({}).optional(),
   inet4_range: z.string().optional(),
   inet6_range: z.string().optional(),
-  dial_fields: dialSchema.optional(),
-})
+}).extend(dialSchema.shape)
 
 export const dnsRuleSchema = z.object({
   server: z.string(),

@@ -29,7 +29,7 @@
         <v-text-field v-model="server.inet6_range" label="IPv6 Range" class="my-2" />
       </div>
 
-      <dialEditor v-model="server.dial_fields" class="my-2" />
+      <dialEditor v-model="server" class="my-2" />
     </v-form>
   </Editor>
 </template>
