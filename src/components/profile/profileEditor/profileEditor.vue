@@ -23,7 +23,6 @@ import DnsEditor from '@/components/dns/dnsEditor';
 
 const props = defineProps<{
   modelValue: any;
-  mode: 'create' | 'edit'
 }>();
 
 const emit = defineEmits(['save', 'cancel'])
@@ -35,8 +34,8 @@ const onSave = async () => {
   saving.value = true
   try {
     const body = { ...props.modelValue }
-    const url = props.mode === 'create' ? '/api/profiles' : `/api/profiles/${body.id}`
-    const method = props.mode === 'create' ? 'POST' : 'PUT'
+    const url = body.id ? `/api/profiles/${body.id}` : '/api/profiles'
+    const method = body.id ? 'PUT' : 'POST'
     const res = await userStore.authorizedFetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
