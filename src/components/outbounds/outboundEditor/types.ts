@@ -26,7 +26,6 @@ export interface SelectOption<T extends string = string> {
 }
 
 export const typeOptions: SelectOption[] = [
-  { title: 'Direct', value: 'direct' },
   { title: 'URL Test', value: 'urltest' },
   { title: 'Selector', value: 'selector' },
   { title: 'VMess', value: 'vmess' },
