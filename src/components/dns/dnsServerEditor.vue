@@ -11,7 +11,7 @@
       <v-text-field v-model="server.tag" label="Tag" />
       <v-text-field v-if="type !== 'fakeip'" v-model="server.address" label="Address" />
       <v-text-field v-if="type === 'https'" v-model="server.address_resolver" label="Address Resolver" />
-      <v-text-field v-model="server.detour" label="Detour" />
+      <outboundsSelector v-model="server.detour" label="Detour" />
     </v-form>
   </Editor>
 </template>
@@ -20,6 +20,7 @@
 import { ref, watch, computed } from 'vue'
 import { type DnsServer } from '@/schemas/dns'
 import Editor from '@/components/common/Editor.vue'
+import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
 
 const props = defineProps<{
   modelValue: DnsServer

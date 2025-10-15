@@ -53,13 +53,7 @@
         <v-btn icon="mdi-close" variant="text" @click="hideField('domain_regex')"></v-btn>
       </div>
       <div v-if="isFieldVisible('rule_set')" class="d-flex align-center my-2" style="gap: 8px;">
-        <v-text-field
-          :model-value="rule.rule_set?.join(', ')"
-          label="Rule Sets (comma-separated)"
-          @update:model-value="updateField('rule_set', $event)"
-          class="flex-grow-1"
-          hide-details
-        ></v-text-field>
+        <ruleSetsSelector v-model="rule.rule_set" class="flex-grow-1" />
         <v-btn icon="mdi-close" variant="text" @click="hideField('rule_set')"></v-btn>
       </div>
 
@@ -85,6 +79,7 @@
 import { ref, watch, computed } from 'vue'
 import { type DnsRule } from '@/schemas/dns'
 import Editor from '@/components/common/Editor.vue'
+import ruleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue'
 
 const props = defineProps<{
   modelValue: DnsRule,
