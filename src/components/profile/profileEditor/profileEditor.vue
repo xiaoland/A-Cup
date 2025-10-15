@@ -1,6 +1,15 @@
 <template>
   <div class="profile-editor">
     <div class="form">
+      <v-text-field v-model="modelValue.name" label="Name" variant="outlined" required />
+      <v-combobox
+        v-model="modelValue.tags"
+        label="Tags"
+        multiple
+        chips
+        closable-chips
+        variant="outlined"
+      />
       <InboundsEditor v-model="modelValue.inbounds" />
       <OutboundsListEditor v-model="modelValue.outbounds" />
       <RouteEditor v-model="modelValue.route" />
