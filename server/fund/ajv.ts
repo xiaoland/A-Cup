@@ -17,13 +17,17 @@ async function loadValidator(): Promise<ValidateFunction> {
         throw new Error(`Failed to fetch Sing-Box schema: ${res.status}`);
       }
       const schema = await res.json();
-      ajv.addMetaSchema(
-        (await (
-          await fetch(
-            'https://json-schema.org/draft/2020-12/schema',
-          )
-        ).json()) as any,
-      );
+      const meta_schemas = await Promise.all([
+        'https://json-schema.org/draft/2020-12/schema',
+        'https://json-schema.org/draft/2020-12/meta/core',
+        'https://json-schema.org/draft/2020-12/meta/applicator',
+        'https://json-schema.org/draft/2020-12/meta/unevaluated',
+        'https://json-schema.org/draft/2020-12/meta/validation',
+        'https://json-schema.org/draft/2020-12/meta/meta-data',
+        'https://json-schema.org/draft/2020-12/meta/format-annotation',
+        'https://json-schema.org/draft/2020-12/meta/content',
+      ].map(url => fetch(url).then(res => res.json())));
+      ajv.addMetaSchema(meta_schemas as any);
       return ajv.compile(schema);
     })();
   }
