@@ -177,7 +177,7 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload,
 });
 
 // Delete Profile
-PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload }) => {
+PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
   
   const result = await db.delete(Profiles).where(
@@ -190,6 +190,12 @@ PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload }) 
   if (result.length === 0) {
     return new Response('Profile not found', { status: 404 });
   }
+
+  // Also delete the exported profile from R2
+  if (env.OSS) {
+    const key = `profiles/${path_params.id}`;
+    await env.OSS.delete(key);
+  }
   
   return Response.json({ message: 'Profile deleted successfully' });
 }, {
@@ -198,9 +204,9 @@ PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload }) 
 });
 
 // Export Profile
-PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, query_params, db, token_payload, env }) => {
+PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
-  
+
   // Get profile
   const profile = await db.select().from(Profiles).where(
     and(
@@ -208,96 +214,46 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, query_params, db,
       eq(Profiles.created_by, user_id)
     )
   ).limit(1);
-  
+
   if (profile.length === 0) {
     return new Response('Profile not found', { status: 404 });
   }
-  
+
+  // Check if R2 is configured
+  if (!env.OSS) {
+    return new Response('Object storage not configured', { status: 501 });
+  }
+
   const profileData = profile[0] as any;
-  const outboundIds = JSON.parse(profileData.outbounds as string) as number[];
-  const ruleSetIds = JSON.parse(profileData.rule_sets as string) as number[];
-  
+  const key = `profiles/${profileData.id}`;
+
   try {
-    // Use individual module export methods to generate configurations
-    const [outbounds, ruleSets] = await Promise.all([
-      Promise.all(outboundIds.map(id => exportOutbound(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
-      Promise.all(ruleSetIds.map(id => exportRuleSet(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
-    ]);
-    
-    // Determine the final outbound with proper tag format
-    const finalOutbound = outbounds[0]?.tag || 'direct';
-    
-    // Generate sing-box configuration
-    const singBoxConfig: SingBoxProfile = {
-      log: {
-        level: "info",
-        timestamp: true
-      },
-      experimental: {
-        cache_file: {
-          enabled: true,
-          store_fakeip: true,
-          store_rdrc: false
-        }
-      },
-      outbounds: outbounds,
-      route: {
-        rule_set: ruleSets,
-        final: finalOutbound,
-        auto_detect_interface: true
-      }
+    // Check if the object exists in R2
+    const object = await env.OSS.head(key);
+    if (object === null) {
+      // (Optional) Regenerate the profile if it's missing
+      // For now, we'll return an error as per the plan.
+      return new Response('Exported profile not found in storage.', { status: 404 });
+    }
+
+    // Generate a pre-signed URL for GET requests, expiring in 5 minutes (300 seconds)
+    const signedUrl = await env.OSS.createSignedUrl('getObject', key, {
+      expires: 300,
+    });
+
+    const response: ProfileExportResponse = {
+      method: 'oss',
+      url: signedUrl,
+      fileName: `${profileData.name}.json`
     };
 
-    // Validate the generated config with Zod
-    SingBoxProfileSchema.parse(singBoxConfig);
+    return Response.json(ProfileExportResponseSchema.parse(response));
 
-    const configJson = JSON.stringify(singBoxConfig, null, 2);
-    
-    if (query_params.method === 'oss') {
-      // Check if R2 is configured
-      if (!env.OSS) {
-        return new Response('Object storage not configured', { status: 501 });
-      }
-      
-      // Upload to R2 storage
-      const fileName = `${profileData.id}-${profileData.name.replace(/[^a-zA-Z0-9]/g, '-')}.json`;
-      const key = `profiles/${fileName}`;
-      
-      await env.OSS.put(key, configJson, {
-        httpMetadata: {
-          contentType: 'application/json'
-        }
-      });
-      
-      // Generate a presigned URL or return the public URL
-      const url = env.OSS_PUBLIC_DOMAIN 
-        ? `https://${env.OSS_PUBLIC_DOMAIN}/${key}`
-        : `Object uploaded as ${key}`;
-      
-      const response: ProfileExportResponse = {
-        method: 'oss',
-        url: url,
-        fileName: fileName
-      };
-      
-      return Response.json(ProfileExportResponseSchema.parse(response));
-    } else {
-      // Return direct download
-      const response: ProfileExportResponse = {
-        method: 'direct',
-        content: configJson,
-        fileName: `${profileData.name}.json`
-      };
-      
-      return Response.json(ProfileExportResponseSchema.parse(response));
-    }
-    
   } catch (error) {
     console.error('Export error:', error);
-    return new Response('Export failed', { status: 500 });
+    return new Response('Failed to generate signed URL for export.', { status: 500 });
   }
 }, {
   pathParamsSchema: IDPathParamSchema,
-  queryParamsSchema: ExportQuerySchema,
   allowedRoles: ['authenticated']
 });

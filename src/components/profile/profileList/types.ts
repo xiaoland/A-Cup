@@ -20,7 +20,6 @@ export interface Props {
 
 export interface ExportOptions {
   type: 'sing-box'
-  method: 'oss' | 'direct'
 }
 
 export interface SelectOption {
@@ -31,10 +30,4 @@ export interface SelectOption {
 // Export type options
 export const exportTypeOptions: SelectOption[] = [
   { title: 'Sing-Box', value: 'sing-box' }
-]
-
-// Export method options  
-export const exportMethodOptions: SelectOption[] = [
-  { title: 'Object Storage (OSS)', value: 'oss' },
-  { title: 'Direct Download', value: 'direct' }
 ]

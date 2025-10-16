@@ -56,16 +56,6 @@
               persistent-hint
             />
           </v-col>
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="exportOptions.method"
-              :items="exportMethodOptions"
-              label="Export Method"
-              variant="outlined"
-              hint="Choose where to export the profile"
-              persistent-hint
-            />
-          </v-col>
         </v-row>
       </v-card-text>
     </v-card>
@@ -218,32 +208,6 @@
             <div class="mt-2">Exporting profile...</div>
           </div>
           
-          <div v-else-if="exportDialog.result" class="export-result">
-            <div class="d-flex align-center">
-              <v-icon color="success" class="me-2">mdi-check-circle</v-icon>
-              <span class="text-h6">Export Successful</span>
-            </div>
-            <div class="mt-2">
-              Profile "{{ exportDialog.profileName }}" has been exported successfully.
-            </div>
-            
-            <div v-if="exportDialog.result.url" class="result-url">
-              <div class="text-caption mb-1">Download URL:</div>
-              <div>{{ exportDialog.result.url }}</div>
-            </div>
-            
-            <div v-if="exportDialog.result.content" class="mt-3">
-              <v-btn
-                color="primary"
-                variant="outlined"
-                @click="downloadDirect"
-                prepend-icon="mdi-download"
-              >
-                Download File
-              </v-btn>
-            </div>
-          </div>
-          
           <div v-else-if="exportDialog.error" class="export-error">
             <div class="d-flex align-center">
               <v-icon color="error" class="me-2">mdi-alert-circle</v-icon>
@@ -255,14 +219,6 @@
         
         <v-card-actions>
           <v-spacer />
-          <v-btn
-            v-if="exportDialog.result?.url"
-            color="primary"
-            variant="outlined"
-            @click="copyToClipboard(exportDialog.result.url)"
-          >
-            Copy URL
-          </v-btn>
           <v-btn
             variant="outlined"
             @click="closeExportDialog"
@@ -319,7 +275,7 @@ import type {
   Props, 
   ExportOptions
 } from './types'
-import { exportTypeOptions, exportMethodOptions } from './types'
+import { exportTypeOptions } from './types'
 
 // Props
 const props = withDefaults(defineProps<Props>(), {
@@ -347,14 +303,13 @@ const localLoading = ref(false)
 const localExportMode = ref(props.exportMode)
 const exportOptions = ref<ExportOptions>({
   type: 'sing-box',
-  method: 'direct'
 })
 
 const exportDialog = ref({
   show: false,
   loading: false,
   profileName: '',
-  result: null as { url?: string; content?: string } | null,
+  result: null as { url?: string; fileName?: string } | null,
   error: ''
 })
 
@@ -392,58 +347,37 @@ const handleProfileClick = (profile: Profile) => {
 }
 
 const exportProfile = async (profile: Profile) => {
-  exportDialog.value = {
-    show: true,
-    loading: true,
-    profileName: profile.name,
-    result: null,
-    error: ''
-  }
-  
+  exportDialog.value.loading = true;
+  exportDialog.value.error = '';
+
   try {
-    const params = new URLSearchParams({
-      type: exportOptions.value.type,
-      method: exportOptions.value.method
-    })
-    
-    const response = await userStore.authorizedFetch(`/api/profiles/${profile.id}/export?${params}`)
-    
-    if (response.ok) {
-      const result = await response.json()
-      exportDialog.value.result = result
-      emit('export', profile, exportOptions.value)
-    } else {
-      const errorText = await response.text()
-      exportDialog.value.error = errorText || 'Failed to export profile'
+    const response = await userStore.authorizedFetch(`/api/profiles/${profile.id}/export`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to export profile');
     }
+
+    const result = await response.json();
+
+    // Trigger download
+    const a = document.createElement('a');
+    a.href = result.url;
+    a.download = result.fileName || `${profile.name}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // Close dialog after successful download trigger
+    exportDialog.value.show = false;
+    localExportMode.value = false;
+    emit('export', profile, exportOptions.value);
+
   } catch (error) {
-    exportDialog.value.error = 'Failed to export profile. Please try again.'
-    console.error('Export error:', error)
+    exportDialog.value.error = error instanceof Error ? error.message : 'An unknown error occurred.';
+    console.error('Export error:', error);
   } finally {
-    exportDialog.value.loading = false
-  }
-}
-
-const downloadDirect = () => {
-  if (exportDialog.value.result?.content) {
-    const blob = new Blob([exportDialog.value.result.content], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${exportDialog.value.profileName}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
-}
-
-const copyToClipboard = async (text: string) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    // In real app, show a toast notification
-  } catch (error) {
-    console.error('Failed to copy to clipboard:', error)
+    exportDialog.value.loading = false;
   }
 }
 
