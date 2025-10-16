@@ -110,7 +110,7 @@ export async function transformSingboxToProfile(
       })
     )
     if (newProfile.route) {
-      newProfile.route.rule_sets = ruleSetIds.filter((id) => id !== undefined)
+      newProfile.route.rule_set = ruleSetIds.filter((id) => id !== undefined)
     }
   }
 
