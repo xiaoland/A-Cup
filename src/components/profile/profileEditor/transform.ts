@@ -67,13 +67,9 @@ export async function transformSingboxToProfile(
   const outboundStore = useOutboundStore()
   const ruleSetStore = useRuleSetStore()
 
-  const newProfile: Profile = {
-    ...existingProfile,
-    name: existingProfile.name || 'Imported Profile',
-  }
-
+  let outboundIds: (number | undefined)[] = []
   if (singboxProfile.outbounds) {
-    const outboundIds = await Promise.all(
+    outboundIds = await Promise.all(
       singboxProfile.outbounds.map(async (outbound) => {
         const existing = outboundStore.outbounds.find((o) => o.name === outbound.tag)
         if (existing) {
@@ -86,11 +82,11 @@ export async function transformSingboxToProfile(
         }
       })
     )
-    newProfile.outbounds = outboundIds.filter((id) => id !== undefined) as number[]
   }
 
+  let ruleSetIds: (number | undefined)[] = []
   if (singboxProfile.route?.rule_set) {
-    const ruleSetIds = await Promise.all(
+    ruleSetIds = await Promise.all(
       (singboxProfile.route.rule_set as any[]).map(async (rs) => {
         const tag = typeof rs === 'string' ? rs : rs.tag
         const existing = ruleSetStore.ruleSets.find((r) => r.name === tag)
@@ -109,15 +105,16 @@ export async function transformSingboxToProfile(
         }
       })
     )
-    if (newProfile.route) {
-      newProfile.route.rule_set = ruleSetIds.filter((id) => id !== undefined)
-    }
   }
 
-  if (singboxProfile.dns) {
-    newProfile.dns = {
+  const newProfile: Profile = {
+    ...existingProfile,
+    name: existingProfile.name || 'Imported Profile',
+    outbounds: outboundIds.filter((id) => id !== undefined) as number[],
+    dns: {
       ...singboxProfile.dns,
-      rules: singboxProfile.dns.rules?.map(rule => ({
+      servers: singboxProfile.dns?.servers || [],
+      rules: singboxProfile.dns?.rules?.map(rule => ({
         ...rule,
         domain: ensureArray(rule.domain),
         domain_suffix: ensureArray(rule.domain_suffix),
@@ -125,13 +122,10 @@ export async function transformSingboxToProfile(
         domain_regex: ensureArray(rule.domain_regex),
         rule_set: ensureArray(rule.rule_set),
       })) || [],
-    }
-  }
-
-  if (singboxProfile.route) {
-    newProfile.route = {
+    },
+    route: {
       ...singboxProfile.route,
-      rules: singboxProfile.route.rules?.map(rule => ({
+      rules: singboxProfile.route?.rules?.map(rule => ({
         ...rule,
         domain: ensureArray(rule.domain),
         domain_suffix: ensureArray(rule.domain_suffix),
@@ -139,18 +133,16 @@ export async function transformSingboxToProfile(
         domain_regex: ensureArray(rule.domain_regex),
         rule_set: ensureArray(rule.rule_set),
       })) || [],
-    }
-  }
-
-  if (singboxProfile.inbounds) {
-    newProfile.inbounds = singboxProfile.inbounds.map(inbound => {
+      rule_set: ruleSetIds.filter((id) => id !== undefined) as number[],
+    },
+    inbounds: singboxProfile.inbounds?.map(inbound => {
       const { type, tag, ...rest } = inbound
       return {
         type,
         tag: tag || '',
         ...rest
       } as any
-    })
+    }) || [],
   }
 
   return newProfile
