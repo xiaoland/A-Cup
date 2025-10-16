@@ -14,8 +14,6 @@
     "orm-mig-gen": "drizzle-kit generate"
   },
   "dependencies": {
-    "ajv": "^8.17.1",
-    "ajv-formats": "^2.1.1",
     "drizzle-orm": "^0.44.2",
     "jsonwebtoken": "^9.0.2",
     "pinia": "^3.0.3",

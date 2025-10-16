@@ -2,7 +2,6 @@ import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { eq } from 'drizzle-orm';
 import { Outbounds, Profiles, RuleSets } from '../db/schema';
 import { SingBoxProfileSchema } from '../schemas/export';
-import { validateSingBoxConfig } from './ajv';
 
 // Export a single outbound into Sing-Box format (duplicate of logic in apis/outbound.ts without import to avoid cycles)
 async function exportOutboundForProfile(db: DrizzleD1Database, id: number) {
@@ -98,8 +97,8 @@ export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profile
   config.route = config.route || {};
   config.route.rule_set = ruleSets;
 
-  // Validate with official JSON Schema via Ajv (blocking)
-  await validateSingBoxConfig(config);
+  // Validate with Zod
+  SingBoxProfileSchema.parse(config);
 
   const configJson = JSON.stringify(config, null, 2);
   await env.OSS.put(`profiles/${profileId}`, configJson, {
