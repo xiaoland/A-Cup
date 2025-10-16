@@ -15,6 +15,51 @@ function ensureArray<T>(value: T | T[] | undefined): T[] {
   return [value]
 }
 
+function transformSingboxToOutbound(singboxOutbound: any): Omit<Outbound, 'id'> {
+  const { tag, type, ...rest } = singboxOutbound
+  let credential = {}
+
+  switch (type) {
+    case 'vmess':
+      credential = {
+        uuid: rest.uuid,
+        alter_id: rest.alter_id,
+        security: rest.security,
+      }
+      break
+    case 'vless':
+      credential = {
+        uuid: rest.uuid,
+        flow: rest.flow,
+      }
+      break
+    case 'shadowsocks':
+      credential = {
+        method: rest.method,
+        password: rest.password,
+      }
+      break
+    case 'trojan':
+      credential = {
+        password: rest.password,
+      }
+      break
+    default:
+      break
+  }
+
+  return {
+    name: tag,
+    type,
+    server: rest.server || '',
+    server_port: rest.server_port || 0,
+    credential,
+    transport: rest.transport,
+    tls: rest.tls,
+    mux: rest.mux,
+  }
+}
+
 export async function transformSingboxToProfile(
   singboxProfile: SingboxProfile,
   existingProfile: Profile
@@ -34,19 +79,9 @@ export async function transformSingboxToProfile(
         if (existing) {
           return existing.id
         }
-        const { tag, ...rest } = outbound as any
-        const newOutbound: Partial<Outbound> = {
-          name: tag,
-          type: rest.type,
-          server: rest.server,
-          server_port: rest.server_port,
-          credential: rest.credential,
-          transport: rest.transport,
-          tls: rest.tls,
-          mux: rest.mux,
-        }
-        const created = await outboundStore.createOutbound(newOutbound as Outbound)
-        if (created !== undefined) {
+        const newOutbound = transformSingboxToOutbound(outbound)
+        const created = await outboundStore.createOutbound(newOutbound)
+        if (created) {
           return created.id
         }
       })
@@ -69,7 +104,7 @@ export async function transformSingboxToProfile(
           content: '',
         }
         const created = await ruleSetStore.createRuleSet(newRuleSet as RuleSet)
-        if (created !== undefined) {
+        if (created) {
           return created.id
         }
       })
