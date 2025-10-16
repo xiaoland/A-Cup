@@ -17,6 +17,13 @@ async function loadValidator(): Promise<ValidateFunction> {
         throw new Error(`Failed to fetch Sing-Box schema: ${res.status}`);
       }
       const schema = await res.json();
+      ajv.addMetaSchema(
+        (await (
+          await fetch(
+            'https://json-schema.org/draft/2020-12/schema',
+          )
+        ).json()) as any,
+      );
       return ajv.compile(schema);
     })();
   }
