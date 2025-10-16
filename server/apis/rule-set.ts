@@ -134,8 +134,8 @@ RULE_SET_ROUTER.add('GET', '/:id', async ({ path_params, db, token_payload }) =>
   const rs = rule_sets[0] as any;
   const readable = (() => {
     try {
-      const r = JSON.parse(rs.readable_by as string) as number[];
-      const w = JSON.parse(rs.writable_by as string) as number[];
+      const r = JSON.parse(rs.readableBy as string) as number[];
+      const w = JSON.parse(rs.writeableBy as string) as number[];
       return (Array.isArray(r) && r.includes(user_id)) || (Array.isArray(w) && w.includes(user_id));
     } catch {
       return false;

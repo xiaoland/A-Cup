@@ -16,16 +16,19 @@ export const useOutboundStore = defineStore('outbound', () => {
     }
   }
 
-  async function createOutbound(outboundData: any) {
+  async function createOutbound(outboundData: any): Promise<Outbound | undefined> {
     const response = await userStore.authorizedFetch('/api/outbounds', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(outboundData),
     })
     if (response.ok) {
-      fetchOutbounds()
+      const newOutbound = await response.json()
+      await fetchOutbounds()
+      return newOutbound
     } else {
       console.error('Failed to create outbound')
+      return undefined
     }
   }
 

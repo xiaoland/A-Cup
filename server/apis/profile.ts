@@ -15,7 +15,6 @@ import {
   type ProfileExportResponse
 } from '../schemas/export';
 import { exportProfileToR2 } from '../fund/profile-export';
-import { validateSingBoxConfig } from '../fund/ajv';
 
 // Import export functions from other modules
 import { exportOutbound } from './outbound';
@@ -36,36 +35,12 @@ const ExportQuerySchema = z.object({
   method: z.enum(['oss', 'direct']).default('direct')
 });
 
-// Helper function to validate entity access
-async function validateEntityAccess(db: any, user_id: number, entityIds: number[], table: any, entityName: string) {
-  if (entityIds.length === 0) return true;
-  
-  const entities = await db.select().from(table).where(
-    and(
-      inArray(table.id, entityIds),
-      or(
-        eq(table.owner, user_id),
-        eq(table.share, true)
-      )
-    )
-  );
-  
-  if (entities.length !== entityIds.length) {
-    throw new Error(`Some ${entityName} not found or not accessible`);
-  }
-  
-  return true;
-}
-
 // Create Profile
 PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
   
   try {
-    // Validate all referenced entities exist and are accessible
-    await validateEntityAccess(db, user_id, body.outbounds, Outbounds, 'outbounds');
     const ruleSetIds: number[] = body.route?.rule_set ?? [];
-    await validateEntityAccess(db, user_id, ruleSetIds, RuleSets, 'rule sets');
     
     const result = await db.insert(Profiles).values({
       created_by: user_id,
@@ -162,10 +137,6 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload,
   }
   
   try {
-    // Validate all referenced entities if they are being updated
-    if (body.outbounds) await validateEntityAccess(db, user_id, body.outbounds, Outbounds, 'outbounds');
-    if (body.route?.rule_set) await validateEntityAccess(db, user_id, body.route.rule_set, RuleSets, 'rule sets');
-    
     const updateData: any = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.tags !== undefined) updateData.tags = JSON.stringify(body.tags);
@@ -277,9 +248,9 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, query_params, db,
       }
     };
 
-    // Validate the complete configuration with official JSON Schema (Ajv)
-    await validateSingBoxConfig(singBoxConfig);
-    
+    // Validate the generated config with Zod
+    SingBoxProfileSchema.parse(singBoxConfig);
+
     const configJson = JSON.stringify(singBoxConfig, null, 2);
     
     if (query_params.method === 'oss') {

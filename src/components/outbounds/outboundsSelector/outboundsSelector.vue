@@ -6,8 +6,9 @@
         :items="outboundsWithTags"
         :multiple="multiple"
         item-title="name"
-        item-value="tag"
+        :item-value="itemValue"
         label="Outbound"
+        :return-object="false"
         @update:modelValue="onSelection"
         hide-details
       ></v-select>
@@ -37,12 +38,16 @@ interface OutboundWithTag extends Outbound {
 
 const props = defineProps({
   modelValue: {
-    type: [String, Array] as import('vue').PropType<string | string[]>,
+    type: [String, Array] as import('vue').PropType<string | string[] | number | number[]>,
     default: '',
   },
   multiple: {
     type: Boolean,
     default: false,
+  },
+  valueAs: {
+    type: String as () => 'id' | 'tag',
+    default: 'tag',
   },
 });
 
@@ -51,7 +56,7 @@ const emit = defineEmits(['update:modelValue']);
 const outboundStore = useOutboundStore();
 const userStore = useUserStore();
 const outboundsWithTags = ref<OutboundWithTag[]>([]);
-const selected = ref(props.modelValue);
+const selected = ref<any>(props.multiple ? [] : '');
 const showCreateDialog = ref(false);
 const emptyOutbound: Outbound = {
   name: '',
@@ -64,6 +69,7 @@ const emptyOutbound: Outbound = {
     security: 'auto',
   },
 };
+const itemValue = computed(() => (props.valueAs === 'id' ? 'id' : 'tag'));
 
 const fetchOutboundsWithTags = async () => {
   await outboundStore.fetchOutbounds();
@@ -76,11 +82,12 @@ const fetchOutboundsWithTags = async () => {
         return { ...outbound, tag: data.tag };
       }
     }
-    return null;
+    return { ...outbound, tag: `outbound-${outbound.id}` };
   });
 
   const resolvedTags = await Promise.all(tagsPromises);
-  outboundsWithTags.value = resolvedTags.filter((o) => o !== null) as OutboundWithTag[];
+  outboundsWithTags.value = resolvedTags as OutboundWithTag[];
+  updateSelected(props.modelValue);
 };
 
 onMounted(fetchOutboundsWithTags);
@@ -90,16 +97,53 @@ const onOutboundCreated = () => {
   showCreateDialog.value = false;
 };
 
-const onSelection = (value: string | string[]) => {
-  emit('update:modelValue', value);
+const onSelection = (value: any | any[]) => {
+  if (props.valueAs === 'id') {
+    if (props.multiple) {
+      const ids = Array.isArray(value) ? value.map((item: any) => (typeof item === 'object' && item.id ? item.id : item)) : [];
+      emit('update:modelValue', ids);
+    } else {
+      const id = typeof value === 'object' && value.id ? value.id : value;
+      emit('update:modelValue', id);
+    }
+  } else {
+    emit('update:modelValue', value);
+  }
+};
+
+const updateSelected = (modelValue: any) => {
+  if (props.valueAs === 'id') {
+    if (props.multiple) {
+      selected.value = Array.isArray(modelValue) ? modelValue.map(Number) : [];
+    } else {
+      selected.value = modelValue ? Number(modelValue) : '';
+    }
+    return;
+  }
+
+  if (props.multiple) {
+    const tags = (Array.isArray(modelValue) ? modelValue : []) as string[];
+    selected.value = tags
+      .map((tag) => outboundsWithTags.value.find((o) => o.tag === tag)?.tag)
+      .filter((tag) => tag) as string[];
+  } else {
+    const tag = modelValue as string;
+    const found = outboundsWithTags.value.find((o) => o.tag === tag);
+    selected.value = found ? found.tag : '';
+  }
 };
 
 watch(
   () => props.modelValue,
   (newValue) => {
-    selected.value = newValue;
-  }
+    updateSelected(newValue);
+  },
+  { immediate: true, deep: true }
 );
+
+watch(outboundsWithTags, () => {
+  updateSelected(props.modelValue);
+});
 </script>
 
 <style scoped></style>

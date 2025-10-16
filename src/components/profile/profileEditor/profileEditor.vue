@@ -15,8 +15,10 @@
       <RouteEditor v-model="modelValue.route" />
       <DnsEditor v-model="modelValue.dns" />
     </div>
+    <input ref="fileInput" type="file" accept="application/json" @change="onFileChange" hidden />
     <div class="actions">
       <v-btn @click="$emit('cancel')">Cancel</v-btn>
+      <v-btn @click="onImport">Import</v-btn>
       <v-btn color="primary" @click="onSave" :loading="saving">Save</v-btn>
     </div>
   </div>
@@ -29,15 +31,50 @@ import InboundsEditor from '@/components/inbounds/inboundsEditor/inboundsEditor.
 import OutboundsListEditor from '@/components/outbounds/outboundsListEditor/outboundsListEditor.vue';
 import RouteEditor from '@/components/route/routeEditor/routeEditor.vue';
 import DnsEditor from '@/components/dns/dnsEditor';
+import type { Profile } from './schema';
+import { SingboxProfileSchema } from '@/schemas/singbox';
+import { transformSingboxToProfile } from './transform';
 
 const props = defineProps<{
-  modelValue: any;
+  modelValue: Profile;
 }>();
 
-const emit = defineEmits(['save', 'cancel'])
+const emit = defineEmits(['save', 'cancel', 'update:modelValue'])
 
 const userStore = useUserStore()
 const saving = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
+
+const onImport = () => {
+  fileInput.value?.click()
+}
+
+const onFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = async (e) => {
+    try {
+      const content = e.target?.result
+      if (typeof content !== 'string') {
+        throw new Error('File content is not a string')
+      }
+      const data = JSON.parse(content)
+      const parsed = SingboxProfileSchema.parse(data)
+      const profile = await transformSingboxToProfile(parsed, props.modelValue)
+      emit('update:modelValue', profile)
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(`Error: ${error.message}`)
+      } else {
+        alert('An unknown error occurred')
+      }
+    }
+  }
+  reader.readAsText(file)
+}
 
 const onSave = async () => {
   saving.value = true

@@ -15,7 +15,7 @@
       <outbounds-selector v-if="rule.action === 'route'" v-model="rule.outbound" />
       <div v-if="isFieldVisible('domain')" class="d-flex align-center my-2" style="gap: 8px;">
         <v-text-field
-          :model-value="rule.domain?.join(', ')"
+          :model-value="Array.isArray(rule.domain) ? rule.domain.join(', ') : rule.domain"
           label="Domains (comma-separated)"
           @update:model-value="updateField('domain', $event)"
           class="flex-grow-1"
@@ -25,7 +25,7 @@
       </div>
       <div v-if="isFieldVisible('domain_suffix')" class="d-flex align-center my-2" style="gap: 8px;">
         <v-text-field
-          :model-value="rule.domain_suffix?.join(', ')"
+          :model-value="Array.isArray(rule.domain_suffix) ? rule.domain_suffix.join(', ') : rule.domain_suffix"
           label="Domain Suffixes (comma-separated)"
           @update:model-value="updateField('domain_suffix', $event)"
           class="flex-grow-1"
@@ -35,7 +35,7 @@
       </div>
       <div v-if="isFieldVisible('domain_keyword')" class="d-flex align-center my-2" style="gap: 8px;">
         <v-text-field
-          :model-value="rule.domain_keyword?.join(', ')"
+          :model-value="Array.isArray(rule.domain_keyword) ? rule.domain_keyword.join(', ') : rule.domain_keyword"
           label="Domain Keywords (comma-separated)"
           @update:model-value="updateField('domain_keyword', $event)"
           class="flex-grow-1"
@@ -45,7 +45,7 @@
       </div>
       <div v-if="isFieldVisible('domain_regex')" class="d-flex align-center my-2" style="gap: 8px;">
         <v-text-field
-          :model-value="rule.domain_regex?.join(', ')"
+          :model-value="Array.isArray(rule.domain_regex) ? rule.domain_regex.join(', ') : rule.domain_regex"
           label="Domain Regex (comma-separated)"
           @update:model-value="updateField('domain_regex', $event)"
           class="flex-grow-1"
@@ -54,7 +54,7 @@
         <v-btn icon="mdi-close" variant="text" @click="hideField('domain_regex')"></v-btn>
       </div>
       <div v-if="isFieldVisible('rule_set')" class="d-flex align-center my-2" style="gap: 8px;">
-        <rule-sets-selector v-model="rule.rule_set" class="flex-grow-1" />
+        <rule-sets-selector :model-value="Array.isArray(rule.rule_set) ? rule.rule_set : (rule.rule_set ? [rule.rule_set] : [])" @update:model-value="rule.rule_set = $event" class="flex-grow-1" />
         <v-btn icon="mdi-close" variant="text" @click="hideField('rule_set')"></v-btn>
       </div>
 
@@ -93,9 +93,6 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'remove']);
 
 const rule = ref(props.modelValue);
-if (!rule.value.rule_set) {
-  rule.value.rule_set = [];
-}
 
 const allConditions = [
   { title: 'Domains', value: 'domain' },
@@ -134,12 +131,12 @@ const hideField = (field: keyof RouteRule) => {
 };
 
 const updateField = (field: keyof RouteRule, value: string) => {
-  const arrayFields: (keyof RouteRule)[] = ['domain', 'domain_suffix', 'domain_keyword', 'domain_regex'];
+  const arrayFields: (keyof RouteRule)[] = ['domain', 'domain_suffix', 'domain_keyword', 'domain_regex', 'rule_set'];
   if (arrayFields.includes(field)) {
     if (value) {
       (rule.value[field] as string[]) = value.split(',').map((s) => s.trim());
     } else {
-      (rule.value[field] as string[]) = [];
+      (rule.value[field] as string[] | undefined) = undefined;
     }
   }
 };
