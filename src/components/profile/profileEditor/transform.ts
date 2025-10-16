@@ -86,12 +86,12 @@ export async function transformSingboxToProfile(
         }
       })
     )
-    newProfile.outbounds = outboundIds.filter((id) => id !== undefined) as any
+    newProfile.outbounds = outboundIds.filter((id) => id !== undefined) as number[]
   }
 
-  if (singboxProfile.route?.rule_sets) {
+  if (singboxProfile.route?.rule_set) {
     const ruleSetIds = await Promise.all(
-      (singboxProfile.route.rule_sets as any[]).map(async (rs) => {
+      (singboxProfile.route.rule_set as any[]).map(async (rs) => {
         const tag = typeof rs === 'string' ? rs : rs.tag
         const existing = ruleSetStore.ruleSets.find((r) => r.name === tag)
         if (existing) {
@@ -110,7 +110,7 @@ export async function transformSingboxToProfile(
       })
     )
     if (newProfile.route) {
-      newProfile.route.rule_sets = ruleSetIds.filter((id) => id !== undefined) as any
+      newProfile.route.rule_sets = ruleSetIds.filter((id) => id !== undefined)
     }
   }
 

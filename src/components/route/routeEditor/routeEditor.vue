@@ -52,7 +52,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   modelValue: () => ({
     rules: [],
-    rule_sets: [] as string[],
+    rule_sets: [] as number[],
   }),
 });
 
