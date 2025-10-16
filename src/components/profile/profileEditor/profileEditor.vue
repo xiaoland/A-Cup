@@ -32,13 +32,14 @@ import OutboundsListEditor from '@/components/outbounds/outboundsListEditor/outb
 import RouteEditor from '@/components/route/routeEditor/routeEditor.vue';
 import DnsEditor from '@/components/dns/dnsEditor';
 import type { Profile } from './schema';
-import { ProfileSchema } from './schema';
+import { SingboxProfileSchema } from '@/schemas/singbox';
+import { transformSingboxToProfile } from './transform';
 
 const props = defineProps<{
   modelValue: Profile;
 }>();
 
-const emit = defineEmits(['save', 'cancel'])
+const emit = defineEmits(['save', 'cancel', 'update:modelValue'])
 
 const userStore = useUserStore()
 const saving = ref(false)
@@ -61,8 +62,9 @@ const onFileChange = (event: Event) => {
         throw new Error('File content is not a string')
       }
       const data = JSON.parse(content)
-      const parsed = ProfileSchema.parse(data)
-      Object.assign(props.modelValue, parsed)
+      const parsed = SingboxProfileSchema.parse(data)
+      const profile = transformSingboxToProfile(parsed, props.modelValue)
+      emit('update:modelValue', profile)
     } catch (error) {
       if (error instanceof Error) {
         alert(`Error: ${error.message}`)

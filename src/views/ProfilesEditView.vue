@@ -3,12 +3,13 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import ProfileEditor from '@/components/profile/profileEditor/profileEditor.vue'
+import type { Profile } from '@/components/profile/profileEditor/schema'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const profileEditorRef = ref<InstanceType<typeof ProfileEditor> | null>(null)
-const form = ref<any | undefined>()
+const form = ref<Profile | undefined>()
 const loading = ref(false)
 
 const profileId = computed(() => route.params.id as string)
