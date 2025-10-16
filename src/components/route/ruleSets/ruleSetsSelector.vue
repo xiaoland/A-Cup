@@ -9,6 +9,7 @@
         label="Rule Sets"
         multiple
         chips
+        :return-object="false"
         @update:modelValue="onSelection"
         hide-details
       ></v-select>

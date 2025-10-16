@@ -8,6 +8,7 @@
         item-title="name"
         :item-value="itemValue"
         label="Outbound"
+        :return-object="false"
         @update:modelValue="onSelection"
         hide-details
       ></v-select>
