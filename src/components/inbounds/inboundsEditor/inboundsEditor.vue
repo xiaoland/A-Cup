@@ -16,7 +16,7 @@
       :form="item"
       :all-tags="allTags"
       @update:form="updateInbound(idx, $event)"
-      @delete="removeInbound(item.tag)"
+      @delete="item.tag && removeInbound(item.tag)"
     />
   </div>
 </template>
@@ -30,7 +30,7 @@ import type { Inbound as APIInbound } from '@/components/inbounds/inbound/schema
 const props = defineProps<{ modelValue: APIInbound[] }>()
 const emit = defineEmits(['update:modelValue'])
 
-const allTags = computed(() => (props.modelValue || []).map((i) => i.tag))
+const allTags = computed(() => (props.modelValue || []).map((i) => i.tag).filter(Boolean) as string[])
 
 const addInbound = () => {
   const newInbounds = [...(props.modelValue || []), defaultInbound()]

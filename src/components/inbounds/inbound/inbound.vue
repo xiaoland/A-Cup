@@ -3,7 +3,7 @@
     v-model="editableForm"
     :title="`Inbound: ${form.tag}`"
     :show-delete="true"
-    @delete="$emit('delete', form.tag)"
+    @delete="form.tag && $emit('delete', form.tag)"
     @save="onSave"
     @cancel="resetForm"
     :start-editable="!form.tag"
@@ -42,7 +42,7 @@ const types = ['mixed', 'tun']
 const tagErrors = ref<string[]>([])
 
 const validationSchema = InboundSchema.superRefine((data, ctx) => {
-  if (props.allTags.filter((t: string) => t !== props.form.tag).includes(data.tag)) {
+  if (data.tag && props.allTags.filter((t: string) => t !== props.form.tag).includes(data.tag)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['tag'],

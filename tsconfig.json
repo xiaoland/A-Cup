@@ -12,5 +12,10 @@
 		"types": [
 			"./worker-configuration.d.ts"
 		]
-	}
+	},
+  "ts-node": {
+    "compilerOptions": {
+      "module": "NodeNext"
+    }
+  }
 }

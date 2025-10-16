@@ -14,7 +14,7 @@
       ></v-select>
       <div v-if="isFieldVisible('domain')" class="d-flex align-center my-2" style="gap: 8px;">
         <v-text-field
-          :model-value="rule.domain?.join(', ')"
+          :model-value="Array.isArray(rule.domain) ? rule.domain.join(', ') : rule.domain"
           label="Domains (comma-separated)"
           @update:model-value="updateField('domain', $event)"
           class="flex-grow-1"
@@ -24,7 +24,7 @@
       </div>
       <div v-if="isFieldVisible('domain_suffix')" class="d-flex align-center my-2" style="gap: 8px;">
         <v-text-field
-          :model-value="rule.domain_suffix?.join(', ')"
+          :model-value="Array.isArray(rule.domain_suffix) ? rule.domain_suffix.join(', ') : rule.domain_suffix"
           label="Domain Suffixes (comma-separated)"
           @update:model-value="updateField('domain_suffix', $event)"
           class="flex-grow-1"
@@ -34,7 +34,7 @@
       </div>
       <div v-if="isFieldVisible('domain_keyword')" class="d-flex align-center my-2" style="gap: 8px;">
         <v-text-field
-          :model-value="rule.domain_keyword?.join(', ')"
+          :model-value="Array.isArray(rule.domain_keyword) ? rule.domain_keyword.join(', ') : rule.domain_keyword"
           label="Domain Keywords (comma-separated)"
           @update:model-value="updateField('domain_keyword', $event)"
           class="flex-grow-1"
@@ -44,7 +44,7 @@
       </div>
       <div v-if="isFieldVisible('domain_regex')" class="d-flex align-center my-2" style="gap: 8px;">
         <v-text-field
-          :model-value="rule.domain_regex?.join(', ')"
+          :model-value="Array.isArray(rule.domain_regex) ? rule.domain_regex.join(', ') : rule.domain_regex"
           label="Domain Regex (comma-separated)"
           @update:model-value="updateField('domain_regex', $event)"
           class="flex-grow-1"
@@ -53,7 +53,7 @@
         <v-btn icon="mdi-close" variant="text" @click="hideField('domain_regex')"></v-btn>
       </div>
       <div v-if="isFieldVisible('rule_set')" class="d-flex align-center my-2" style="gap: 8px;">
-        <ruleSetsSelector v-model="rule.rule_set" class="flex-grow-1" />
+        <ruleSetsSelector :model-value="Array.isArray(rule.rule_set) ? rule.rule_set : (rule.rule_set ? [rule.rule_set] : [])" @update:model-value="rule.rule_set = $event" class="flex-grow-1" />
         <v-btn icon="mdi-close" variant="text" @click="hideField('rule_set')"></v-btn>
       </div>
 
