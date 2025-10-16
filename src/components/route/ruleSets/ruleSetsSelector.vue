@@ -5,7 +5,7 @@
         v-model="selected"
         :items="ruleSetsWithTags"
         item-title="name"
-        item-value="tag"
+        :item-value="itemValue"
         label="Rule Sets"
         multiple
         chips
@@ -41,6 +41,10 @@ const props = defineProps({
     type: Array as () => string[],
     default: () => [],
   },
+  valueAs: {
+    type: String as () => 'id' | 'tag',
+    default: 'tag',
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -48,8 +52,10 @@ const emit = defineEmits(['update:modelValue']);
 const ruleSetStore = useRuleSetStore();
 const userStore = useUserStore();
 const ruleSetsWithTags = ref<RuleSetWithTag[]>([]);
-const selected = ref<string[]>(props.modelValue);
+const selected = ref<string[]>([]);
 const showCreateDialog = ref(false);
+
+const itemValue = computed(() => (props.valueAs === 'id' ? 'id' : 'tag'));
 
 const fetchRuleSets = async () => {
   await ruleSetStore.fetchRuleSets();
@@ -77,6 +83,8 @@ const fetchRuleSets = async () => {
         tag: ruleSet.tag,
       } as RuleSetWithTag;
     });
+
+  updateSelected(props.modelValue);
 };
 
 onMounted(fetchRuleSets);
@@ -90,12 +98,33 @@ const onRuleSetCreated = () => {
   showCreateDialog.value = false;
 };
 
+const updateSelected = (modelValue: string[]) => {
+  if (props.valueAs === 'id') {
+    selected.value = modelValue;
+    return;
+  }
+
+  // When value is 'tag', convert tags to IDs for selection
+  const selectedIds = modelValue
+    .map((tag) => {
+      const found = ruleSetsWithTags.value.find((rs) => rs.tag === tag);
+      return found ? found.id : null;
+    })
+    .filter((id) => id !== null) as string[];
+  selected.value = selectedIds;
+};
+
 watch(
   () => props.modelValue,
   (newValue) => {
-    selected.value = newValue;
-  }
+    updateSelected(newValue);
+  },
+  { immediate: true }
 );
+
+watch(ruleSetsWithTags, () => {
+  updateSelected(props.modelValue);
+});
 </script>
 
 <style scoped></style>
