@@ -88,8 +88,13 @@ const fetchRuleSets = async () => {
 
 onMounted(fetchRuleSets);
 
-const onSelection = (value: (string | number)[]) => {
-  emit('update:modelValue', value);
+const onSelection = (value: any[]) => {
+  if (props.valueAs === 'id') {
+    const ids = value.map((item) => (typeof item === 'object' && item.id ? item.id : item));
+    emit('update:modelValue', ids);
+  } else {
+    emit('update:modelValue', value);
+  }
 };
 
 const onRuleSetCreated = () => {
@@ -126,5 +131,3 @@ watch(ruleSetsWithTags, () => {
   updateSelected(props.modelValue);
 });
 </script>
-
-<style scoped></style>

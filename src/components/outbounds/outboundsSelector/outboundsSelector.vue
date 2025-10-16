@@ -97,8 +97,18 @@ const onOutboundCreated = () => {
   showCreateDialog.value = false;
 };
 
-const onSelection = (value: any) => {
-  emit('update:modelValue', value);
+const onSelection = (value: any | any[]) => {
+  if (props.valueAs === 'id') {
+    if (props.multiple) {
+      const ids = Array.isArray(value) ? value.map((item: any) => (typeof item === 'object' && item.id ? item.id : item)) : [];
+      emit('update:modelValue', ids);
+    } else {
+      const id = typeof value === 'object' && value.id ? value.id : value;
+      emit('update:modelValue', id);
+    }
+  } else {
+    emit('update:modelValue', value);
+  }
 };
 
 const updateSelected = (modelValue: any) => {
