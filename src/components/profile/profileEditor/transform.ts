@@ -45,7 +45,9 @@ export function transformSingboxToProfile(
         domain_regex: ensureArray(rule.domain_regex),
         rule_set: ensureArray(rule.rule_set),
       })) || [],
-      rule_set: singboxProfile.route.rule_set?.map(rs => typeof rs === 'string' ? rs : rs.tag) || []
+      rule_sets: Array.isArray(singboxProfile.route.rule_sets)
+        ? singboxProfile.route.rule_sets.map(rs => (typeof rs === 'string' ? rs : rs.tag))
+        : [],
     }
   }
 
@@ -61,18 +63,7 @@ export function transformSingboxToProfile(
   }
 
   if (singboxProfile.outbounds) {
-    newProfile.outbounds = singboxProfile.outbounds.map(outbound => {
-      const { type, tag, ...rest } = outbound
-      return {
-        type,
-        tag,
-        name: tag,
-        server: rest.server || '',
-        server_port: rest.server_port || 0,
-        credential: rest.credential || {},
-        ...rest,
-      } as any
-    })
+    newProfile.outbounds = singboxProfile.outbounds.map(outbound => outbound.tag)
   }
 
 

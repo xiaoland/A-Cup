@@ -38,7 +38,7 @@ interface RuleSetWithTag extends RuleSetSchemaType {
 
 const props = defineProps({
   modelValue: {
-    type: Array as () => string[],
+    type: Array as () => (string | number)[],
     default: () => [],
   },
   valueAs: {
@@ -52,7 +52,7 @@ const emit = defineEmits(['update:modelValue']);
 const ruleSetStore = useRuleSetStore();
 const userStore = useUserStore();
 const ruleSetsWithTags = ref<RuleSetWithTag[]>([]);
-const selected = ref<string[]>([]);
+const selected = ref<(string | number)[]>([]);
 const showCreateDialog = ref(false);
 
 const itemValue = computed(() => (props.valueAs === 'id' ? 'id' : 'tag'));
@@ -68,28 +68,26 @@ const fetchRuleSets = async () => {
         return { ...ruleSet, tag: data.tag };
       }
     }
-    return null;
+    return { ...ruleSet, tag: `rule-set-${ruleSet.id}` }; // Fallback tag
   });
 
   const resolvedTags = await Promise.all(tagsPromises);
-  ruleSetsWithTags.value = resolvedTags
-    .filter((rs) => rs !== null)
-    .map((rs) => {
-      const ruleSet = rs as any;
-      return {
-        ...ruleSet,
-        type: ruleSet.type || 'remote',
-        format: ruleSet.format || null,
-        tag: ruleSet.tag,
-      } as RuleSetWithTag;
-    });
+  ruleSetsWithTags.value = resolvedTags.map((rs) => {
+    const ruleSet = rs as any;
+    return {
+      ...ruleSet,
+      type: ruleSet.type || 'remote',
+      format: ruleSet.format || null,
+      tag: ruleSet.tag,
+    } as RuleSetWithTag;
+  });
 
   updateSelected(props.modelValue);
 };
 
 onMounted(fetchRuleSets);
 
-const onSelection = (value: string[]) => {
+const onSelection = (value: (string | number)[]) => {
   emit('update:modelValue', value);
 };
 
@@ -98,20 +96,21 @@ const onRuleSetCreated = () => {
   showCreateDialog.value = false;
 };
 
-const updateSelected = (modelValue: string[]) => {
-  if (props.valueAs === 'id') {
-    selected.value = modelValue;
+const updateSelected = (modelValue: (string | number)[]) => {
+  if (!Array.isArray(modelValue)) {
+    selected.value = [];
     return;
   }
-
-  // When value is 'tag', convert tags to IDs for selection
-  const selectedIds = modelValue
-    .map((tag) => {
-      const found = ruleSetsWithTags.value.find((rs) => rs.tag === tag);
-      return found ? found.id : null;
-    })
-    .filter((id) => id !== null) as string[];
-  selected.value = selectedIds;
+  if (props.valueAs === 'id') {
+    selected.value = modelValue.map((id) => (typeof id === 'number' ? id : parseInt(id, 10)));
+  } else {
+    selected.value = modelValue
+      .map((tag) => {
+        const found = ruleSetsWithTags.value.find((rs) => rs.tag === tag);
+        return found ? found.tag : null;
+      })
+      .filter((t) => t !== null) as string[];
+  }
 };
 
 watch(
@@ -119,7 +118,7 @@ watch(
   (newValue) => {
     updateSelected(newValue);
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
 
 watch(ruleSetsWithTags, () => {

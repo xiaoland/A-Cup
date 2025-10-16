@@ -11,7 +11,7 @@
       <v-divider class="my-4"></v-divider>
 
       <h3>Rule Sets</h3>
-      <rule-sets-selector v-model="route.rule_set" value-as="id" class="mb-4" />
+      <rule-sets-selector v-model="route.rule_sets" value-as="id" class="mb-4" />
 
       <v-divider class="my-4"></v-divider>
 
@@ -52,7 +52,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   modelValue: () => ({
     rules: [],
-    rule_set: [] as string[],
+    rule_sets: [] as string[],
   }),
 });
 

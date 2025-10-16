@@ -37,7 +37,7 @@ interface OutboundWithTag extends Outbound {
 
 const props = defineProps({
   modelValue: {
-    type: [String, Array] as import('vue').PropType<string | string[]>,
+    type: [String, Array] as import('vue').PropType<string | string[] | number | number[]>,
     default: '',
   },
   multiple: {
@@ -55,7 +55,7 @@ const emit = defineEmits(['update:modelValue']);
 const outboundStore = useOutboundStore();
 const userStore = useUserStore();
 const outboundsWithTags = ref<OutboundWithTag[]>([]);
-const selected = ref<string | string[]>(props.multiple ? [] : '');
+const selected = ref<any>(props.multiple ? [] : '');
 const showCreateDialog = ref(false);
 const emptyOutbound: Outbound = {
   name: '',
@@ -81,11 +81,11 @@ const fetchOutboundsWithTags = async () => {
         return { ...outbound, tag: data.tag };
       }
     }
-    return null;
+    return { ...outbound, tag: `outbound-${outbound.id}` };
   });
 
   const resolvedTags = await Promise.all(tagsPromises);
-  outboundsWithTags.value = resolvedTags.filter((o) => o !== null) as OutboundWithTag[];
+  outboundsWithTags.value = resolvedTags as OutboundWithTag[];
   updateSelected(props.modelValue);
 };
 
@@ -96,25 +96,29 @@ const onOutboundCreated = () => {
   showCreateDialog.value = false;
 };
 
-const onSelection = (value: string | string[]) => {
+const onSelection = (value: any) => {
   emit('update:modelValue', value);
 };
 
-const updateSelected = (modelValue: string | string[]) => {
+const updateSelected = (modelValue: any) => {
   if (props.valueAs === 'id') {
-    selected.value = modelValue;
+    if (props.multiple) {
+      selected.value = Array.isArray(modelValue) ? modelValue.map(Number) : [];
+    } else {
+      selected.value = modelValue ? Number(modelValue) : '';
+    }
     return;
   }
 
   if (props.multiple) {
-    const tags = (modelValue as string[]) || [];
+    const tags = (Array.isArray(modelValue) ? modelValue : []) as string[];
     selected.value = tags
-      .map((tag) => outboundsWithTags.value.find((o) => o.tag === tag)?.id)
-      .filter((id) => id) as string[];
+      .map((tag) => outboundsWithTags.value.find((o) => o.tag === tag)?.tag)
+      .filter((tag) => tag) as string[];
   } else {
     const tag = modelValue as string;
     const found = outboundsWithTags.value.find((o) => o.tag === tag);
-    selected.value = found ? found.id || '' : '';
+    selected.value = found ? found.tag : '';
   }
 };
 
@@ -123,7 +127,7 @@ watch(
   (newValue) => {
     updateSelected(newValue);
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
 
 watch(outboundsWithTags, () => {

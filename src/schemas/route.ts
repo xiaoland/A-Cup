@@ -14,7 +14,7 @@ export const RouteRuleSchema = z.object({
 // Schema for the main route object
 export const RouteSchema = z.object({
   rules: z.array(RouteRuleSchema).optional(),
-  rule_set: z.array(z.string()).optional(), // array of rule-set tags
+  rule_sets: z.array(z.string()).optional(), // array of rule-set tags
   final: z.string().optional(),
   auto_detect_interface: z.boolean().optional(),
   default_interface: z.string().optional(),

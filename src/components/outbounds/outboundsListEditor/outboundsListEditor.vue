@@ -60,7 +60,7 @@ onMounted(fetchOutbounds)
 
 const updateOutbounds = () => {
   outbounds.value = (props.modelValue || [])
-    .map((id) => outboundStore.outbounds.find((o) => o.id === id))
+    .map((id) => outboundStore.outbounds.find((o) => o.id?.toString() === id))
     .filter((o) => o) as Outbound[]
 }
 
@@ -76,7 +76,7 @@ const addOutbound = (selectedIds: string[]) => {
 const updateOutbound = (index: number, updatedOutbound: Outbound) => {
   const newOutboundIds = [...(props.modelValue || [])]
   if (updatedOutbound.id) {
-    newOutboundIds[index] = updatedOutbound.id
+    newOutboundIds[index] = updatedOutbound.id.toString()
     emit('update:modelValue', newOutboundIds)
   }
 }
