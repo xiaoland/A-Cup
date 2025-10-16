@@ -88,6 +88,14 @@ watch(
   { deep: true }
 );
 
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    route.value = newValue;
+  },
+  { deep: true }
+);
+
 const pretty = (v: any) => {
   try { return JSON.stringify(v ?? {}, null, 2) } catch { return '' }
 }

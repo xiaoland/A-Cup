@@ -44,8 +44,8 @@ async function validateEntityAccess(db: any, user_id: number, entityIds: number[
     and(
       inArray(table.id, entityIds),
       or(
-        eq(table.owner, user_id),
-        eq(table.share, true)
+        eq(table.created_by, user_id),
+        eq(table.readable_by, true)
       )
     )
   );
