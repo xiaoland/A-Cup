@@ -28,7 +28,7 @@ export const ProfileSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   tags: z.array(z.string()),
   inbounds: z.array(InboundSchema),
-  outbounds: z.array(z.string()),
+  outbounds: z.array(OutboundSchema),
   route: RouteSchema,
   dns: dnsSchema,
 })

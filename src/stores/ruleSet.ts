@@ -16,16 +16,19 @@ export const useRuleSetStore = defineStore('ruleSet', () => {
     }
   }
 
-  async function createRuleSet(ruleSetData: any) {
+  async function createRuleSet(ruleSetData: any): Promise<RuleSet | undefined> {
     const response = await userStore.authorizedFetch('/api/rule_sets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(ruleSetData),
     })
     if (response.ok) {
+      const newRuleSet = await response.json()
       fetchRuleSets()
+      return newRuleSet
     } else {
       console.error('Failed to create rule set')
+      return undefined
     }
   }
 

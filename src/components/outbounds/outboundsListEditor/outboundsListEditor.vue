@@ -10,7 +10,7 @@
     </v-card-title>
   </v-card>
 
-  <div v-for="(item, idx) in outbounds" :key="item.id ?? `new-${idx}`" class="mt-4">
+  <div v-for="(item, idx) in props.modelValue" :key="item.tag ?? `new-${idx}`" class="mt-4">
     <OutboundEditor
       :form="item"
       :start-editable="true"
@@ -23,25 +23,25 @@
     <v-card>
       <v-card-title>Add Outbound</v-card-title>
       <v-card-text>
-        <outbounds-selector :multiple="true" value-as="id" @update:modelValue="addOutbound" />
+        <outbound-picker @update:modelValue="addOutbound" />
       </v-card-text>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import OutboundEditor from '../outboundEditor/outboundEditor.vue'
-import OutboundsSelector from '../outboundsSelector/outboundsSelector.vue'
+import OutboundPicker from '../outboundPicker/outboundPicker.vue'
 import type { Outbound } from '../outboundEditor/types'
 import { useOutboundStore } from '@/stores/outbound'
 
 export interface Props {
-  modelValue: string[]
+  modelValue: Outbound[]
 }
 
 export interface Emits {
-  (e: 'update:modelValue', value: string[]): void
+  (e: 'update:modelValue', value: Outbound[]): void
 }
 
 const props = defineProps<Props>()
@@ -49,42 +49,27 @@ const emit = defineEmits<Emits>()
 
 const outboundStore = useOutboundStore()
 const showAddDialog = ref(false)
-const outbounds = ref<Outbound[]>([])
 
-const fetchOutbounds = async () => {
+onMounted(async () => {
   await outboundStore.fetchOutbounds()
-  updateOutbounds()
-}
+})
 
-onMounted(fetchOutbounds)
-
-const updateOutbounds = () => {
-  outbounds.value = (props.modelValue || [])
-    .map((id) => outboundStore.outbounds.find((o) => o.id?.toString() === id))
-    .filter((o) => o) as Outbound[]
-}
-
-watch(() => props.modelValue, updateOutbounds, { deep: true })
-watch(() => outboundStore.outbounds, updateOutbounds, { deep: true })
-
-const addOutbound = (selectedIds: string[]) => {
-  const newOutboundIds = [...(props.modelValue || []), ...selectedIds]
-  emit('update:modelValue', newOutboundIds)
+const addOutbound = (selectedOutbound: Outbound) => {
+  const newOutbounds = [...(props.modelValue || []), selectedOutbound]
+  emit('update:modelValue', newOutbounds)
   showAddDialog.value = false
 }
 
 const updateOutbound = (index: number, updatedOutbound: Outbound) => {
-  const newOutboundIds = [...(props.modelValue || [])]
-  if (updatedOutbound.id) {
-    newOutboundIds[index] = updatedOutbound.id.toString()
-    emit('update:modelValue', newOutboundIds)
-  }
+  const newOutbounds = [...(props.modelValue || [])]
+  newOutbounds[index] = updatedOutbound
+  emit('update:modelValue', newOutbounds)
 }
 
 const removeOutbound = (index: number) => {
-  const newOutboundIds = [...(props.modelValue || [])]
-  newOutboundIds.splice(index, 1)
-  emit('update:modelValue', newOutboundIds)
+  const newOutbounds = [...(props.modelValue || [])]
+  newOutbounds.splice(index, 1)
+  emit('update:modelValue', newOutbounds)
 }
 </script>
 

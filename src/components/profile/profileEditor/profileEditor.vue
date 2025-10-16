@@ -55,7 +55,7 @@ const onFileChange = (event: Event) => {
   if (!file) return
 
   const reader = new FileReader()
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try {
       const content = e.target?.result
       if (typeof content !== 'string') {
@@ -63,7 +63,7 @@ const onFileChange = (event: Event) => {
       }
       const data = JSON.parse(content)
       const parsed = SingboxProfileSchema.parse(data)
-      const profile = transformSingboxToProfile(parsed, props.modelValue)
+      const profile = await transformSingboxToProfile(parsed, props.modelValue)
       emit('update:modelValue', profile)
     } catch (error) {
       if (error instanceof Error) {

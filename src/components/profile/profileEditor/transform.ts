@@ -1,5 +1,9 @@
 import type { Profile } from './schema'
 import type { SingboxProfile } from '@/schemas/singbox'
+import { useOutboundStore } from '@/stores/outbound'
+import { useRuleSetStore } from '@/stores/ruleSet'
+import type { Outbound } from '@/components/outbounds/outboundEditor/types'
+import type { RuleSet } from '@/schemas/route'
 
 function ensureArray<T>(value: T | T[] | undefined): T[] {
   if (Array.isArray(value)) {
@@ -11,13 +15,68 @@ function ensureArray<T>(value: T | T[] | undefined): T[] {
   return [value]
 }
 
-export function transformSingboxToProfile(
+export async function transformSingboxToProfile(
   singboxProfile: SingboxProfile,
   existingProfile: Profile
-): Profile {
+): Promise<Profile> {
+  const outboundStore = useOutboundStore()
+  const ruleSetStore = useRuleSetStore()
+
   const newProfile: Profile = {
     ...existingProfile,
     name: existingProfile.name || 'Imported Profile',
+  }
+
+  if (singboxProfile.outbounds) {
+    const outboundIds = await Promise.all(
+      singboxProfile.outbounds.map(async (outbound) => {
+        const existing = outboundStore.outbounds.find((o) => o.name === outbound.tag)
+        if (existing) {
+          return existing.id
+        }
+        const { tag, ...rest } = outbound as any
+        const newOutbound: Partial<Outbound> = {
+          name: tag,
+          type: rest.type,
+          server: rest.server,
+          server_port: rest.server_port,
+          credential: rest.credential,
+          transport: rest.transport,
+          tls: rest.tls,
+          mux: rest.mux,
+        }
+        const created = await outboundStore.createOutbound(newOutbound as Outbound)
+        if (created !== undefined) {
+          return created.id
+        }
+      })
+    )
+    newProfile.outbounds = outboundIds.filter((id) => id !== undefined) as any
+  }
+
+  if (singboxProfile.route?.rule_sets) {
+    const ruleSetIds = await Promise.all(
+      (singboxProfile.route.rule_sets as any[]).map(async (rs) => {
+        const tag = typeof rs === 'string' ? rs : rs.tag
+        const existing = ruleSetStore.ruleSets.find((r) => r.name === tag)
+        if (existing) {
+          return existing.id
+        }
+        const newRuleSet: Partial<RuleSet> = {
+          name: tag,
+          type: 'remote',
+          format: 'binary',
+          content: '',
+        }
+        const created = await ruleSetStore.createRuleSet(newRuleSet as RuleSet)
+        if (created !== undefined) {
+          return created.id
+        }
+      })
+    )
+    if (newProfile.route) {
+      newProfile.route.rule_sets = ruleSetIds.filter((id) => id !== undefined) as any
+    }
   }
 
   if (singboxProfile.dns) {
@@ -45,9 +104,6 @@ export function transformSingboxToProfile(
         domain_regex: ensureArray(rule.domain_regex),
         rule_set: ensureArray(rule.rule_set),
       })) || [],
-      rule_sets: Array.isArray(singboxProfile.route.rule_sets)
-        ? singboxProfile.route.rule_sets.map(rs => (typeof rs === 'string' ? rs : rs.tag))
-        : [],
     }
   }
 
@@ -61,11 +117,6 @@ export function transformSingboxToProfile(
       } as any
     })
   }
-
-  if (singboxProfile.outbounds) {
-    newProfile.outbounds = singboxProfile.outbounds.map(outbound => outbound.tag)
-  }
-
 
   return newProfile
 }
