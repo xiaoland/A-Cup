@@ -24,7 +24,7 @@ export const useOutboundStore = defineStore('outbound', () => {
     })
     if (response.ok) {
       const newOutbound = await response.json()
-      fetchOutbounds()
+      await fetchOutbounds()
       return newOutbound
     } else {
       console.error('Failed to create outbound')

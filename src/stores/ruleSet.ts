@@ -24,7 +24,7 @@ export const useRuleSetStore = defineStore('ruleSet', () => {
     })
     if (response.ok) {
       const newRuleSet = await response.json()
-      fetchRuleSets()
+      await fetchRuleSets()
       return newRuleSet
     } else {
       console.error('Failed to create rule set')
