@@ -1,1 +1,0 @@
-ALTER TABLE `profiles` ADD `uuid` text NOT NULL;
