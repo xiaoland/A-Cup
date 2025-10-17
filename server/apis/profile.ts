@@ -37,27 +37,15 @@ PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
   
   try {
     const ruleSetIds: number[] = body.route?.rule_set ?? [];
-    const uuid = randomUUID();
     
     const result = await db.insert(Profiles).values({
       created_by: user_id,
       name: body.name,
-      uuid: uuid,
       tags: JSON.stringify(body.tags),
       outbounds: JSON.stringify(body.outbounds),
       rule_sets: JSON.stringify(ruleSetIds),
     }).returning();
     
-    // Upload exported profile to R2 (private)
-    if (!env.OSS) {
-      return new Response('Object storage not configured', { status: 501 });
-    }
-    // Remove DB-only fields from base config
-    const baseConfig = { ...body };
-    delete (baseConfig as any).name;
-    delete (baseConfig as any).tags;
-    await exportProfileToR2(db, env, uuid, baseConfig);
-
     return Response.json(result[0]);
   } catch (error) {
     return new Response(error instanceof Error ? error.message : 'Validation failed', { status: 400 });
@@ -146,14 +134,17 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload,
       .where(eq(Profiles.id, path_params.id))
       .returning();
     
-    // Upload updated profile export to R2 (private)
-    if (!env.OSS) {
-      return new Response('Object storage not configured', { status: 501 });
+    // If profile has been exported, re-export it
+    if (existingProfile[0].uuid) {
+      // Upload updated profile export to R2 (private)
+      if (!env.OSS) {
+        return new Response('Object storage not configured', { status: 501 });
+      }
+      const baseConfig = { ...body };
+      delete (baseConfig as any).name;
+      delete (baseConfig as any).tags;
+      await exportProfileToR2(db, env, existingProfile[0].uuid, baseConfig);
     }
-    const baseConfig = { ...body };
-    delete (baseConfig as any).name;
-    delete (baseConfig as any).tags;
-    await exportProfileToR2(db, env, existingProfile[0].uuid, baseConfig);
 
     // Parse JSON fields for response
     const resultData = result[0] as any;
@@ -217,11 +208,28 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, db, token_payload
     return new Response('Profile not found', { status: 404 });
   }
 
-  const profileData = profile[0] as any;
-  const key = `profiles/${profileData.uuid}`;
+  let profileData = profile[0];
 
   try {
-    const url = `${env.OSS_PUBLIC_DOMAIN}/${key}`;
+    if (!profileData.uuid) {
+      // First time export: generate UUID, export and save
+      const newUuid = randomUUID();
+
+      // Update the profile in the database with the new UUID
+      await db.update(Profiles)
+        .set({ uuid: newUuid })
+        .where(eq(Profiles.id, profileData.id));
+
+      // Re-fetch profile data to get all fields for export
+      const fullProfileData = await db.select().from(Profiles).where(eq(Profiles.id, profileData.id)).limit(1);
+
+      // Export to R2
+      await exportProfileToR2(db, env, newUuid, fullProfileData[0]);
+
+      profileData.uuid = newUuid; // Update local data
+    }
+
+    const url = `${env.OSS_PUBLIC_DOMAIN}/profiles/${profileData.uuid}`;
 
     const response: ProfileExportResponse = {
       method: 'oss',
