@@ -1,1 +1,1 @@
-ALTER TABLE `profiles` ADD `uuid` text NOT NULL;
+ALTER TABLE `profiles` ADD `uuid` text;
