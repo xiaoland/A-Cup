@@ -59,5 +59,30 @@ export const useProfileStore = defineStore('profile', () => {
     }
   }
 
-  return { profiles, loading, fetchProfiles, createProfile, updateProfile, deleteProfile }
+  async function exportProfile(profile: Profile) {
+    try {
+      const response = await userStore.authorizedFetch(`/api/profiles/${profile.id}/export`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to export profile');
+      }
+
+      const result = await response.json();
+
+      // Trigger download
+      const a = document.createElement('a');
+      a.href = result.url;
+      a.download = result.fileName || `${profile.name}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+    } catch (error) {
+      console.error('Export error:', error);
+      // Optionally, you could use a notification store to show an error to the user
+    }
+  }
+
+  return { profiles, loading, fetchProfiles, createProfile, updateProfile, deleteProfile, exportProfile }
 })

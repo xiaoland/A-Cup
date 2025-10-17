@@ -83,6 +83,11 @@ PROFILE_ROUTER.add('GET', '', async ({ db, token_payload }) => {
     tags: JSON.parse(profile.tags as string),
     outbounds: JSON.parse(profile.outbounds as string),
     rule_sets: JSON.parse(profile.rule_sets as string),
+    inbounds: [],
+    wg_endpoints: [],
+    rules: [],
+    dns_rules: [],
+    dns: [],
   }));
   
   return Response.json(parsedProfiles);
