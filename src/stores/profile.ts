@@ -5,14 +5,20 @@ import type { Profile } from '@/components/profile/profileList/types'
 
 export const useProfileStore = defineStore('profile', () => {
   const profiles = ref<Profile[]>([])
+  const loading = ref(false)
   const userStore = useUserStore()
 
   async function fetchProfiles() {
-    const response = await userStore.authorizedFetch('/api/profiles')
-    if (response.ok) {
-      profiles.value = await response.json()
-    } else {
-      console.error('Failed to fetch profiles')
+    loading.value = true
+    try {
+      const response = await userStore.authorizedFetch('/api/profiles')
+      if (response.ok) {
+        profiles.value = await response.json()
+      } else {
+        console.error('Failed to fetch profiles')
+      }
+    } finally {
+      loading.value = false
     }
   }
 
@@ -53,5 +59,5 @@ export const useProfileStore = defineStore('profile', () => {
     }
   }
 
-  return { profiles, fetchProfiles, createProfile, updateProfile, deleteProfile }
+  return { profiles, loading, fetchProfiles, createProfile, updateProfile, deleteProfile }
 })
