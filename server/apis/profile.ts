@@ -256,7 +256,8 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, db, token_payload
 
   } catch (error) {
     console.error('Export error:', error);
-    return new Response('Failed to generate signed URL for export.', { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return new Response(`Failed to generate signed URL for export: ${errorMessage}`, { status: 500 });
   }
 }, {
   pathParamsSchema: IDPathParamSchema,
