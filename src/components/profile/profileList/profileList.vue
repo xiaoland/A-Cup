@@ -158,32 +158,12 @@
                 <!-- Component Statistics -->
                 <div class="profile-components">
                   <div class="component-info">
-                    <div class="component-label">Inbounds</div>
-                    <div class="component-count">{{ profile.inbounds.length }}</div>
-                  </div>
-                  <div class="component-info">
                     <div class="component-label">Outbounds</div>
                     <div class="component-count">{{ profile.outbounds.length }}</div>
                   </div>
                   <div class="component-info">
-                    <div class="component-label">WG Endpoints</div>
-                    <div class="component-count">{{ profile.wg_endpoints.length }}</div>
-                  </div>
-                  <div class="component-info">
-                    <div class="component-label">Route Rules</div>
-                    <div class="component-count">{{ profile.rules.length }}</div>
-                  </div>
-                  <div class="component-info">
                     <div class="component-label">Rule Sets</div>
                     <div class="component-count">{{ profile.rule_sets.length }}</div>
-                  </div>
-                  <div class="component-info">
-                    <div class="component-label">DNS Rules</div>
-                    <div class="component-count">{{ profile.dns_rules.length }}</div>
-                  </div>
-                  <div class="component-info">
-                    <div class="component-label">DNS Servers</div>
-                    <div class="component-count">{{ profile.dns.length }}</div>
                   </div>
                 </div>
               </v-card-text>
