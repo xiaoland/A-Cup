@@ -2,7 +2,6 @@
   <v-card
     variant="outlined"
     class="profile-item"
-    @click="$emit('edit', profile.id)"
   >
     <v-card-text>
       <div class="profile-header">

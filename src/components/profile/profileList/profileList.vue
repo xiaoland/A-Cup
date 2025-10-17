@@ -59,6 +59,67 @@
       </v-card-text>
     </v-card>
 
+    <!-- Export Result Dialog -->
+    <v-dialog
+      v-model="exportDialog.show"
+      max-width="600px"
+    >
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon class="me-2" color="primary">mdi-export</v-icon>
+          Export Profile
+        </v-card-title>
+
+        <v-card-text>
+          <div v-if="exportDialog.loading" class="text-center py-4">
+            <v-progress-circular indeterminate color="primary" />
+            <div class="mt-2">Exporting profile...</div>
+          </div>
+
+          <div v-else-if="exportDialog.result" class="export-result">
+            <div class="d-flex align-center">
+              <v-icon color="success" class="me-2">mdi-check-circle</v-icon>
+              <span class="text-h6">Export Successful</span>
+            </div>
+            <div class="mt-2">
+              Profile "{{ exportDialog.profileName }}" has been exported successfully.
+            </div>
+
+            <div v-if="exportDialog.result.url" class="result-url">
+              <div class="text-caption mb-1">Download URL:</div>
+              <div>{{ exportDialog.result.url }}</div>
+            </div>
+          </div>
+
+          <div v-else-if="exportDialog.error" class="export-error">
+            <div class="d-flex align-center">
+              <v-icon color="error" class="me-2">mdi-alert-circle</v-icon>
+              <span class="text-h6">Export Failed</span>
+            </div>
+            <div class="mt-2">{{ exportDialog.error }}</div>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            v-if="exportDialog.result?.url"
+            color="primary"
+            variant="outlined"
+            @click="copyToClipboard(exportDialog.result.url)"
+          >
+            Copy URL
+          </v-btn>
+          <v-btn
+            variant="outlined"
+            @click="closeExportDialog"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Delete Confirmation Dialog -->
     <v-dialog
       v-model="deleteDialog.show"
@@ -123,6 +184,14 @@ const deleteDialog = ref({
   profile: null as Profile | null
 })
 
+const exportDialog = ref({
+  show: false,
+  loading: false,
+  profileName: '',
+  result: null as { url?: string; fileName?: string } | null,
+  error: ''
+})
+
 // Computed
 const profiles = computed(() => profileStore.profiles)
 const loading = computed(() => profileStore.loading)
@@ -132,8 +201,37 @@ const handleEdit = (id: number) => {
   emit('edit', id)
 }
 
-const exportProfile = (profile: Profile) => {
-  profileStore.exportProfile(profile)
+const exportProfile = async (profile: Profile) => {
+  exportDialog.value = {
+    show: true,
+    loading: true,
+    profileName: profile.name,
+    result: null,
+    error: ''
+  }
+
+  try {
+    const result = await profileStore.exportProfile(profile)
+    exportDialog.value.result = result
+  } catch (error) {
+    exportDialog.value.error = error instanceof Error ? error.message : 'An unknown error occurred.'
+    console.error('Export error:', error)
+  } finally {
+    exportDialog.value.loading = false
+  }
+}
+
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    // In real app, show a toast notification
+  } catch (error) {
+    console.error('Failed to copy to clipboard:', error)
+  }
+}
+
+const closeExportDialog = () => {
+  exportDialog.value.show = false
 }
 
 const duplicateProfile = async (profile: Profile) => {
