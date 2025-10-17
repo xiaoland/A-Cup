@@ -28,7 +28,7 @@ const CreateProfileSchema = SingBoxProfileRequestSchema;
 const UpdateProfileSchema = SingBoxProfileRequestSchema.partial();
 
 const IDPathParamSchema = z.object({
-  id: z.string().transform(val => parseInt(val))
+  id: z.string().uuid(),
 });
 
 // Create Profile
@@ -45,8 +45,19 @@ PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
       outbounds: JSON.stringify(body.outbounds),
       rule_sets: JSON.stringify(ruleSetIds),
     }).returning();
+
+    const newProfile = result[0];
+
+    // Export the profile to R2
+    if (!env.OSS) {
+      return new Response('Object storage not configured', { status: 501 });
+    }
+    const baseConfig = { ...body };
+    delete (baseConfig as any).name;
+    delete (baseConfig as any).tags;
+    await exportProfileToR2(db, env, newProfile.id, baseConfig);
     
-    return Response.json(result[0]);
+    return Response.json(newProfile);
   } catch (error) {
     return new Response(error instanceof Error ? error.message : 'Validation failed', { status: 400 });
   }
@@ -134,17 +145,14 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload,
       .where(eq(Profiles.id, path_params.id))
       .returning();
     
-    // If profile has been exported, re-export it
-    if (existingProfile[0].uuid) {
-      // Upload updated profile export to R2 (private)
-      if (!env.OSS) {
-        return new Response('Object storage not configured', { status: 501 });
-      }
-      const baseConfig = { ...body };
-      delete (baseConfig as any).name;
-      delete (baseConfig as any).tags;
-      await exportProfileToR2(db, env, existingProfile[0].uuid, baseConfig);
+    // Re-export the profile
+    if (!env.OSS) {
+      return new Response('Object storage not configured', { status: 501 });
     }
+    const baseConfig = { ...body };
+    delete (baseConfig as any).name;
+    delete (baseConfig as any).tags;
+    await exportProfileToR2(db, env, existingProfile[0].id, baseConfig);
 
     // Parse JSON fields for response
     const resultData = result[0] as any;
@@ -182,7 +190,7 @@ PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload, en
 
   // Also delete the exported profile from R2
   if (env.OSS) {
-    const key = `profiles/${result[0].uuid}`;
+    const key = `profiles/${result[0].id}`;
     await env.OSS.delete(key);
   }
   
@@ -208,34 +216,10 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, db, token_payload
     return new Response('Profile not found', { status: 404 });
   }
 
-  let profileData = profile[0];
+  const profileData = profile[0];
 
   try {
-    if (!profileData.uuid) {
-      // First time export: generate UUID, export and save
-      const newUuid = randomUUID();
-
-      // Update the profile in the database with the new UUID
-      await db.update(Profiles)
-        .set({ uuid: newUuid })
-        .where(eq(Profiles.id, profileData.id));
-
-      // Re-fetch profile data to get all fields for export
-      const fullProfileData = await db.select().from(Profiles).where(eq(Profiles.id, profileData.id)).limit(1);
-      const pData = fullProfileData[0];
-      const baseConfig = {
-        outbounds: pData.outbounds,
-        route: {
-          rule_set: pData.rule_sets,
-        }
-      };
-      // Export to R2
-      await exportProfileToR2(db, env, newUuid, baseConfig);
-
-      profileData.uuid = newUuid; // Update local data
-    }
-
-    const url = `${env.OSS_PUBLIC_DOMAIN}/profiles/${profileData.uuid}`;
+    const url = `${env.OSS_PUBLIC_DOMAIN}/profiles/${profileData.id}`;
 
     const response: ProfileExportResponse = {
       method: 'oss',
