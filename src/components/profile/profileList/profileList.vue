@@ -69,124 +69,126 @@
           class="mb-4"
         />
 
-        <!-- Empty State -->
-        <div v-else-if="!loading && profiles.length === 0" class="empty-state">
-          <v-icon class="empty-icon">mdi-account-network-outline</v-icon>
-          <h3>No profiles found</h3>
-          <p class="text-medium-emphasis">Start by creating your first proxy profile</p>
-          <v-btn
-            color="primary"
-            variant="elevated"
-            @click="$emit('create')"
-            prepend-icon="mdi-plus"
-            class="mt-4"
-          >
-            Create First Profile
-          </v-btn>
-        </div>
-
-        <!-- Profile List -->
         <div v-else>
-          <v-card
-            v-for="profile in profiles"
-            :key="profile.id"
-            variant="outlined"
-            class="profile-item"
-            :class="{ 'export-mode': exportMode }"
-            @click="handleProfileClick(profile)"
-          >
-            <v-card-text>
-              <div class="profile-header">
-                <div>
-                  <div class="profile-title">{{ profile.name }}</div>
-                  <div class="text-caption text-medium-emphasis">
-                    ID: {{ profile.id }}
+          <!-- Empty State -->
+          <div v-if="profiles.length === 0" class="empty-state">
+            <v-icon class="empty-icon">mdi-account-network-outline</v-icon>
+            <h3>No profiles found</h3>
+            <p class="text-medium-emphasis">Start by creating your first proxy profile</p>
+            <v-btn
+              color="primary"
+              variant="elevated"
+              @click="$emit('create')"
+              prepend-icon="mdi-plus"
+              class="mt-4"
+            >
+              Create First Profile
+            </v-btn>
+          </div>
+
+          <!-- Profile List -->
+          <div v-else>
+            <v-card
+              v-for="profile in profiles"
+              :key="profile.id"
+              variant="outlined"
+              class="profile-item"
+              :class="{ 'export-mode': exportMode }"
+              @click="handleProfileClick(profile)"
+            >
+              <v-card-text>
+                <div class="profile-header">
+                  <div>
+                    <div class="profile-title">{{ profile.name }}</div>
+                    <div class="text-caption text-medium-emphasis">
+                      ID: {{ profile.id }}
+                    </div>
+                  </div>
+                  <div v-if="!exportMode" class="profile-actions">
+                    <v-btn
+                      icon="mdi-pencil"
+                      size="small"
+                      variant="text"
+                      @click.stop="$emit('edit', profile.id)"
+                    />
+                    <v-menu>
+                      <template #activator="{ props: menuProps }">
+                        <v-btn
+                          icon="mdi-dots-vertical"
+                          size="small"
+                          variant="text"
+                          v-bind="menuProps"
+                          @click.stop
+                        />
+                      </template>
+                      <v-list>
+                        <v-list-item @click="duplicateProfile(profile)">
+                          <template #prepend>
+                            <v-icon>mdi-content-copy</v-icon>
+                          </template>
+                          <v-list-item-title>Duplicate</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item @click="confirmDelete(profile)">
+                          <template #prepend>
+                            <v-icon color="error">mdi-delete</v-icon>
+                          </template>
+                          <v-list-item-title>Delete</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
+                  </div>
+                  <div v-else class="d-flex align-center">
+                    <v-icon color="primary" class="me-2">mdi-cursor-pointer</v-icon>
+                    <span class="text-caption">Click to export</span>
                   </div>
                 </div>
-                <div v-if="!exportMode" class="profile-actions">
-                  <v-btn
-                    icon="mdi-pencil"
+
+                <!-- Tags -->
+                <div v-if="profile.tags.length > 0" class="profile-tags">
+                  <v-chip
+                    v-for="tag in profile.tags"
+                    :key="tag"
                     size="small"
-                    variant="text"
-                    @click.stop="$emit('edit', profile.id)"
-                  />
-                  <v-menu>
-                    <template #activator="{ props: menuProps }">
-                      <v-btn
-                        icon="mdi-dots-vertical"
-                        size="small"
-                        variant="text"
-                        v-bind="menuProps"
-                        @click.stop
-                      />
-                    </template>
-                    <v-list>
-                      <v-list-item @click="duplicateProfile(profile)">
-                        <template #prepend>
-                          <v-icon>mdi-content-copy</v-icon>
-                        </template>
-                        <v-list-item-title>Duplicate</v-list-item-title>
-                      </v-list-item>
-                      <v-list-item @click="confirmDelete(profile)">
-                        <template #prepend>
-                          <v-icon color="error">mdi-delete</v-icon>
-                        </template>
-                        <v-list-item-title>Delete</v-list-item-title>
-                      </v-list-item>
-                    </v-list>
-                  </v-menu>
+                    variant="outlined"
+                  >
+                    {{ tag }}
+                  </v-chip>
                 </div>
-                <div v-else class="d-flex align-center">
-                  <v-icon color="primary" class="me-2">mdi-cursor-pointer</v-icon>
-                  <span class="text-caption">Click to export</span>
-                </div>
-              </div>
 
-              <!-- Tags -->
-              <div v-if="profile.tags.length > 0" class="profile-tags">
-                <v-chip
-                  v-for="tag in profile.tags"
-                  :key="tag"
-                  size="small"
-                  variant="outlined"
-                >
-                  {{ tag }}
-                </v-chip>
-              </div>
-
-              <!-- Component Statistics -->
-              <div class="profile-components">
-                <div class="component-info">
-                  <div class="component-label">Inbounds</div>
-                  <div class="component-count">{{ profile.inbounds.length }}</div>
+                <!-- Component Statistics -->
+                <div class="profile-components">
+                  <div class="component-info">
+                    <div class="component-label">Inbounds</div>
+                    <div class="component-count">{{ profile.inbounds.length }}</div>
+                  </div>
+                  <div class="component-info">
+                    <div class="component-label">Outbounds</div>
+                    <div class="component-count">{{ profile.outbounds.length }}</div>
+                  </div>
+                  <div class="component-info">
+                    <div class="component-label">WG Endpoints</div>
+                    <div class="component-count">{{ profile.wg_endpoints.length }}</div>
+                  </div>
+                  <div class="component-info">
+                    <div class="component-label">Route Rules</div>
+                    <div class="component-count">{{ profile.rules.length }}</div>
+                  </div>
+                  <div class="component-info">
+                    <div class="component-label">Rule Sets</div>
+                    <div class="component-count">{{ profile.rule_sets.length }}</div>
+                  </div>
+                  <div class="component-info">
+                    <div class="component-label">DNS Rules</div>
+                    <div class="component-count">{{ profile.dns_rules.length }}</div>
+                  </div>
+                  <div class="component-info">
+                    <div class="component-label">DNS Servers</div>
+                    <div class="component-count">{{ profile.dns.length }}</div>
+                  </div>
                 </div>
-                <div class="component-info">
-                  <div class="component-label">Outbounds</div>
-                  <div class="component-count">{{ profile.outbounds.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">WG Endpoints</div>
-                  <div class="component-count">{{ profile.wg_endpoints.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">Route Rules</div>
-                  <div class="component-count">{{ profile.rules.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">Rule Sets</div>
-                  <div class="component-count">{{ profile.rule_sets.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">DNS Rules</div>
-                  <div class="component-count">{{ profile.dns_rules.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">DNS Servers</div>
-                  <div class="component-count">{{ profile.dns.length }}</div>
-                </div>
-              </div>
-            </v-card-text>
-          </v-card>
+              </v-card-text>
+            </v-card>
+          </div>
         </div>
       </v-card-text>
     </v-card>
