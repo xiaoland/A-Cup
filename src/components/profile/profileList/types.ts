@@ -3,13 +3,8 @@ export interface Profile {
   created_by: number
   name: string
   tags: string[]
-  inbounds: number[]
   outbounds: number[]
-  wg_endpoints: number[]
-  rules: number[]
   rule_sets: number[]
-  dns_rules: number[]
-  dns: number[]
 }
 
 export interface Props {

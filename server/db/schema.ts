@@ -76,6 +76,7 @@ export const Profiles = sqliteTable("profiles", {
   id: int().primaryKey({ autoIncrement: true }),
   created_by: int().notNull().references(() => Users.id),
   name: text().notNull(),
+  uuid: text().notNull(),
   tags: text({ mode: "json" }).notNull().default("[]"), // text[] for what system,device,etc.
   outbounds: text({ mode: "json" }).notNull().default("[]"), // int[] FK to outbounds.id
   rule_sets: text({ mode: "json" }).notNull().default("[]"), // int[] FK to rule_sets.id

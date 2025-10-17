@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { Router } from '../fund/router';
 import { 
@@ -30,21 +31,18 @@ const IDPathParamSchema = z.object({
   id: z.string().transform(val => parseInt(val))
 });
 
-const ExportQuerySchema = z.object({
-  type: z.enum(['sing-box']).default('sing-box'),
-  method: z.enum(['oss', 'direct']).default('direct')
-});
-
 // Create Profile
 PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
   
   try {
     const ruleSetIds: number[] = body.route?.rule_set ?? [];
+    const uuid = randomUUID();
     
     const result = await db.insert(Profiles).values({
       created_by: user_id,
       name: body.name,
+      uuid: uuid,
       tags: JSON.stringify(body.tags),
       outbounds: JSON.stringify(body.outbounds),
       rule_sets: JSON.stringify(ruleSetIds),
@@ -58,7 +56,7 @@ PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
     const baseConfig = { ...body };
     delete (baseConfig as any).name;
     delete (baseConfig as any).tags;
-    await exportProfileToR2(db, env, (result[0] as any).id, baseConfig);
+    await exportProfileToR2(db, env, uuid, baseConfig);
 
     return Response.json(result[0]);
   } catch (error) {
@@ -83,11 +81,6 @@ PROFILE_ROUTER.add('GET', '', async ({ db, token_payload }) => {
     tags: JSON.parse(profile.tags as string),
     outbounds: JSON.parse(profile.outbounds as string),
     rule_sets: JSON.parse(profile.rule_sets as string),
-    inbounds: [],
-    wg_endpoints: [],
-    rules: [],
-    dns_rules: [],
-    dns: [],
   }));
   
   return Response.json(parsedProfiles);
@@ -160,7 +153,7 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload,
     const baseConfig = { ...body };
     delete (baseConfig as any).name;
     delete (baseConfig as any).tags;
-    await exportProfileToR2(db, env, path_params.id, baseConfig);
+    await exportProfileToR2(db, env, existingProfile[0].uuid, baseConfig);
 
     // Parse JSON fields for response
     const resultData = result[0] as any;
@@ -198,7 +191,7 @@ PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload, en
 
   // Also delete the exported profile from R2
   if (env.OSS) {
-    const key = `profiles/${path_params.id}`;
+    const key = `profiles/${result[0].uuid}`;
     await env.OSS.delete(key);
   }
   
@@ -224,31 +217,15 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, db, token_payload
     return new Response('Profile not found', { status: 404 });
   }
 
-  // Check if R2 is configured
-  if (!env.OSS) {
-    return new Response('Object storage not configured', { status: 501 });
-  }
-
   const profileData = profile[0] as any;
-  const key = `profiles/${profileData.id}`;
+  const key = `profiles/${profileData.uuid}`;
 
   try {
-    // Check if the object exists in R2
-    const object = await env.OSS.head(key);
-    if (object === null) {
-      // (Optional) Regenerate the profile if it's missing
-      // For now, we'll return an error as per the plan.
-      return new Response('Exported profile not found in storage.', { status: 404 });
-    }
-
-    // Generate a pre-signed URL for GET requests, expiring in 5 minutes (300 seconds)
-    const signedUrl = await env.OSS.createSignedUrl('getObject', key, {
-      expires: 300,
-    });
+    const url = `${env.OSS_PUBLIC_DOMAIN}/${key}`;
 
     const response: ProfileExportResponse = {
       method: 'oss',
-      url: signedUrl,
+      url: url,
       fileName: `${profileData.name}.json`
     };
 
