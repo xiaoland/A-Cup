@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { Router } from '../fund/router';
 import { 
@@ -30,11 +31,6 @@ const IDPathParamSchema = z.object({
   id: z.string().transform(val => parseInt(val))
 });
 
-const ExportQuerySchema = z.object({
-  type: z.enum(['sing-box']).default('sing-box'),
-  method: z.enum(['oss', 'direct']).default('direct')
-});
-
 // Create Profile
 PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
@@ -50,16 +46,6 @@ PROFILE_ROUTER.add('POST', '', async ({ body, db, token_payload, env }) => {
       rule_sets: JSON.stringify(ruleSetIds),
     }).returning();
     
-    // Upload exported profile to R2 (private)
-    if (!env.OSS) {
-      return new Response('Object storage not configured', { status: 501 });
-    }
-    // Remove DB-only fields from base config
-    const baseConfig = { ...body };
-    delete (baseConfig as any).name;
-    delete (baseConfig as any).tags;
-    await exportProfileToR2(db, env, (result[0] as any).id, baseConfig);
-
     return Response.json(result[0]);
   } catch (error) {
     return new Response(error instanceof Error ? error.message : 'Validation failed', { status: 400 });
@@ -148,14 +134,17 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload,
       .where(eq(Profiles.id, path_params.id))
       .returning();
     
-    // Upload updated profile export to R2 (private)
-    if (!env.OSS) {
-      return new Response('Object storage not configured', { status: 501 });
+    // If profile has been exported, re-export it
+    if (existingProfile[0].uuid) {
+      // Upload updated profile export to R2 (private)
+      if (!env.OSS) {
+        return new Response('Object storage not configured', { status: 501 });
+      }
+      const baseConfig = { ...body };
+      delete (baseConfig as any).name;
+      delete (baseConfig as any).tags;
+      await exportProfileToR2(db, env, existingProfile[0].uuid, baseConfig);
     }
-    const baseConfig = { ...body };
-    delete (baseConfig as any).name;
-    delete (baseConfig as any).tags;
-    await exportProfileToR2(db, env, path_params.id, baseConfig);
 
     // Parse JSON fields for response
     const resultData = result[0] as any;
@@ -177,7 +166,7 @@ PROFILE_ROUTER.add('PUT', '/:id', async ({ path_params, body, db, token_payload,
 });
 
 // Delete Profile
-PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload }) => {
+PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
   
   const result = await db.delete(Profiles).where(
@@ -190,6 +179,12 @@ PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload }) 
   if (result.length === 0) {
     return new Response('Profile not found', { status: 404 });
   }
+
+  // Also delete the exported profile from R2
+  if (env.OSS) {
+    const key = `profiles/${result[0].uuid}`;
+    await env.OSS.delete(key);
+  }
   
   return Response.json({ message: 'Profile deleted successfully' });
 }, {
@@ -198,9 +193,9 @@ PROFILE_ROUTER.add('DELETE', '/:id', async ({ path_params, db, token_payload }) 
 });
 
 // Export Profile
-PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, query_params, db, token_payload, env }) => {
+PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, db, token_payload, env }) => {
   const user_id = parseInt((token_payload?.sub || '0').toString());
-  
+
   // Get profile
   const profile = await db.select().from(Profiles).where(
     and(
@@ -208,96 +203,54 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, query_params, db,
       eq(Profiles.created_by, user_id)
     )
   ).limit(1);
-  
+
   if (profile.length === 0) {
     return new Response('Profile not found', { status: 404 });
   }
-  
-  const profileData = profile[0] as any;
-  const outboundIds = JSON.parse(profileData.outbounds as string) as number[];
-  const ruleSetIds = JSON.parse(profileData.rule_sets as string) as number[];
-  
+
+  let profileData = profile[0];
+
   try {
-    // Use individual module export methods to generate configurations
-    const [outbounds, ruleSets] = await Promise.all([
-      Promise.all(outboundIds.map(id => exportOutbound(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
-      Promise.all(ruleSetIds.map(id => exportRuleSet(db, id))).then(results => results.filter((item): item is NonNullable<typeof item> => item !== null)),
-    ]);
-    
-    // Determine the final outbound with proper tag format
-    const finalOutbound = outbounds[0]?.tag || 'direct';
-    
-    // Generate sing-box configuration
-    const singBoxConfig: SingBoxProfile = {
-      log: {
-        level: "info",
-        timestamp: true
-      },
-      experimental: {
-        cache_file: {
-          enabled: true,
-          store_fakeip: true,
-          store_rdrc: false
+    if (!profileData.uuid) {
+      // First time export: generate UUID, export and save
+      const newUuid = randomUUID();
+
+      // Update the profile in the database with the new UUID
+      await db.update(Profiles)
+        .set({ uuid: newUuid })
+        .where(eq(Profiles.id, profileData.id));
+
+      // Re-fetch profile data to get all fields for export
+      const fullProfileData = await db.select().from(Profiles).where(eq(Profiles.id, profileData.id)).limit(1);
+      const pData = fullProfileData[0];
+      const baseConfig = {
+        outbounds: pData.outbounds,
+        route: {
+          rule_set: pData.rule_sets,
         }
-      },
-      outbounds: outbounds,
-      route: {
-        rule_set: ruleSets,
-        final: finalOutbound,
-        auto_detect_interface: true
-      }
+      };
+      // Export to R2
+      await exportProfileToR2(db, env, newUuid, baseConfig);
+
+      profileData.uuid = newUuid; // Update local data
+    }
+
+    const url = `${env.OSS_PUBLIC_DOMAIN}/profiles/${profileData.uuid}`;
+
+    const response: ProfileExportResponse = {
+      method: 'oss',
+      url: url,
+      fileName: `${profileData.name}.json`
     };
 
-    // Validate the generated config with Zod
-    SingBoxProfileSchema.parse(singBoxConfig);
+    return Response.json(ProfileExportResponseSchema.parse(response));
 
-    const configJson = JSON.stringify(singBoxConfig, null, 2);
-    
-    if (query_params.method === 'oss') {
-      // Check if R2 is configured
-      if (!env.OSS) {
-        return new Response('Object storage not configured', { status: 501 });
-      }
-      
-      // Upload to R2 storage
-      const fileName = `${profileData.id}-${profileData.name.replace(/[^a-zA-Z0-9]/g, '-')}.json`;
-      const key = `profiles/${fileName}`;
-      
-      await env.OSS.put(key, configJson, {
-        httpMetadata: {
-          contentType: 'application/json'
-        }
-      });
-      
-      // Generate a presigned URL or return the public URL
-      const url = env.OSS_PUBLIC_DOMAIN 
-        ? `https://${env.OSS_PUBLIC_DOMAIN}/${key}`
-        : `Object uploaded as ${key}`;
-      
-      const response: ProfileExportResponse = {
-        method: 'oss',
-        url: url,
-        fileName: fileName
-      };
-      
-      return Response.json(ProfileExportResponseSchema.parse(response));
-    } else {
-      // Return direct download
-      const response: ProfileExportResponse = {
-        method: 'direct',
-        content: configJson,
-        fileName: `${profileData.name}.json`
-      };
-      
-      return Response.json(ProfileExportResponseSchema.parse(response));
-    }
-    
   } catch (error) {
     console.error('Export error:', error);
-    return new Response('Export failed', { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return new Response(`Failed to generate signed URL for export: ${errorMessage}`, { status: 500 });
   }
 }, {
   pathParamsSchema: IDPathParamSchema,
-  queryParamsSchema: ExportQuerySchema,
   allowedRoles: ['authenticated']
 });

@@ -58,9 +58,9 @@ async function exportRuleSetForProfile(db: DrizzleD1Database, id: number) {
   return config;
 }
 
-export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profileId: number, baseConfig?: any) {
+export async function exportProfileToR2(db: DrizzleD1Database, env: Env, uuid: string, baseConfig?: any) {
   // Fetch profile row
-  const profileList = await db.select().from(Profiles).where(eq(Profiles.id, profileId)).limit(1);
+  const profileList = await db.select().from(Profiles).where(eq(Profiles.uuid, uuid)).limit(1);
   if (profileList.length === 0) return;
 
   const profile: any = profileList[0];
@@ -74,7 +74,7 @@ export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profile
     config = JSON.parse(JSON.stringify(baseConfig));
   } else {
     // Load existing config from R2 and update only the outbounds and route.rule_set
-    const existing = await env.OSS.get(`profiles/${profileId}`);
+    const existing = await env.OSS.get(`profiles/${uuid}`);
     if (existing) {
       try {
         config = await existing.json<any>();
@@ -101,7 +101,7 @@ export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profile
   SingBoxProfileSchema.parse(config);
 
   const configJson = JSON.stringify(config, null, 2);
-  await env.OSS.put(`profiles/${profileId}`, configJson, {
+  await env.OSS.put(`profiles/${uuid}`, configJson, {
     httpMetadata: { contentType: 'application/json' },
   });
 }
