@@ -222,9 +222,15 @@ PROFILE_ROUTER.add('GET', '/:id/export', async ({ path_params, db, token_payload
 
       // Re-fetch profile data to get all fields for export
       const fullProfileData = await db.select().from(Profiles).where(eq(Profiles.id, profileData.id)).limit(1);
-
+      const pData = fullProfileData[0];
+      const baseConfig = {
+        outbounds: pData.outbounds,
+        route: {
+          rule_set: pData.rule_sets,
+        }
+      };
       // Export to R2
-      await exportProfileToR2(db, env, newUuid, fullProfileData[0]);
+      await exportProfileToR2(db, env, newUuid, baseConfig);
 
       profileData.uuid = newUuid; // Update local data
     }
