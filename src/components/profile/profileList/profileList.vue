@@ -87,106 +87,16 @@
 
         <!-- Profile List -->
         <div v-else>
-          <v-card
+          <ProfileCard
             v-for="profile in profiles"
             :key="profile.id"
-            variant="outlined"
-            class="profile-item"
-            :class="{ 'export-mode': exportMode }"
-            @click="handleProfileClick(profile)"
-          >
-            <v-card-text>
-              <div class="profile-header">
-                <div>
-                  <div class="profile-title">{{ profile.name }}</div>
-                  <div class="text-caption text-medium-emphasis">
-                    ID: {{ profile.id }}
-                  </div>
-                </div>
-                <div v-if="!exportMode" class="profile-actions">
-                  <v-btn
-                    icon="mdi-pencil"
-                    size="small"
-                    variant="text"
-                    @click.stop="$emit('edit', profile.id)"
-                  />
-                  <v-menu>
-                    <template #activator="{ props: menuProps }">
-                      <v-btn
-                        icon="mdi-dots-vertical"
-                        size="small"
-                        variant="text"
-                        v-bind="menuProps"
-                        @click.stop
-                      />
-                    </template>
-                    <v-list>
-                      <v-list-item @click="duplicateProfile(profile)">
-                        <template #prepend>
-                          <v-icon>mdi-content-copy</v-icon>
-                        </template>
-                        <v-list-item-title>Duplicate</v-list-item-title>
-                      </v-list-item>
-                      <v-list-item @click="confirmDelete(profile)">
-                        <template #prepend>
-                          <v-icon color="error">mdi-delete</v-icon>
-                        </template>
-                        <v-list-item-title>Delete</v-list-item-title>
-                      </v-list-item>
-                    </v-list>
-                  </v-menu>
-                </div>
-                <div v-else class="d-flex align-center">
-                  <v-icon color="primary" class="me-2">mdi-cursor-pointer</v-icon>
-                  <span class="text-caption">Click to export</span>
-                </div>
-              </div>
-
-              <!-- Tags -->
-              <div v-if="profile.tags.length > 0" class="profile-tags">
-                <v-chip
-                  v-for="tag in profile.tags"
-                  :key="tag"
-                  size="small"
-                  variant="outlined"
-                >
-                  {{ tag }}
-                </v-chip>
-              </div>
-
-              <!-- Component Statistics -->
-              <div class="profile-components">
-                <div class="component-info">
-                  <div class="component-label">Inbounds</div>
-                  <div class="component-count">{{ profile.inbounds.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">Outbounds</div>
-                  <div class="component-count">{{ profile.outbounds.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">WG Endpoints</div>
-                  <div class="component-count">{{ profile.wg_endpoints.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">Route Rules</div>
-                  <div class="component-count">{{ profile.rules.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">Rule Sets</div>
-                  <div class="component-count">{{ profile.rule_sets.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">DNS Rules</div>
-                  <div class="component-count">{{ profile.dns_rules.length }}</div>
-                </div>
-                <div class="component-info">
-                  <div class="component-label">DNS Servers</div>
-                  <div class="component-count">{{ profile.dns.length }}</div>
-                </div>
-              </div>
-            </v-card-text>
-          </v-card>
+            :profile="profile"
+            :export-mode="exportMode"
+            @edit="handleEdit"
+            @delete="confirmDelete"
+            @duplicate="duplicateProfile"
+            @export="exportProfile"
+          />
         </div>
       </v-card-text>
     </v-card>
@@ -270,6 +180,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useProfileStore } from '@/stores/profile'
 import { useUserStore } from '@/stores/user'
+import ProfileCard from '../profileCard/profileCard.vue'
 import type { 
   Profile, 
   Props, 
@@ -338,12 +249,8 @@ const cancelExportMode = () => {
   localExportMode.value = false
 }
 
-const handleProfileClick = (profile: Profile) => {
-  if (exportMode.value) {
-    exportProfile(profile)
-  } else {
-    emit('edit', profile.id)
-  }
+const handleEdit = (id: number) => {
+  emit('edit', id);
 }
 
 const exportProfile = async (profile: Profile) => {
