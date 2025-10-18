@@ -7,12 +7,13 @@
       </div>
     </template>
     <template #content>
-      <div class="flex flex-wrap">
+      <div class="flex flex-col gap-2">
         <OutboundCard
           v-for="id in modelValue"
           :key="id"
           :id="id"
-          @click="openEditDialog(id)"
+          @edit="openEditDialog(id)"
+          @delete="removeOutbound(id)"
         />
       </div>
     </template>
@@ -90,6 +91,10 @@ const openEditDialog = (id: number) => {
     selectedOutbound.value = { ...outbound }
     showEditDialog.value = true
   }
+}
+
+const removeOutbound = (id: number) => {
+  emit('update:modelValue', props.modelValue.filter((outboundId) => outboundId !== id))
 }
 
 const onOutboundSaved = (savedOutbound: Outbound) => {
