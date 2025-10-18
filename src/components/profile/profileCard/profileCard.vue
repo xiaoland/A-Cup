@@ -1,89 +1,80 @@
 <template>
-  <v-card
-    variant="outlined"
-    class="profile-item"
-  >
-    <v-card-text>
-      <div class="profile-header">
+  <Card class="profile-item">
+    <template #content>
+      <div class="flex justify-between items-start">
         <div>
-          <div class="profile-title">{{ profile.name }}</div>
-          <div class="text-caption text-medium-emphasis">
-            ID: {{ profile.id }}
-          </div>
+          <div class="text-xl font-bold">{{ profile.name }}</div>
+          <div class="text-sm text-gray-500">ID: {{ profile.id }}</div>
         </div>
-        <div class="profile-actions">
-          <v-btn
-            icon="mdi-export"
-            size="small"
-            variant="text"
+        <div class="flex items-center">
+          <Button
+            icon="i-mdi-export"
+            text
+            rounded
             @click.stop="$emit('export', profile)"
           />
-          <v-btn
-            icon="mdi-pencil"
-            size="small"
-            variant="text"
+          <Button
+            icon="i-mdi-pencil"
+            text
+            rounded
             @click.stop="$emit('edit', profile.id)"
           />
-          <v-menu>
-            <template #activator="{ props: menuProps }">
-              <v-btn
-                icon="mdi-dots-vertical"
-                size="small"
-                variant="text"
-                v-bind="menuProps"
-                @click.stop
-              />
-            </template>
-            <v-list>
-              <v-list-item @click="$emit('duplicate', profile)">
-                <template #prepend>
-                  <v-icon>mdi-content-copy</v-icon>
-                </template>
-                <v-list-item-title>Duplicate</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="$emit('delete', profile)">
-                <template #prepend>
-                  <v-icon color="error">mdi-delete</v-icon>
-                </template>
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+          <Menu ref="menu" :model="menuItems" :popup="true" />
+          <Button
+            icon="i-mdi-dots-vertical"
+            text
+            rounded
+            @click.stop="menu.toggle($event)"
+          />
         </div>
       </div>
 
       <!-- Tags -->
-      <div v-if="profile.tags.length > 0" class="profile-tags">
-        <v-chip
+      <div v-if="profile.tags && profile.tags.length > 0" class="mt-4 flex flex-wrap gap-2">
+        <Chip
           v-for="tag in profile.tags"
           :key="tag"
-          size="small"
-          variant="outlined"
-        >
-          {{ tag }}
-        </v-chip>
+          :label="tag"
+        />
       </div>
 
       <!-- Component Statistics -->
-      <div class="profile-components">
-        <div class="component-info">
-          <div class="component-label">Outbounds</div>
-          <div class="component-count">{{ profile.outbounds.length }}</div>
+      <div class="mt-4 flex justify-around p-2 bg-gray-100 rounded">
+        <div class="text-center">
+          <div class="text-sm text-gray-500">Outbounds</div>
+          <div class="text-lg font-bold">{{ profile.outbounds.length }}</div>
         </div>
-        <div class="component-info">
-          <div class="component-label">Rule Sets</div>
-          <div class="component-count">{{ profile.rule_sets.length }}</div>
+        <div class="text-center">
+          <div class="text-sm text-gray-500">Rule Sets</div>
+          <div class="text-lg font-bold">{{ profile.rule_sets.length }}</div>
         </div>
       </div>
-    </v-card-text>
-  </v-card>
+    </template>
+  </Card>
 </template>
 
 <script setup lang="ts">
-import type { Props, Emits } from './profileCard.ts';
+import { ref } from 'vue'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import Menu from 'primevue/menu'
+import Chip from 'primevue/chip'
+import type { Props, Emits } from './profileCard.ts'
 
-defineProps<Props>();
-defineEmits<Emits>();
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+const menu = ref()
+const menuItems = ref([
+  {
+    label: 'Duplicate',
+    icon: 'i-mdi-content-copy',
+    command: () => emit('duplicate', props.profile),
+  },
+  {
+    label: 'Delete',
+    icon: 'i-mdi-delete',
+    command: () => emit('delete', props.profile),
+  },
+])
 </script>
-
-<style scoped lang="scss" src="./profileCard.scss"></style>

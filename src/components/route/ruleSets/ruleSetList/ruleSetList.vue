@@ -1,248 +1,152 @@
 <template>
-  <v-container class="rule-set-list">
-    <v-card>
-      <v-card-title class="d-flex align-center justify-space-between">
-        <div class="d-flex align-center">
-          <v-icon class="me-2">mdi-file-document-outline</v-icon>
-          Rule Sets
+  <div class="rule-set-list">
+    <Card>
+      <template #title>
+        <div class="flex justify-between items-center">
+          <div class="text-2xl font-bold flex items-center">
+            <span class="i-mdi-file-document-outline mr-2" />
+            Rule Sets
+          </div>
+          <Button
+            label="Create New"
+            icon="i-mdi-plus"
+            @click="createRuleSet"
+          />
         </div>
-        <v-btn
-          color="primary"
-          variant="elevated"
-          @click="createRuleSet"
-          prepend-icon="mdi-plus"
+      </template>
+      <template #content>
+        <DataTable
+          :value="ruleSets"
+          :loading="loading"
+          data-key="id"
+          class="p-datatable-sm"
         >
-          Create New
-        </v-btn>
-      </v-card-title>
-
-      <v-card-text>
-        <!-- Loading State -->
-        <v-skeleton-loader
-          v-if="loading"
-          type="list-item-three-line@6"
-          class="mb-4"
-        />
-
-        <!-- Empty State -->
-        <v-empty-state
-          v-else-if="!loading && ruleSets.length === 0"
-          headline="No rule sets found"
-          title="Start by creating your first rule set"
-          text="Rule sets define collections of rules that can be used in route rules for traffic matching."
-        >
-          <template #actions>
-            <v-btn
-              color="primary"
-              variant="elevated"
-              @click="createRuleSet"
-              prepend-icon="mdi-plus"
-            >
-              Create First Rule Set
-            </v-btn>
+          <template #empty>
+            <div class="text-center p-4">
+              <span class="i-mdi-file-document-outline text-6xl text-gray-400" />
+              <h3 class="text-xl font-bold mt-4">No rule sets found</h3>
+              <p class="text-gray-500">Start by creating your first rule set</p>
+              <Button
+                label="Create First Rule Set"
+                icon="i-mdi-plus"
+                class="mt-4"
+                @click="createRuleSet"
+              />
+            </div>
           </template>
-        </v-empty-state>
 
-        <!-- Rule Sets List -->
-        <v-list v-else>
-          <v-list-item
-            v-for="ruleSet in ruleSets"
-            :key="ruleSet.id"
-            class="mb-2"
-            @click="editRuleSet(ruleSet.id)"
-          >
-            <template #prepend>
-              <v-avatar color="blue-lighten-1" class="me-3">
-                <v-icon>
-                  {{ ruleSet.type === 'remote' ? 'mdi-cloud-download' : 'mdi-file-document-edit' }}
-                </v-icon>
-              </v-avatar>
+          <Column field="name" header="Name" sortable></Column>
+          <Column field="type" header="Type" sortable>
+             <template #body="slotProps">
+              <Tag :value="slotProps.data.type" :severity="slotProps.data.type === 'remote' ? 'info' : 'success'" />
             </template>
-
-            <v-list-item-title class="text-h6">
-              {{ ruleSet.name }}
-              <v-chip
-                v-if="ruleSet.share"
-                size="small"
-                color="green"
-                variant="flat"
-                class="ms-2"
-              >
-                <v-icon start size="small">mdi-share-variant</v-icon>
-                Shared
-              </v-chip>
-            </v-list-item-title>
-
-            <v-list-item-subtitle class="mt-1">
-              <div class="d-flex align-center">
-                <v-chip
-                  size="small"
-                  :color="ruleSet.type === 'remote' ? 'blue' : 'purple'"
-                  variant="tonal"
-                  class="me-2"
-                >
-                  {{ ruleSet.type === 'remote' ? 'Remote' : 'Inline' }}
-                </v-chip>
-                
-                <span v-if="ruleSet.type === 'remote' && ruleSet.url" class="text-medium-emphasis">
-                  {{ truncateUrl(ruleSet.url) }}
-                </span>
-                <span v-else-if="ruleSet.type === 'inline' && ruleSet.rules" class="text-medium-emphasis">
-                  {{ ruleSet.rules.length }} rules
-                </span>
-              </div>
-            </v-list-item-subtitle>
-
-            <template #append>
-              <div class="d-flex align-center">
-                <!-- Export Button -->
-                <v-btn
-                  icon="mdi-download"
-                  variant="text"
-                  size="small"
-                  @click.stop="showExportDialog(ruleSet)"
-                >
-                  <v-icon>mdi-download</v-icon>
-                  <v-tooltip activator="parent">Export</v-tooltip>
-                </v-btn>
-
-                <!-- Delete Button -->
-                <v-btn
-                  icon="mdi-delete"
-                  variant="text"
-                  size="small"
-                  color="error"
-                  @click.stop="showDeleteDialog(ruleSet)"
-                  v-if="ruleSet.owner === userStore.user?.id"
-                >
-                  <v-icon>mdi-delete</v-icon>
-                  <v-tooltip activator="parent">Delete</v-tooltip>
-                </v-btn>
-
-                <!-- Menu Button -->
-                <v-menu>
-                  <template #activator="{ props }">
-                    <v-btn
-                      icon="mdi-dots-vertical"
-                      variant="text"
-                      size="small"
-                      v-bind="props"
-                      @click.stop
-                    />
-                  </template>
-                  <v-list>
-                    <v-list-item @click="editRuleSet(ruleSet.id)">
-                      <v-list-item-title>
-                        <v-icon class="me-2">mdi-pencil</v-icon>
-                        Edit
-                      </v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="duplicateRuleSet(ruleSet)">
-                      <v-list-item-title>
-                        <v-icon class="me-2">mdi-content-copy</v-icon>
-                        Duplicate
-                      </v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </div>
+          </Column>
+          <Column header="Content">
+            <template #body="slotProps">
+              <span v-if="slotProps.data.type === 'remote' && slotProps.data.url" class="truncate">
+                {{ truncateUrl(slotProps.data.url) }}
+              </span>
+              <span v-else-if="slotProps.data.type === 'inline' && slotProps.data.rules" class="text-gray-500">
+                {{ slotProps.data.rules.length }} rules
+              </span>
             </template>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-    </v-card>
+          </Column>
+          <Column header="Shared" field="share" sortable>
+            <template #body="slotProps">
+              <Tag v-if="slotProps.data.share" value="Shared" severity="success" icon="i-mdi-share-variant" />
+            </template>
+          </Column>
+          <Column header="Actions" style="width: 10rem; text-align: right">
+            <template #body="slotProps">
+              <Button icon="i-mdi-pencil" text rounded @click="editRuleSet(slotProps.data.id)" />
+              <Button icon="i-mdi-export" text rounded @click="showExportDialog(slotProps.data)" />
+               <Menu ref="menu" :model="getMenuItems(slotProps.data)" :popup="true" />
+                <Button
+                    icon="i-mdi-dots-vertical"
+                    text
+                    rounded
+                    @click="menu.toggle($event)"
+                />
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+    </Card>
 
     <!-- Export Dialog -->
-    <v-dialog v-model="exportDialog.show" max-width="800">
-      <v-card>
-        <v-card-title>
-          <v-icon class="me-2">mdi-download</v-icon>
-          Export Rule Set: {{ exportDialog.ruleSet?.name }}
-        </v-card-title>
-        
-        <v-card-text>
-          <v-select
-            v-model="exportDialog.type"
-            :items="exportTypes"
-            label="Export Format"
-            variant="outlined"
-          />
-          
-          <v-textarea
-            v-model="exportDialog.content"
-            label="Exported Configuration"
-            readonly
-            rows="15"
-            variant="outlined"
-            class="mt-4"
-          />
-        </v-card-text>
-        
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="outlined"
-            @click="exportDialog.show = false"
-          >
-            Close
-          </v-btn>
-          <v-btn
-            color="primary"
-            @click="copyExportedContent"
-            :loading="exportDialog.copying"
-          >
-            Copy to Clipboard
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <Dialog v-model:visible="exportDialog.show" modal header="Export Rule Set" class="w-full max-w-lg">
+      <div class="p-4 flex flex-col gap-4">
+        <Select
+          v-model="exportDialog.type"
+          :options="exportTypes"
+          placeholder="Select a format"
+        />
+        <Textarea
+          v-model="exportDialog.content"
+          readonly
+          rows="15"
+          class="w-full font-mono"
+        />
+      </div>
+      <template #footer>
+        <Button
+          label="Close"
+          severity="secondary"
+          @click="exportDialog.show = false"
+        />
+        <Button
+          label="Copy to Clipboard"
+          icon="i-mdi-content-copy"
+          @click="copyExportedContent"
+          :loading="exportDialog.copying"
+        />
+      </template>
+    </Dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <v-dialog v-model="deleteDialog.show" max-width="500">
-      <v-card>
-        <v-card-title>
-          <v-icon class="me-2" color="error">mdi-delete</v-icon>
-          Delete Rule Set
-        </v-card-title>
-        
-        <v-card-text>
-          Are you sure you want to delete the rule set "<strong>{{ deleteDialog.ruleSet?.name }}</strong>"?
-          This action cannot be undone.
-        </v-card-text>
-        
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="outlined"
-            @click="deleteDialog.show = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            @click="deleteRuleSet"
-            :loading="deleteDialog.deleting"
-          >
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-container>
+    <Dialog v-model:visible="deleteDialog.show" modal header="Delete Rule Set" class="w-full max-w-md">
+       <div class="p-4">
+            Are you sure you want to delete the rule set "<strong>{{ deleteDialog.ruleSet?.name }}</strong>"? This action cannot be undone.
+       </div>
+      <template #footer>
+        <Button
+          label="Cancel"
+          severity="secondary"
+          @click="deleteDialog.show = false"
+        />
+        <Button
+          label="Delete"
+          severity="danger"
+          @click="deleteRuleSet"
+          :loading="deleteDialog.deleting"
+        />
+      </template>
+    </Dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import type { RuleSet } from './types'
-import { exportTypes } from './types'
 import { useRuleSetStore } from '@/stores/ruleSet'
 import { useUserStore } from '@/stores/user'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Tag from 'primevue/tag'
+import Dialog from 'primevue/dialog'
+import Select from 'primevue/select'
+import Textarea from 'primevue/textarea'
+import Menu from 'primevue/menu'
+import type { RuleSet } from './types'
+import { exportTypes } from './types'
 
 // Store and router
 const userStore = useUserStore()
 const ruleSetStore = useRuleSetStore()
 const router = useRouter()
+const menu = ref();
 
 // State
 const loading = ref(false)
@@ -327,7 +231,7 @@ const deleteRuleSet = async () => {
 }
 
 // Duplicate functionality
-const duplicateRuleSet = async (ruleSet: RuleSet) => {
+const duplicateRuleSet = async (ruleSet: RuleSet): Promise<void> => {
   const { id, owner, ...ruleSetData } = ruleSet
   const duplicate = {
     ...ruleSetData,
@@ -336,6 +240,29 @@ const duplicateRuleSet = async (ruleSet: RuleSet) => {
   }
   await ruleSetStore.createRuleSet(duplicate)
 }
+
+const getMenuItems = (ruleSet: RuleSet) => {
+    const items = [
+        {
+            label: 'Duplicate',
+            icon: 'i-mdi-content-copy',
+            command: () => {
+                duplicateRuleSet(ruleSet)
+            }
+        }
+    ];
+
+    if (ruleSet.owner === userStore.user?.id) {
+        items.push({
+            label: 'Delete',
+            icon: 'i-mdi-delete',
+            command: () => showDeleteDialog(ruleSet),
+        });
+    }
+
+    return items;
+};
+
 
 // Utility functions
 const truncateUrl = (url: string, maxLength: number = 50) => {
@@ -348,7 +275,3 @@ onMounted(() => {
   loadRuleSets()
 })
 </script>
-
-<style scoped lang="scss">
-@use './index.scss';
-</style>

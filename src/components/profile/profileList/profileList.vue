@@ -1,50 +1,40 @@
 <template>
-  <v-container class="profile-list">
-    <div class="action-header">
-      <div class="header-title">
-        <v-icon class="me-2">mdi-account-network-outline</v-icon>
+  <div class="profile-list">
+    <div class="flex justify-between items-center mb-4">
+      <div class="text-2xl font-bold flex items-center">
+        <span class="i-mdi-account-network-outline mr-2" />
         Profiles
       </div>
-      <div class="header-actions">
-        <v-btn
-          color="primary"
-          variant="elevated"
-          @click="$emit('create')"
-          prepend-icon="mdi-plus"
-        >
-          Create New
-        </v-btn>
-      </div>
+      <Button
+        label="Create New"
+        icon="i-mdi-plus"
+        @click="$emit('create')"
+      />
     </div>
 
-    <v-card>
-      <v-card-text>
+    <Card>
+      <template #content>
         <!-- Loading State -->
-        <v-skeleton-loader
-          v-if="loading"
-          type="list-item-three-line@6"
-          class="mb-4"
-        />
+        <div v-if="loading">
+          <Skeleton v-for="i in 3" :key="i" height="6rem" class="mb-2" />
+        </div>
 
         <div v-else>
           <!-- Empty State -->
-          <div v-if="profiles.length === 0" class="empty-state">
-            <v-icon class="empty-icon">mdi-account-network-outline</v-icon>
-            <h3>No profiles found</h3>
-            <p class="text-medium-emphasis">Start by creating your first proxy profile</p>
-            <v-btn
-              color="primary"
-              variant="elevated"
-              @click="$emit('create')"
-              prepend-icon="mdi-plus"
+          <div v-if="profiles.length === 0" class="text-center p-4">
+            <span class="i-mdi-account-network-outline text-6xl text-gray-400" />
+            <h3 class="text-xl font-bold mt-4">No profiles found</h3>
+            <p class="text-gray-500">Start by creating your first proxy profile</p>
+            <Button
+              label="Create First Profile"
+              icon="i-mdi-plus"
               class="mt-4"
-            >
-              Create First Profile
-            </v-btn>
+              @click="$emit('create')"
+            />
           </div>
 
           <!-- Profile List -->
-          <div v-else>
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <ProfileCard
               v-for="profile in profiles"
               :key="profile.id"
@@ -56,111 +46,97 @@
             />
           </div>
         </div>
-      </v-card-text>
-    </v-card>
+      </template>
+    </Card>
 
     <!-- Export Result Dialog -->
-    <v-dialog
-      v-model="exportDialog.show"
-      max-width="600px"
+    <Dialog
+      v-model:visible="exportDialog.show"
+      modal
+      header="Export Profile"
+      class="w-full max-w-lg"
     >
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon class="me-2" color="primary">mdi-export</v-icon>
-          Export Profile
-        </v-card-title>
+      <div v-if="exportDialog.loading" class="text-center p-4">
+        <ProgressSpinner />
+        <div class="mt-2">Exporting profile...</div>
+      </div>
 
-        <v-card-text>
-          <div v-if="exportDialog.loading" class="text-center py-4">
-            <v-progress-circular indeterminate color="primary" />
-            <div class="mt-2">Exporting profile...</div>
-          </div>
+      <div v-else-if="exportDialog.result" class="p-4">
+        <div class="flex items-center text-green-500">
+          <span class="i-mdi-check-circle mr-2" />
+          <span class="text-xl font-bold">Export Successful</span>
+        </div>
+        <div class="mt-2">
+          Profile "{{ exportDialog.profileName }}" has been exported successfully.
+        </div>
 
-          <div v-else-if="exportDialog.result" class="export-result">
-            <div class="d-flex align-center">
-              <v-icon color="success" class="me-2">mdi-check-circle</v-icon>
-              <span class="text-h6">Export Successful</span>
-            </div>
-            <div class="mt-2">
-              Profile "{{ exportDialog.profileName }}" has been exported successfully.
-            </div>
+        <div v-if="exportDialog.result.url" class="mt-4">
+          <div class="text-sm font-bold mb-1">Download URL:</div>
+          <div class="p-2 bg-gray-100 rounded break-all">{{ exportDialog.result.url }}</div>
+        </div>
+      </div>
 
-            <div v-if="exportDialog.result.url" class="result-url">
-              <div class="text-caption mb-1">Download URL:</div>
-              <div>{{ exportDialog.result.url }}</div>
-            </div>
-          </div>
+      <div v-else-if="exportDialog.error" class="p-4">
+        <div class="flex items-center text-red-500">
+          <span class="i-mdi-alert-circle mr-2" />
+          <span class="text-xl font-bold">Export Failed</span>
+        </div>
+        <div class="mt-2">{{ exportDialog.error }}</div>
+      </div>
 
-          <div v-else-if="exportDialog.error" class="export-error">
-            <div class="d-flex align-center">
-              <v-icon color="error" class="me-2">mdi-alert-circle</v-icon>
-              <span class="text-h6">Export Failed</span>
-            </div>
-            <div class="mt-2">{{ exportDialog.error }}</div>
-          </div>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            v-if="exportDialog.result?.url"
-            color="primary"
-            variant="outlined"
-            @click="copyToClipboard(exportDialog.result.url)"
-          >
-            Copy URL
-          </v-btn>
-          <v-btn
-            variant="outlined"
-            @click="closeExportDialog"
-          >
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      <template #footer>
+        <Button
+          v-if="exportDialog.result?.url"
+          label="Copy URL"
+          icon="i-mdi-content-copy"
+          @click="copyToClipboard(exportDialog.result.url)"
+        />
+        <Button
+          label="Close"
+          severity="secondary"
+          @click="closeExportDialog"
+        />
+      </template>
+    </Dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <v-dialog
-      v-model="deleteDialog.show"
-      max-width="400px"
+    <Dialog
+      v-model:visible="deleteDialog.show"
+      modal
+      header="Delete Profile"
+      class="w-full max-w-md"
     >
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          <v-icon color="error" class="me-2">mdi-delete</v-icon>
-          Delete Profile
-        </v-card-title>
-        
-        <v-card-text>
-          Are you sure you want to delete the profile "{{ deleteDialog.profile?.name }}"?
-          This action cannot be undone.
-        </v-card-text>
-        
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            variant="outlined"
-            @click="deleteDialog.show = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            variant="elevated"
-            @click="deleteProfile"
-          >
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-container>
+      <div class="p-4">
+        <div class="flex items-center">
+          <span class="i-mdi-delete text-red-500 mr-2" />
+          Are you sure you want to delete the profile "{{ deleteDialog.profile?.name }}"? This action cannot be undone.
+        </div>
+      </div>
+      <template #footer>
+        <Button
+          label="Cancel"
+          severity="secondary"
+          @click="deleteDialog.show = false"
+        />
+        <Button
+          label="Delete"
+          severity="danger"
+          @click="deleteProfile"
+        />
+      </template>
+    </Dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useProfileStore } from '@/stores/profile'
 import ProfileCard from '../profileCard/profileCard.vue'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import Skeleton from 'primevue/skeleton'
+import Dialog from 'primevue/dialog'
+import ProgressSpinner from 'primevue/progressspinner'
 import type { Profile, Props } from './types'
 
 // Props
@@ -264,7 +240,3 @@ onMounted(() => {
   }
 })
 </script>
-
-<style lang="scss" scoped>
-@use './index.scss';
-</style>

@@ -1,210 +1,132 @@
 <template>
-  <v-container class="outbound-list">
-    <v-card>
-      <v-card-title class="d-flex align-center justify-space-between">
-        <div class="d-flex align-center">
-          <v-icon class="me-2">mdi-server-network</v-icon>
-          Outbounds
+  <div class="outbound-list">
+    <Card>
+      <template #title>
+        <div class="flex justify-between items-center">
+          <div class="text-2xl font-bold flex items-center">
+            <span class="i-mdi-server-network mr-2" />
+            Outbounds
+          </div>
+          <Button
+            label="Create New"
+            icon="i-mdi-plus"
+            @click="createOutbound"
+          />
         </div>
-        <v-btn
-          color="primary"
-          variant="elevated"
-          @click="createOutbound"
-          prepend-icon="mdi-plus"
+      </template>
+      <template #content>
+        <DataTable
+          :value="outbounds"
+          :loading="loading"
+          data-key="id"
+          class="p-datatable-sm"
         >
-          Create New
-        </v-btn>
-      </v-card-title>
-
-      <v-card-text>
-        <!-- Loading State -->
-        <v-skeleton-loader
-          v-if="loading"
-          type="list-item-three-line@6"
-          class="mb-4"
-        />
-
-        <!-- Empty State -->
-        <v-empty-state
-          v-else-if="!loading && outbounds.length === 0"
-          headline="No outbounds found"
-          title="Start by creating your first outbound"
-          text="Outbounds define proxy server configurations for routing your traffic."
-        >
-          <template #actions>
-            <v-btn
-              color="primary"
-              variant="elevated"
-              @click="createOutbound"
-              prepend-icon="mdi-plus"
-            >
-              Create First Outbound
-            </v-btn>
+          <template #empty>
+            <div class="text-center p-4">
+              <span class="i-mdi-server-network text-6xl text-gray-400" />
+              <h3 class="text-xl font-bold mt-4">No outbounds found</h3>
+              <p class="text-gray-500">Start by creating your first outbound</p>
+              <Button
+                label="Create First Outbound"
+                icon="i-mdi-plus"
+                class="mt-4"
+                @click="createOutbound"
+              />
+            </div>
           </template>
-        </v-empty-state>
 
-        <!-- Outbounds List -->
-        <v-list v-else>
-          <v-list-item
-            v-for="outbound in outbounds"
-            :key="outbound.id"
-            class="outbound-item"
-            @click="editOutbound(outbound)"
-          >
-            <template #prepend>
-              <v-avatar
-                :color="getTypeColor(outbound.type)"
-                class="text-white"
-              >
-                <v-icon>{{ getTypeIcon(outbound.type) }}</v-icon>
-              </v-avatar>
+          <Column field="name" header="Name" sortable>
+            <template #body="slotProps">
+              {{ getOutboundDisplayName(slotProps.data) }}
             </template>
-
-            <v-list-item-title class="text-h6">
-              {{ getOutboundDisplayName(outbound) }}
-            </v-list-item-title>
-
-            <v-list-item-subtitle>
-              <div class="d-flex flex-column">
-                <span class="text-caption mb-1">
-                  Type: {{ getTypeDisplayName(outbound.type) }}
-                  <v-chip
-                    v-if="outbound.region"
-                    size="x-small"
-                    variant="outlined"
-                    class="ms-2"
-                  >
-                    {{ getRegionDisplayName(outbound.region) }}
-                  </v-chip>
-                </span>
-                <span v-if="outbound.server" class="text-caption">
-                  {{ outbound.server }}{{ outbound.server_port ? `:${outbound.server_port}` : '' }}
-                </span>
-              </div>
-            </v-list-item-subtitle>
-
-            <template #append>
-              <div class="d-flex align-center">
-                
-                
-                <v-menu>
-                  <template #activator="{ props }">
-                    <v-btn
-                      icon="mdi-dots-vertical"
-                      size="small"
-                      variant="text"
-                      v-bind="props"
-                      @click.stop
-                    />
-                  </template>
-                  <v-list density="compact">
-                    <v-list-item
-                      @click="editOutbound(outbound)"
-                      prepend-icon="mdi-pencil"
-                    >
-                      Edit
-                    </v-list-item>
-                    <v-list-item
-                      @click="exportOutbound(outbound)"
-                      prepend-icon="mdi-export"
-                    >
-                      Export
-                    </v-list-item>
-                    <v-list-item
-                      @click="deleteOutbound(outbound)"
-                      prepend-icon="mdi-delete"
-                      class="text-error"
-                    >
-                      Delete
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </div>
+          </Column>
+          <Column field="type" header="Type" sortable>
+            <template #body="slotProps">
+              <Tag :value="getTypeDisplayName(slotProps.data.type)" :severity="getTypeSeverity(slotProps.data.type)" />
             </template>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-    </v-card>
+          </Column>
+          <Column field="server" header="Server" sortable>
+             <template #body="slotProps">
+              <span v-if="slotProps.data.server">{{ slotProps.data.server }}{{ slotProps.data.server_port ? `:${slotProps.data.server_port}` : '' }}</span>
+            </template>
+          </Column>
+          <Column field="region" header="Region" sortable>
+            <template #body="slotProps">
+              <span v-if="slotProps.data.region">{{ getRegionDisplayName(slotProps.data.region) }}</span>
+            </template>
+          </Column>
+          <Column header="Actions" style="width: 10rem; text-align: right">
+            <template #body="slotProps">
+              <Button icon="i-mdi-pencil" text rounded @click="editOutbound(slotProps.data)" />
+              <Button icon="i-mdi-export" text rounded @click="exportOutbound(slotProps.data)" />
+              <Button icon="i-mdi-delete" severity="danger" text rounded @click="deleteOutbound(slotProps.data)" />
+            </template>
+          </Column>
+        </DataTable>
+      </template>
+    </Card>
 
     <!-- Delete Confirmation Dialog -->
-    <v-dialog
-      v-model="deleteDialog"
-      max-width="400"
+    <Dialog
+      v-model:visible="deleteDialog"
+      modal
+      header="Confirm Delete"
+      class="w-full max-w-md"
     >
-      <v-card>
-        <v-card-title class="text-h6">
-          Confirm Delete
-        </v-card-title>
-        <v-card-text>
-          Are you sure you want to delete outbound "{{ selectedOutbound?.name || `${selectedOutbound?.type}.${selectedOutbound?.region}` }}"?
-          This action cannot be undone.
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            text
-            @click="deleteDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            variant="elevated"
-            @click="confirmDelete"
-            :loading="deleteLoading"
-          >
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+        <div class="p-4">
+            Are you sure you want to delete outbound "{{ selectedOutbound?.name || `${selectedOutbound?.type}.${selectedOutbound?.region}` }}"? This action cannot be undone.
+        </div>
+      <template #footer>
+        <Button
+          label="Cancel"
+          severity="secondary"
+          @click="deleteDialog = false"
+        />
+        <Button
+          label="Delete"
+          severity="danger"
+          @click="confirmDelete"
+          :loading="deleteLoading"
+        />
+      </template>
+    </Dialog>
 
     <!-- Export Dialog -->
-    <v-dialog
-      v-model="exportDialog"
-      max-width="600"
+    <Dialog
+      v-model:visible="exportDialog"
+      modal
+      header="Export Configuration"
+      class="w-full max-w-lg"
     >
-      <v-card>
-        <v-card-title class="text-h6">
-          Export Configuration
-        </v-card-title>
-        <v-card-text>
-          <v-select
-            v-model="exportType"
-            :items="exportTypes"
-            label="Export Format"
-            variant="outlined"
-            class="mb-4"
-          />
-          <v-textarea
-            v-if="exportedConfig"
-            :model-value="exportedConfig"
-            label="Configuration"
-            variant="outlined"
-            readonly
-            rows="15"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            text
-            @click="exportDialog = false"
-          >
-            Close
-          </v-btn>
-          <v-btn
-            v-if="exportedConfig"
-            color="primary"
-            variant="elevated"
-            @click="copyToClipboard"
-          >
-            Copy to Clipboard
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-container>
+      <div class="p-4 flex flex-col gap-4">
+        <Select
+          v-model="exportType"
+          :options="exportTypes"
+          placeholder="Select a format"
+        />
+        <Textarea
+          v-if="exportedConfig"
+          :model-value="exportedConfig"
+          readonly
+          rows="15"
+          class="w-full font-mono"
+        />
+      </div>
+      <template #footer>
+        <Button
+          label="Close"
+          severity="secondary"
+          @click="exportDialog = false"
+        />
+        <Button
+          v-if="exportedConfig"
+          label="Copy to Clipboard"
+          icon="i-mdi-content-copy"
+          @click="copyToClipboard"
+        />
+      </template>
+    </Dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -212,6 +134,14 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useOutboundStore } from '@/stores/outbound'
 import { useUserStore } from '@/stores/user'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Tag from 'primevue/tag'
+import Dialog from 'primevue/dialog'
+import Select from 'primevue/select'
+import Textarea from 'primevue/textarea'
 import type { Outbound } from '../outboundEditor/types'
 import { typeOptions, regionOptions } from '../outboundEditor/types'
 import { exportTypes, type ExportType } from './types'
@@ -314,38 +244,21 @@ const getOutboundDisplayName = (outbound: Outbound): string => {
   return outbound.type
 }
 
-const getTypeColor = (type: string): string => {
-  const colors: Record<string, string> = {
-    'direct': 'grey',
-    'urltest': 'blue',
-    'selector': 'green',
-    'vmess': 'purple',
-    'vless': 'indigo',
-    'ss': 'orange',
-    'hysteria2': 'red'
-  }
-  return colors[type] || 'primary'
-}
-
-const getTypeIcon = (type: string): string => {
-  const icons: Record<string, string> = {
-    'direct': 'mdi-arrow-right',
-    'urltest': 'mdi-speedometer',
-    'selector': 'mdi-format-list-bulleted',
-    'vmess': 'mdi-shield-outline',
-    'vless': 'mdi-shield',
-    'ss': 'mdi-shield-check',
-    'hysteria2': 'mdi-rocket'
-  }
-  return icons[type] || 'mdi-server'
-}
+const getTypeSeverity = (type: string) => {
+  const severities: Record<string, 'success' | 'info' | 'warning' | 'danger' | 'secondary' | undefined> = {
+    'direct': 'secondary',
+    'urltest': 'info',
+    'selector': 'success',
+    'vmess': 'warning',
+    'vless': 'warning',
+    'ss': 'warning',
+    'hysteria2': 'danger'
+  };
+  return severities[type] || 'primary';
+};
 
 // Load data on component mount
 onMounted(() => {
   loadOutbounds()
 })
 </script>
-
-<style lang="scss" scoped>
-@use './index.scss';
-</style>

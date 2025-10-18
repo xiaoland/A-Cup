@@ -25,8 +25,10 @@ export const OutboundSchema = z.object({
 
 export const ProfileSchema = z.object({
   id: z.number().optional(),
+  created_by: z.number().optional(),
   name: z.string().min(1, 'Name is required'),
   tags: z.array(z.string()),
+  rule_sets: z.array(z.number()),
   inbounds: z.array(InboundSchema),
   outbounds: z.array(z.number()),
   route: RouteSchema,
@@ -38,6 +40,7 @@ export type Profile = z.infer<typeof ProfileSchema>
 export const defaultProfile = (): Profile => ({
   name: '',
   tags: [],
+  rule_sets: [],
   inbounds: [],
   outbounds: [],
   route: {},

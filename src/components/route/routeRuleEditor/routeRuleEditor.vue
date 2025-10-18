@@ -1,98 +1,79 @@
 <template>
-  <Editor
-    v-model="rule"
-    title="Route Rule"
-    :show-delete="true"
-    @delete="emit('remove')"
-    :start-editable="true"
-  >
-    <v-form>
-      <v-select
-        v-model="rule.action"
-        :items="['route', 'reject', 'hijack-dns']"
-        label="Action"
-      ></v-select>
-      <outbounds-selector v-if="rule.action === 'route'" v-model="rule.outbound" />
-      <div v-if="isFieldVisible('domain')" class="d-flex align-center my-2" style="gap: 8px;">
-        <v-text-field
-          :model-value="Array.isArray(rule.domain) ? rule.domain.join(', ') : rule.domain"
-          label="Domains (comma-separated)"
-          @update:model-value="updateField('domain', $event)"
-          class="flex-grow-1"
-          hide-details
-        ></v-text-field>
-        <v-btn icon="mdi-close" variant="text" @click="hideField('domain')"></v-btn>
+  <Card>
+    <template #title>
+      <div class="flex justify-between items-center">
+        <div class="text-xl font-bold">Route Rule</div>
+        <Button icon="i-mdi-delete" severity="danger" text rounded @click="emit('remove')" />
       </div>
-      <div v-if="isFieldVisible('domain_suffix')" class="d-flex align-center my-2" style="gap: 8px;">
-        <v-text-field
-          :model-value="Array.isArray(rule.domain_suffix) ? rule.domain_suffix.join(', ') : rule.domain_suffix"
-          label="Domain Suffixes (comma-separated)"
-          @update:model-value="updateField('domain_suffix', $event)"
-          class="flex-grow-1"
-          hide-details
-        ></v-text-field>
-        <v-btn icon="mdi-close" variant="text" @click="hideField('domain_suffix')"></v-btn>
-      </div>
-      <div v-if="isFieldVisible('domain_keyword')" class="d-flex align-center my-2" style="gap: 8px;">
-        <v-text-field
-          :model-value="Array.isArray(rule.domain_keyword) ? rule.domain_keyword.join(', ') : rule.domain_keyword"
-          label="Domain Keywords (comma-separated)"
-          @update:model-value="updateField('domain_keyword', $event)"
-          class="flex-grow-1"
-          hide-details
-        ></v-text-field>
-        <v-btn icon="mdi-close" variant="text" @click="hideField('domain_keyword')"></v-btn>
-      </div>
-      <div v-if="isFieldVisible('domain_regex')" class="d-flex align-center my-2" style="gap: 8px;">
-        <v-text-field
-          :model-value="Array.isArray(rule.domain_regex) ? rule.domain_regex.join(', ') : rule.domain_regex"
-          label="Domain Regex (comma-separated)"
-          @update:model-value="updateField('domain_regex', $event)"
-          class="flex-grow-1"
-          hide-details
-        ></v-text-field>
-        <v-btn icon="mdi-close" variant="text" @click="hideField('domain_regex')"></v-btn>
-      </div>
-      <div v-if="isFieldVisible('rule_set')" class="d-flex align-center my-2" style="gap: 8px;">
-        <rule-sets-selector :model-value="Array.isArray(rule.rule_set) ? rule.rule_set : (rule.rule_set ? [rule.rule_set] : [])" @update:model-value="rule.rule_set = $event" class="flex-grow-1" />
-        <v-btn icon="mdi-close" variant="text" @click="hideField('rule_set')"></v-btn>
-      </div>
+    </template>
+    <template #content>
+      <div class="p-fluid flex flex-col gap-4">
+        <div class="field">
+          <label for="action">Action</label>
+          <Select
+            id="action"
+            v-model="rule.action"
+            :options="['route', 'reject', 'hijack-dns']"
+          />
+        </div>
+        <div v-if="rule.action === 'route'" class="field">
+            <label>Outbound</label>
+            <outbounds-selector v-model="rule.outbound" />
+        </div>
 
-      <v-menu>
-        <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" :disabled="availableConditions.length === 0">Add Condition</v-btn>
-        </template>
-        <v-list>
-          <v-list-item
-            v-for="condition in availableConditions"
-            :key="condition.value"
-            @click="showField(condition)"
-          >
-            <v-list-item-title>{{ condition.title }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </v-form>
-  </Editor>
+        <div v-if="isFieldVisible('domain')" class="field">
+          <label for="domain">Domains</label>
+          <InputChips id="domain" v-model="rule.domain" />
+        </div>
+        <div v-if="isFieldVisible('domain_suffix')" class="field">
+          <label for="domain_suffix">Domain Suffixes</label>
+          <InputChips id="domain_suffix" v-model="rule.domain_suffix" />
+        </div>
+        <div v-if="isFieldVisible('domain_keyword')" class="field">
+          <label for="domain_keyword">Domain Keywords</label>
+          <InputChips id="domain_keyword" v-model="rule.domain_keyword" />
+        </div>
+        <div v-if="isFieldVisible('domain_regex')" class="field">
+          <label for="domain_regex">Domain Regex</label>
+          <InputChips id="domain_regex" v-model="rule.domain_regex" />
+        </div>
+        <div v-if="isFieldVisible('rule_set')" class="field">
+          <label>Rule Sets</label>
+          <rule-sets-selector v-model="rule.rule_set" />
+        </div>
+
+        <SplitButton
+          label="Add Condition"
+          icon="i-mdi-plus"
+          :model="availableConditions.map(c => ({ label: c.title, command: () => showField(c) }))"
+          :disabled="availableConditions.length === 0"
+        />
+      </div>
+    </template>
+  </Card>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
-import { type RouteRule } from '@/schemas/route';
-import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue';
-import RuleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue';
-import Editor from '@/components/common/Editor.vue';
+import { ref, watch, computed } from 'vue'
+import { type RouteRule } from '@/schemas/route'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
+import InputChips from 'primevue/inputchips'
+import SplitButton from 'primevue/splitbutton'
+import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
+import RuleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue'
 
 const props = defineProps({
   modelValue: {
     type: Object as () => RouteRule,
     required: true,
   },
-});
+})
 
-const emit = defineEmits(['update:modelValue', 'remove']);
+const emit = defineEmits(['update:modelValue', 'remove'])
 
-const rule = ref(props.modelValue);
+const rule = ref(props.modelValue)
 
 const allConditions = [
   { title: 'Domains', value: 'domain' },
@@ -100,55 +81,42 @@ const allConditions = [
   { title: 'Domain Keywords', value: 'domain_keyword' },
   { title: 'Domain Regex', value: 'domain_regex' },
   { title: 'Rule Sets', value: 'rule_set' },
-];
+]
 
 const visibleFields = ref<Array<keyof RouteRule>>(([] as Array<keyof RouteRule>).concat(
   Object.keys(props.modelValue).filter(k => allConditions.some(c => c.value === k)) as Array<keyof RouteRule>
-));
+))
 
 const availableConditions = computed(() => {
   return allConditions.filter(
     (condition) => !visibleFields.value.includes(condition.value as keyof RouteRule)
-  );
-});
+  )
+})
 
 const isFieldVisible = (field: keyof RouteRule) => {
-  return visibleFields.value.includes(field);
-};
+  return visibleFields.value.includes(field)
+}
 
 const showField = (condition: { value: string }) => {
-  const field = condition.value as keyof RouteRule;
+  const field = condition.value as keyof RouteRule
   if (!visibleFields.value.includes(field)) {
-    visibleFields.value.push(field);
+    visibleFields.value.push(field)
   }
-};
-
-const hideField = (field: keyof RouteRule) => {
-  visibleFields.value = visibleFields.value.filter((f) => f !== field);
-  if (field in rule.value) {
-    delete rule.value[field];
-  }
-};
-
-const updateField = (field: keyof RouteRule, value: string) => {
-  const arrayFields: (keyof RouteRule)[] = ['domain', 'domain_suffix', 'domain_keyword', 'domain_regex', 'rule_set'];
-  if (arrayFields.includes(field)) {
-    if (value) {
-      (rule.value[field] as string[]) = value.split(',').map((s) => s.trim());
-    } else {
-      (rule.value[field] as string[] | undefined) = undefined;
-    }
-  }
-};
-
+}
 
 watch(
   rule,
   (newValue) => {
-    emit('update:modelValue', newValue);
+    emit('update:modelValue', newValue)
   },
   { deep: true }
-);
+)
 </script>
 
-<style scoped lang="scss" src="./routeRuleEditor.scss"></style>
+<style scoped>
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+</style>

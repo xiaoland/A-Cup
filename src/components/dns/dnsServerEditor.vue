@@ -1,43 +1,72 @@
 <template>
-  <Editor
-    v-model="server"
-    title="DNS Server"
-    :show-delete="true"
-    @delete="emit('remove')"
-    :start-editable="true"
-  >
-    <v-form>
-      <v-select v-model="server.type" label="Type" :items="['udp', 'https', 'fakeip']" class="my-2" />
-      <v-text-field v-model="server.tag" label="Tag" class="my-2" />
-      <v-text-field v-if="server.type !== 'fakeip'" v-model="server.address" label="Address" class="my-2" />
-
-      <!-- UDP Fields -->
-      <div v-if="server.type === 'udp'">
-        <v-text-field v-model.number="server.server_port" label="Server Port" class="my-2" />
+  <Card>
+    <template #title>
+      <div class="flex justify-between items-center">
+        <div class="text-xl font-bold">DNS Server</div>
+        <Button icon="i-mdi-delete" severity="danger" text rounded @click="emit('remove')" />
       </div>
+    </template>
+    <template #content>
+      <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="field col-span-1">
+          <label for="type">Type</label>
+          <Select id="type" v-model="server.type" :options="['udp', 'https', 'fakeip']" />
+        </div>
+        <div class="field col-span-1">
+          <label for="tag">Tag</label>
+          <InputText id="tag" v-model="server.tag" />
+        </div>
+        <div v-if="server.type !== 'fakeip'" class="field col-span-1">
+          <label for="address">Address</label>
+          <InputText id="address" v-model="server.address" />
+        </div>
 
-      <!-- HTTPS Fields -->
-      <div v-if="server.type === 'https'">
-        <v-text-field v-model.number="server.server_port" label="Server Port" class="my-2" />
-        <v-text-field v-model="server.path" label="Path" class="my-2" />
-        <!-- A simple key-value editor for headers can be implemented here -->
+        <!-- UDP Fields -->
+        <div v-if="server.type === 'udp'" class="field col-span-1">
+          <label for="server_port">Server Port</label>
+          <InputNumber id="server_port" v-model.number="server.server_port" />
+        </div>
+
+        <!-- HTTPS Fields -->
+        <template v-if="server.type === 'https'">
+          <div class="field col-span-1">
+            <label for="server_port_https">Server Port</label>
+            <InputNumber id="server_port_https" v-model.number="server.server_port" />
+          </div>
+          <div class="field col-span-1">
+            <label for="path">Path</label>
+            <InputText id="path" v-model="server.path" />
+          </div>
+        </template>
+
+        <!-- FakeIP Fields -->
+        <template v-if="server.type === 'fakeip'">
+          <div class="field col-span-1">
+            <label for="inet4_range">IPv4 Range</label>
+            <InputText id="inet4_range" v-model="server.inet4_range" />
+          </div>
+          <div class="field col-span-1">
+            <label for="inet6_range">IPv6 Range</label>
+            <InputText id="inet6_range" v-model="server.inet6_range" />
+          </div>
+        </template>
+
+        <div class="col-span-2">
+            <dialEditor v-model="server" />
+        </div>
       </div>
-
-      <!-- FakeIP Fields -->
-      <div v-if="server.type === 'fakeip'">
-        <v-text-field v-model="server.inet4_range" label="IPv4 Range" class="my-2" />
-        <v-text-field v-model="server.inet6_range" label="IPv6 Range" class="my-2" />
-      </div>
-
-      <dialEditor v-model="server" class="my-2" />
-    </v-form>
-  </Editor>
+    </template>
+  </Card>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { type DnsServer, dnsServerSchema } from '@/schemas/dns'
-import Editor from '@/components/common/Editor.vue'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
 import dialEditor from '@/components/common/dialEditor.vue'
 
 const props = defineProps<{
@@ -68,3 +97,11 @@ watch(
   { deep: true }
 )
 </script>
+
+<style scoped>
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+</style>

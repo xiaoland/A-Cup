@@ -1,39 +1,44 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="6">
-      <v-select
+  <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="field col-span-2">
+      <label for="type">Type</label>
+      <Select
+        id="type"
         v-model="form.type"
-        :items="typeOptions"
-        item-title="title"
-        item-value="value"
-        label="Type"
-        variant="outlined"
-        required
+        :options="typeOptions"
+        option-label="title"
+        option-value="value"
       />
-    </v-col>
-    <v-col cols="12">
+    </div>
+    <div class="col-span-2">
       <OutboundsSelector v-model="(form as any).outbounds" />
-    </v-col>
-    <v-col cols="12" md="6">
-      <v-select
+    </div>
+    <div class="field col-span-2">
+      <label for="default">Default (optional)</label>
+      <Select
+        id="default"
         v-model="(form as any).default"
-        :items="getDefaultOptions((form as any).outbounds)"
-        item-title="title"
-        item-value="value"
-        label="Default (optional)"
-        clearable
-        variant="outlined"
+        :options="getDefaultOptions((form as any).outbounds)"
+        option-label="title"
+        option-value="value"
+        placeholder="Select a default outbound"
+        show-clear
       />
-    </v-col>
-    <v-col cols="12">
-      <v-switch inset v-model="(form as any).interrupt_exist_connections" label="Interrupt existing connections" />
-    </v-col>
-  </v-row>
+    </div>
+    <div class="field col-span-2">
+       <div class="flex items-center">
+            <Checkbox v-model="(form as any).interrupt_exist_connections" inputId="interrupt_exist_connections" :binary="true" />
+            <label for="interrupt_exist_connections" class="ml-2"> Interrupt existing connections </label>
+        </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import Select from 'primevue/select'
+import Checkbox from 'primevue/checkbox'
 import type { Outbound } from './types'
 import { typeOptions } from './types'
 import OutboundsSelector from '@/components/outbounds/common/OutboundsSelector.vue'
@@ -62,4 +67,9 @@ const getDefaultOptions = (ids?: number[]) =>
 </script>
 
 <style scoped>
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 </style>

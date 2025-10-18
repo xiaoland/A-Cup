@@ -1,15 +1,25 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="6">
-      <v-text-field v-model="form.credential.uuid" label="UUID" variant="outlined" />
-    </v-col>
-    <v-col cols="12" md="6">
-      <v-select :items="vlessFlows" v-model="form.credential.flow" label="Flow (optional)" variant="outlined" clearable />
-    </v-col>
-  </v-row>
+  <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="field col-span-1">
+      <label for="uuid">UUID</label>
+      <InputText id="uuid" v-model="form.credential.uuid" />
+    </div>
+    <div class="field col-span-1">
+      <label for="flow">Flow (optional)</label>
+      <Select
+        id="flow"
+        v-model="form.credential.flow"
+        :options="vlessFlows"
+        show-clear
+        placeholder="Select a flow"
+      />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
 import type { Outbound } from './types'
 
 defineProps<{ form: Outbound }>()
@@ -18,4 +28,9 @@ const vlessFlows = ['xtls-rprx-vision']
 </script>
 
 <style scoped>
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 </style>
