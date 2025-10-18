@@ -4,9 +4,9 @@
       <div class="text-2xl font-bold">DNS</div>
     </template>
     <template #content>
-      <TabView>
-        <TabPanel header="Servers" value="servers">
-          <div class="flex flex-col gap-4">
+      <Tabs value="0">
+        <Tab value="0" header="Servers">
+          <div class="flex flex-col gap-4 p-4">
             <dnsServerEditor
               v-for="(server, i) in dns.servers"
               :key="i"
@@ -15,9 +15,9 @@
             />
           </div>
           <Button class="mt-4" label="Add Server" icon="i-mdi-plus" @click="addServer" />
-        </TabPanel>
-        <TabPanel header="Rules" value="rules">
-          <div class="flex flex-col gap-4">
+        </Tab>
+        <Tab value="1" header="Rules">
+          <div class="flex flex-col gap-4 p-4">
             <dnsRuleEditor
               v-if="dns.rules"
               v-for="(rule, i) in dns.rules"
@@ -28,9 +28,9 @@
             />
           </div>
           <Button class="mt-4" label="Add Rule" icon="i-mdi-plus" @click="addRule" />
-        </TabPanel>
-        <TabPanel header="Advanced" value="advanced">
-          <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+        </Tab>
+        <Tab value="2" header="Advanced">
+          <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
             <div class="field col-span-1">
                 <label>Final</label>
                 <outboundsSelector v-model="dns.final" />
@@ -56,8 +56,8 @@
                 </div>
             </div>
           </div>
-        </TabPanel>
-      </TabView>
+        </Tab>
+      </Tabs>
     </template>
   </Card>
 </template>
@@ -66,8 +66,8 @@
 import { ref, watch, computed } from 'vue'
 import { type Dns, dnsSchema } from '@/schemas/dns'
 import Card from 'primevue/card'
-import TabView from 'primevue/tabview'
-import TabPanel from 'primevue/tabpanel'
+import Tabs from 'primevue/tabs'
+import Tab from 'primevue/tab'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'

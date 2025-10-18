@@ -66,11 +66,11 @@
             </div>
             <div class="field">
               <label for="network_type">Network Type</label>
-              <Chips id="network_type" v-model="dial.network_type" />
+              <InputChips id="network_type" v-model="dial.network_type" />
             </div>
             <div class="field">
               <label for="fallback_network_type">Fallback Network Type</label>
-              <Chips id="fallback_network_type" v-model="dial.fallback_network_type" />
+              <InputChips id="fallback_network_type" v-model="dial.fallback_network_type" />
             </div>
             <div class="field">
               <label for="fallback_delay">Fallback Delay</label>
@@ -94,7 +94,7 @@ import AccordionPanel from 'primevue/accordionpanel'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Checkbox from 'primevue/checkbox'
-import Chips from 'primevue/chips'
+import InputChips from 'primevue/inputchips'
 import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
 
 const props = defineProps<{

@@ -19,19 +19,19 @@
 
         <div v-if="isFieldVisible('domain')" class="field">
           <label for="domain">Domains</label>
-          <Chips id="domain" v-model="rule.domain" />
+          <InputChips id="domain" v-model="rule.domain" />
         </div>
         <div v-if="isFieldVisible('domain_suffix')" class="field">
           <label for="domain_suffix">Domain Suffixes</label>
-          <Chips id="domain_suffix" v-model="rule.domain_suffix" />
+          <InputChips id="domain_suffix" v-model="rule.domain_suffix" />
         </div>
         <div v-if="isFieldVisible('domain_keyword')" class="field">
           <label for="domain_keyword">Domain Keywords</label>
-          <Chips id="domain_keyword" v-model="rule.domain_keyword" />
+          <InputChips id="domain_keyword" v-model="rule.domain_keyword" />
         </div>
         <div v-if="isFieldVisible('domain_regex')" class="field">
           <label for="domain_regex">Domain Regex</label>
-          <Chips id="domain_regex" v-model="rule.domain_regex" />
+          <InputChips id="domain_regex" v-model="rule.domain_regex" />
         </div>
         <div v-if="isFieldVisible('rule_set')" class="field">
           <label>Rule Sets</label>
@@ -55,7 +55,7 @@ import { type DnsRule, dnsRuleSchema } from '@/schemas/dns'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
-import Chips from 'primevue/chips'
+import InputChips from 'primevue/inputchips'
 import SplitButton from 'primevue/splitbutton'
 import ruleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue'
 

@@ -15,9 +15,9 @@
           <template v-else>
             <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="field col-span-1">
-                <label for="type">Type</label>
+                <label :for="`type-${uniqueId}`">Type</label>
                 <Select
-                  id="type"
+                  :id="`type-${uniqueId}`"
                   v-model="form.type"
                   :options="typeOptions"
                   option-label="title"
@@ -25,13 +25,13 @@
                 />
               </div>
               <div class="field col-span-1">
-                <label for="name">Name</label>
-                <InputText id="name" v-model="form.name" />
+                <label :for="`name-${uniqueId}`">Name</label>
+                <InputText :id="`name-${uniqueId}`" v-model="form.name" />
               </div>
               <div class="field col-span-1">
-                <label for="region">Region</label>
+                <label :for="`region-${uniqueId}`">Region</label>
                 <Select
-                  id="region"
+                  :id="`region-${uniqueId}`"
                   v-model="form.region"
                   :options="regionOptions"
                   option-label="title"
@@ -41,17 +41,17 @@
                 />
               </div>
               <div class="field col-span-1">
-                <label for="provider">Provider</label>
-                <InputText id="provider" v-model="form.provider" />
+                <label :for="`provider-${uniqueId}`">Provider</label>
+                <InputText :id="`provider-${uniqueId}`" v-model="form.provider" />
               </div>
               <div class="field md:col-span-2 grid grid-cols-3 gap-4">
                 <div class="field col-span-2">
-                    <label for="server">Server</label>
-                    <InputText id="server" v-model="form.server" />
+                    <label :for="`server-${uniqueId}`">Server</label>
+                    <InputText :id="`server-${uniqueId}`" v-model="form.server" />
                 </div>
                  <div class="field col-span-1">
-                    <label for="server_port">Port</label>
-                    <InputNumber id="server_port" v-model="form.server_port" />
+                    <label :for="`server_port-${uniqueId}`">Port</label>
+                    <InputNumber :id="`server_port-${uniqueId}`" v-model="form.server_port" />
                 </div>
               </div>
 
@@ -115,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import Card from 'primevue/card'
@@ -143,6 +143,7 @@ const userStore = useUserStore()
 
 const saving = ref(false)
 const deleting = ref(false)
+const uniqueId = computed(() => props.form.name || Math.random().toString(36).substring(7))
 
 // Ensure nested credential object exists for bindings
 const form = props.form

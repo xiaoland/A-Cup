@@ -5,12 +5,12 @@
         <template #content>
           <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="field">
-              <label for="name">Name</label>
-              <InputText id="name" v-model="modelValue.name" />
+              <label :for="`name-${uniqueId}`">Name</label>
+              <InputText :id="`name-${uniqueId}`" v-model="modelValue.name" />
             </div>
             <div class="field">
-              <label for="tags">Tags</label>
-              <Chips id="tags" v-model="modelValue.tags" />
+              <label :for="`tags-${uniqueId}`">Tags</label>
+              <InputChips :id="`tags-${uniqueId}`" v-model="modelValue.tags" />
             </div>
           </div>
         </template>
@@ -52,10 +52,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import InputText from 'primevue/inputtext'
-import Chips from 'primevue/chips'
+import InputChips from 'primevue/inputchips'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import InboundsEditor from '@/components/inbounds/inboundsEditor/inboundsEditor.vue'
@@ -74,6 +74,7 @@ const emit = defineEmits(['save', 'cancel', 'update:modelValue'])
 
 const userStore = useUserStore()
 const saving = ref(false)
+const uniqueId = computed(() => Math.random().toString(36).substring(7))
 const fileInput = ref<HTMLInputElement | null>(null)
 
 const onImport = () => {
