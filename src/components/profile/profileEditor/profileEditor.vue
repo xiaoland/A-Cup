@@ -1,25 +1,52 @@
 <template>
   <div class="profile-editor">
-    <div class="form">
-      <v-text-field v-model="modelValue.name" label="Name" variant="outlined" required />
-      <v-combobox
-        v-model="modelValue.tags"
-        label="Tags"
-        multiple
-        chips
-        closable-chips
-        variant="outlined"
-      />
-      <InboundsEditor v-model="modelValue.inbounds" />
-      <OutboundsListEditor v-model="modelValue.outbounds" />
-      <RouteEditor v-model="modelValue.route" />
-      <DnsEditor v-model="modelValue.dns" />
+    <div class="grid grid-cols-1 gap-4">
+      <Card>
+        <template #content>
+          <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="field">
+              <label for="name">Name</label>
+              <InputText id="name" v-model="modelValue.name" />
+            </div>
+            <div class="field">
+              <label for="tags">Tags</label>
+              <Chips id="tags" v-model="modelValue.tags" />
+            </div>
+          </div>
+        </template>
+      </Card>
+
+      <Card>
+        <template #content>
+          <InboundsEditor v-model="modelValue.inbounds" />
+        </template>
+      </Card>
+
+      <Card>
+        <template #content>
+          <OutboundsListEditor v-model="modelValue.outbounds" />
+        </template>
+      </Card>
+
+      <Card>
+        <template #content>
+          <RouteEditor v-model="modelValue.route" />
+        </template>
+      </Card>
+
+      <Card>
+        <template #content>
+          <DnsEditor v-model="modelValue.dns" />
+        </template>
+      </Card>
     </div>
+
     <input ref="fileInput" type="file" accept="application/json" @change="onFileChange" hidden />
-    <div class="actions">
-      <v-btn @click="$emit('cancel')">Cancel</v-btn>
-      <v-btn @click="onImport">Import</v-btn>
-      <v-btn color="primary" @click="onSave" :loading="saving">Save</v-btn>
+
+    <div class="flex justify-end gap-2 mt-4">
+      <Button label="Cancel" severity="secondary" @click="$emit('cancel')" />
+      <Button label="Import" severity="info" @click="onImport" />
+      <Button label="Save" @click="onSave" :loading="saving" />
     </div>
   </div>
 </template>
@@ -27,17 +54,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
-import InboundsEditor from '@/components/inbounds/inboundsEditor/inboundsEditor.vue';
-import OutboundsListEditor from '@/components/outbounds/outboundsListEditor/outboundsListEditor.vue';
-import RouteEditor from '@/components/route/routeEditor/routeEditor.vue';
-import DnsEditor from '@/components/dns/dnsEditor';
-import type { Profile } from './schema';
-import { SingboxProfileSchema } from '@/schemas/singbox';
-import { transformSingboxToProfile } from './transform';
+import InputText from 'primevue/inputtext'
+import Chips from 'primevue/chips'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import InboundsEditor from '@/components/inbounds/inboundsEditor/inboundsEditor.vue'
+import OutboundsListEditor from '@/components/outbounds/outboundsListEditor/outboundsListEditor.vue'
+import RouteEditor from '@/components/route/routeEditor/routeEditor.vue'
+import DnsEditor from '@/components/dns/dnsEditor/dnsEditor.vue'
+import type { Profile } from './schema'
+import { SingboxProfileSchema } from '@/schemas/singbox'
+import { transformSingboxToProfile } from './transform'
 
 const props = defineProps<{
-  modelValue: Profile;
-}>();
+  modelValue: Profile
+}>()
 
 const emit = defineEmits(['save', 'cancel', 'update:modelValue'])
 
@@ -85,7 +116,7 @@ const onSave = async () => {
     const res = await userStore.authorizedFetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error(`Save failed: ${res.status}`)
     const saved = await res.json()
@@ -96,7 +127,12 @@ const onSave = async () => {
     saving.value = false
   }
 }
-
 </script>
 
-<style lang="sass" scoped src="./profileEditor.scss"></style>
+<style scoped>
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+</style>

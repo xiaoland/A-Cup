@@ -1,21 +1,37 @@
 <template>
-  <v-row>
-    <v-col cols="12" md="6">
-      <v-select :items="ssMethods" v-model="form.credential.method" label="Method" variant="outlined" />
-    </v-col>
-    <v-col cols="12" md="6">
-      <v-text-field v-model="form.credential.password" label="Password" variant="outlined" type="password" />
-    </v-col>
-    <v-col cols="12" md="6">
-      <v-text-field v-model="form.credential.plugin" label="Plugin (optional)" variant="outlined" />
-    </v-col>
-    <v-col cols="12" md="6">
-      <v-text-field v-model="form.credential.plugin_opts" label="Plugin Opts (optional)" variant="outlined" />
-    </v-col>
-  </v-row>
+  <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="field col-span-1">
+      <label for="method">Method</label>
+      <Select
+        id="method"
+        v-model="form.credential.method"
+        :options="ssMethods"
+      />
+    </div>
+    <div class="field col-span-1">
+      <label for="password">Password</label>
+      <Password
+        id="password"
+        v-model="form.credential.password"
+        :feedback="false"
+        toggleMask
+      />
+    </div>
+    <div class="field col-span-1">
+      <label for="plugin">Plugin (optional)</label>
+      <InputText id="plugin" v-model="form.credential.plugin" />
+    </div>
+    <div class="field col-span-1">
+      <label for="plugin_opts">Plugin Opts (optional)</label>
+      <InputText id="plugin_opts" v-model="form.credential.plugin_opts" />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+import Select from 'primevue/select'
+import Password from 'primevue/password'
+import InputText from 'primevue/inputtext'
 import type { Outbound } from './types'
 
 defineProps<{ form: Outbound }>()
@@ -32,4 +48,9 @@ const ssMethods = [
 </script>
 
 <style scoped>
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 </style>

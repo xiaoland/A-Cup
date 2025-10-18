@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { LoginCredentials, LoginResponse, User, JWTPayload } from '@/components/userLogin/types'
+import type { LoginCredentials, LoginResponse, User, JWTPayload } from '@/views/types'
 
 const TOKEN_KEY = 'auth_token';
 
@@ -71,7 +71,10 @@ export const useUserStore = defineStore('user', () => {
     }
 
     token.value = authToken
-    user.value = userData
+    user.value = {
+      id: userData.id,
+      username: userData.username,
+    }
     localStorage.setItem(TOKEN_KEY, authToken)
   }
 

@@ -1,40 +1,67 @@
 <template>
-  <Editor
-    v-model="form"
-    :title="`Rule Set: ${form.name}`"
-    @save="save"
-    @cancel="emit('close')"
-    @delete="deleteRuleSet"
-    :show-delete="!!form.id"
-  >
-    <v-form>
-      <v-text-field v-model="form.name" label="Name"></v-text-field>
-      <v-select v-model="form.type" :items="['inline', 'remote']" label="Type"></v-select>
-      <v-combobox
-        v-model="form.format"
-        :items="['binary', 'source']"
-        label="Format"
-        hint="Select a format or type a custom one"
-        persistent-hint
-      ></v-combobox>
-      <v-textarea
-        v-if="form.type === 'inline'"
-        v-model="form.content"
-        label="Content (JSON array of headless rules)"
-      ></v-textarea>
-      <v-text-field v-if="form.type === 'remote'" v-model="form.content" label="URL"></v-text-field>
-      <outbounds-selector v-model="form.download_detour" />
-      <v-text-field v-model="form.update_interval" label="Update Interval"></v-text-field>
-    </v-form>
-  </Editor>
+  <Card>
+    <template #title>
+      <div class="text-2xl font-bold">
+        {{ form.id ? `Edit Rule Set: ${form.name}` : 'Create Rule Set' }}
+      </div>
+    </template>
+    <template #content>
+      <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="field col-span-1">
+          <label for="name">Name</label>
+          <InputText id="name" v-model="form.name" />
+        </div>
+        <div class="field col-span-1">
+          <label for="type">Type</label>
+          <Select id="type" v-model="form.type" :options="['inline', 'remote']" />
+        </div>
+        <div class="field col-span-1">
+          <label for="format">Format</label>
+          <Select
+            id="format"
+            v-model="form.format"
+            :options="['binary', 'source']"
+            editable
+          />
+        </div>
+        <div class="field col-span-2">
+          <label for="content">{{ form.type === 'remote' ? 'URL' : 'Content (JSON array of headless rules)' }}</label>
+          <Textarea
+            id="content"
+            v-model="form.content"
+            rows="10"
+            auto-resize
+          />
+        </div>
+        <div class="field col-span-1">
+            <label for="download_detour">Download Detour</label>
+            <OutboundsSelector v-model="form.download_detour" />
+        </div>
+        <div class="field col-span-1">
+          <label for="update_interval">Update Interval</label>
+          <InputText id="update_interval" v-model="form.update_interval" />
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="flex justify-end gap-2">
+        <Button label="Cancel" severity="secondary" @click="emit('close')" />
+        <Button label="Save" @click="save(form)" />
+      </div>
+    </template>
+  </Card>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRuleSetStore } from '@/stores/ruleSet';
-import { RuleSetSchema, type RuleSet } from '@/schemas/route';
-import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue';
-import Editor from '@/components/common/Editor.vue';
+import { ref } from 'vue'
+import { useRuleSetStore } from '@/stores/ruleSet'
+import { RuleSetSchema, type RuleSet } from '@/schemas/route'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import Textarea from 'primevue/textarea'
+import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
 
 const props = defineProps({
   ruleSet: {
@@ -46,35 +73,33 @@ const props = defineProps({
       content: '',
     }),
   },
-});
+})
 
-const emit = defineEmits(['close', 'created', 'deleted']);
+const emit = defineEmits(['close', 'created', 'deleted'])
 
-const form = ref(props.ruleSet);
-const ruleSetStore = useRuleSetStore();
+const form = ref(props.ruleSet)
+const ruleSetStore = useRuleSetStore()
 
 const save = async (data: RuleSet) => {
   try {
-    const validatedData = RuleSetSchema.parse(data);
+    const validatedData = RuleSetSchema.parse(data)
     if (props.ruleSet.id) {
-      await ruleSetStore.updateRuleSet(props.ruleSet.id, validatedData);
+      await ruleSetStore.updateRuleSet(props.ruleSet.id, validatedData)
     } else {
-      await ruleSetStore.createRuleSet(validatedData);
-      emit('created', validatedData);
+      await ruleSetStore.createRuleSet(validatedData)
+      emit('created', validatedData)
     }
-    emit('close');
+    emit('close')
   } catch (error) {
-    console.error('Validation error:', error);
+    console.error('Validation error:', error)
   }
-};
-
-const deleteRuleSet = async () => {
-  if (props.ruleSet.id) {
-    await ruleSetStore.deleteRuleSet(props.ruleSet.id);
-    emit('deleted');
-    emit('close');
-  }
-};
+}
 </script>
 
-<style scoped lang="scss" src="./ruleSetEditor.scss"></style>
+<style scoped>
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+</style>

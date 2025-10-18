@@ -1,40 +1,38 @@
 <template>
-  <div class="d-flex align-center" style="gap: 8px;">
+  <div class="flex items-center gap-2">
     <div class="flex-grow-1">
-      <v-select
+      <MultiSelect
         v-model="selected"
-        :items="ruleSetsWithTags"
-        item-title="name"
-        :item-value="itemValue"
-        label="Rule Sets"
-        multiple
-        chips
-        :return-object="false"
+        :options="ruleSetsWithTags"
+        option-label="name"
+        :option-value="itemValue"
+        placeholder="Select Rule Sets"
+        display="chip"
+        class="w-full"
         @update:modelValue="onSelection"
-        hide-details
-      ></v-select>
+      />
     </div>
-    <v-btn @click="showCreateDialog = true" icon="mdi-plus" variant="text"></v-btn>
-    <v-dialog v-model="showCreateDialog" max-width="600px">
-      <v-card>
-        <v-card-title>Create New Rule Set</v-card-title>
-        <v-card-text>
-          <rule-set-editor @close="showCreateDialog = false" @created="onRuleSetCreated" />
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <Button icon="i-mdi-plus" text rounded @click="showCreateDialog = true" />
+    <Dialog v-model:visible="showCreateDialog" modal header="Create New Rule Set" class="w-full max-w-lg">
+      <div class="p-4">
+        <rule-set-editor @close="showCreateDialog = false" @created="onRuleSetCreated" />
+      </div>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
-import { useRuleSetStore } from '@/stores/ruleSet';
-import { useUserStore } from '@/stores/user';
-import RuleSetEditor from './ruleSetEditor/ruleSetEditor.vue';
-import type { RuleSet as RuleSetSchemaType } from '@/schemas/route';
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRuleSetStore } from '@/stores/ruleSet'
+import { useUserStore } from '@/stores/user'
+import MultiSelect from 'primevue/multiselect'
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import RuleSetEditor from './ruleSetEditor/ruleSetEditor.vue'
+import type { RuleSet as RuleSetSchemaType } from '@/schemas/route'
 
 interface RuleSetWithTag extends RuleSetSchemaType {
-  tag: string;
+  tag: string
 }
 
 const props = defineProps({
@@ -46,88 +44,60 @@ const props = defineProps({
     type: String as () => 'id' | 'tag',
     default: 'tag',
   },
-});
+})
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue'])
 
-const ruleSetStore = useRuleSetStore();
-const userStore = useUserStore();
-const ruleSetsWithTags = ref<RuleSetWithTag[]>([]);
-const selected = ref<(string | number)[]>([]);
-const showCreateDialog = ref(false);
+const ruleSetStore = useRuleSetStore()
+const userStore = useUserStore()
+const ruleSetsWithTags = ref<RuleSetWithTag[]>([])
+const selected = ref<(string | number)[]>(props.modelValue)
+const showCreateDialog = ref(false)
 
-const itemValue = computed(() => (props.valueAs === 'id' ? 'id' : 'tag'));
+const itemValue = computed(() => (props.valueAs === 'id' ? 'id' : 'tag'))
 
 const fetchRuleSets = async () => {
-  await ruleSetStore.fetchRuleSets();
-  const ruleSets = ruleSetStore.ruleSets;
+  await ruleSetStore.fetchRuleSets()
+  const ruleSets = ruleSetStore.ruleSets
   const tagsPromises = ruleSets.map(async (ruleSet) => {
     if (ruleSet.id) {
-      const response = await userStore.authorizedFetch(`/api/rule_sets/${ruleSet.id}/tag`);
+      const response = await userStore.authorizedFetch(`/api/rule_sets/${ruleSet.id}/tag`)
       if (response.ok) {
-        const data = await response.json();
-        return { ...ruleSet, tag: data.tag };
+        const data = await response.json()
+        return { ...ruleSet, tag: data.tag }
       }
     }
-    return { ...ruleSet, tag: `rule-set-${ruleSet.id}` }; // Fallback tag
-  });
+    return { ...ruleSet, tag: `rule-set-${ruleSet.id}` } // Fallback tag
+  })
 
-  const resolvedTags = await Promise.all(tagsPromises);
+  const resolvedTags = await Promise.all(tagsPromises)
   ruleSetsWithTags.value = resolvedTags.map((rs) => {
-    const ruleSet = rs as any;
+    const ruleSet = rs as any
     return {
       ...ruleSet,
       type: ruleSet.type || 'remote',
       format: ruleSet.format || null,
       tag: ruleSet.tag,
-    } as RuleSetWithTag;
-  });
+    } as RuleSetWithTag
+  })
+}
 
-  updateSelected(props.modelValue);
-};
-
-onMounted(fetchRuleSets);
+onMounted(fetchRuleSets)
 
 const onSelection = (value: any[]) => {
-  if (props.valueAs === 'id') {
-    const ids = value.map((item) => (typeof item === 'object' && item.id ? item.id : item));
-    emit('update:modelValue', ids);
-  } else {
-    emit('update:modelValue', value);
-  }
-};
+    emit('update:modelValue', value)
+}
 
 const onRuleSetCreated = () => {
-  fetchRuleSets();
-  showCreateDialog.value = false;
-};
-
-const updateSelected = (modelValue: (string | number)[]) => {
-  if (!Array.isArray(modelValue)) {
-    selected.value = [];
-    return;
-  }
-  if (props.valueAs === 'id') {
-    selected.value = modelValue.map((id) => (typeof id === 'number' ? id : parseInt(id, 10)));
-  } else {
-    selected.value = modelValue
-      .map((tag) => {
-        const found = ruleSetsWithTags.value.find((rs) => rs.tag === tag);
-        return found ? found.tag : null;
-      })
-      .filter((t) => t !== null) as string[];
-  }
-};
+  fetchRuleSets()
+  showCreateDialog.value = false
+}
 
 watch(
   () => props.modelValue,
   (newValue) => {
-    updateSelected(newValue);
+    selected.value = newValue
   },
   { immediate: true, deep: true }
-);
-
-watch(ruleSetsWithTags, () => {
-  updateSelected(props.modelValue);
-});
+)
 </script>

@@ -1,48 +1,58 @@
 <template>
-  <div class="d-flex flex-column" style="gap: 8px">
-    <div class="d-flex align-center" style="gap: 8px">
-      <v-btn color="primary" variant="outlined" @click="dialog = true">Select Outbounds</v-btn>
-      <span class="text-caption text-medium-emphasis">Selected: {{ (modelValue || []).length }}</span>
+  <div class="flex flex-col gap-2">
+    <div class="flex items-center gap-2">
+      <Button label="Select Outbounds" @click="dialog = true" />
+      <span class="text-sm text-gray-500">Selected: {{ (modelValue || []).length }}</span>
     </div>
-    <div class="d-flex" style="gap: 6px; flex-wrap: wrap">
-      <v-chip v-for="id in (modelValue || [])" :key="id" size="small" class="ma-1" variant="tonal">
-        {{ nameOf(id) || `#${id}` }}
-      </v-chip>
+    <div class="flex flex-wrap gap-2">
+      <Chip v-for="id in (modelValue || [])" :key="id" :label="nameOf(id) || `#${id}`" />
     </div>
 
-    <v-dialog v-model="dialog" max-width="900">
-      <v-card>
-        <v-card-title class="text-h6">Select Outbounds</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="q" label="Search" prepend-inner-icon="mdi-magnify" variant="outlined" clearable />
-          <v-divider class="my-2" />
-          <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-2" />
-          <v-list v-else lines="two" density="comfortable" class="border rounded">
-            <v-list-item
-              v-for="item in filtered"
-              :key="item.id"
-              :title="item.name || `#${item.id}`"
-              :subtitle="`${item.type}${item.region ? ' · ' + item.region : ''}${item.provider ? ' · ' + item.provider : ''}`"
-            >
-              <template #prepend>
-                <v-checkbox-btn :model-value="local.has(item.id)" @click.stop="toggle(item.id)" />
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="dialog = false">Cancel</v-btn>
-          <v-btn color="primary" @click="apply">Apply</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <Dialog v-model:visible="dialog" modal header="Select Outbounds" class="w-full max-w-4xl">
+      <div class="p-4">
+        <div class="p-inputgroup">
+            <span class="p-inputgroup-addon">
+                <i class="i-mdi-magnify" />
+            </span>
+            <InputText v-model="q" placeholder="Search" />
+        </div>
+        <DataTable
+          :value="filtered"
+          v-model:selection="selection"
+          :loading="loading"
+          data-key="id"
+          :paginator="true"
+          :rows="10"
+          class="p-datatable-sm mt-4"
+        >
+          <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+          <Column field="name" header="Name" sortable>
+             <template #body="slotProps">
+              {{ slotProps.data.name || `#${slotProps.data.id}` }}
+            </template>
+          </Column>
+          <Column field="type" header="Type" sortable></Column>
+          <Column field="region" header="Region" sortable></Column>
+          <Column field="provider" header="Provider" sortable></Column>
+        </DataTable>
+      </div>
+      <template #footer>
+        <Button label="Cancel" severity="secondary" @click="dialog = false" />
+        <Button label="Apply" @click="apply" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
+import Button from 'primevue/button'
+import Chip from 'primevue/chip'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 
 interface OutboundItem {
   id: number
@@ -60,13 +70,14 @@ const dialog = ref(false)
 const loading = ref(false)
 const items = ref<OutboundItem[]>([])
 const q = ref('')
-const local = ref<Set<number>>(new Set(props.modelValue || []))
+const selection = ref<OutboundItem[]>([])
 
 watch(
   () => props.modelValue,
   (v) => {
-    local.value = new Set(v || [])
-  }
+    selection.value = items.value.filter(item => (v || []).includes(item.id))
+  },
+  { deep: true }
 )
 
 const filtered = computed(() => {
@@ -83,14 +94,8 @@ const filtered = computed(() => {
 
 const nameOf = (id: number) => items.value.find((x) => x.id === id)?.name
 
-const toggle = (id: number) => {
-  const s = local.value
-  if (s.has(id)) s.delete(id)
-  else s.add(id)
-}
-
 const apply = () => {
-  emit('update:modelValue', Array.from(local.value))
+  emit('update:modelValue', selection.value.map(item => item.id))
   dialog.value = false
 }
 
@@ -100,7 +105,10 @@ const load = async () => {
     const res = await user.authorizedFetch('/api/outbounds')
     if (res.ok) {
       const data = await res.json()
-      if (Array.isArray(data)) items.value = data
+      if (Array.isArray(data)) {
+        items.value = data
+        selection.value = items.value.filter(item => (props.modelValue || []).includes(item.id))
+      }
     }
   } catch (e) {
     console.error(e)
@@ -111,6 +119,3 @@ const load = async () => {
 
 onMounted(load)
 </script>
-
-<style scoped>
-</style>

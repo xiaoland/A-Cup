@@ -1,53 +1,76 @@
 <template>
-  <Editor title="DNS" :model-value="dns">
-    <v-tabs v-model="tab" color="primary">
-      <v-tab value="servers">Servers</v-tab>
-      <v-tab value="rules">Rules</v-tab>
-      <v-tab value="advanced">Advanced</v-tab>
-    </v-tabs>
-    <v-window v-model="tab">
-      <v-window-item value="servers" class="pa-4">
-        <div class="d-flex flex-column" style="gap: 16px;">
-          <dnsServerEditor
-            v-for="(server, i) in dns.servers"
-            :key="i"
-            v-model="dns.servers[i]"
-            @remove="removeServer(i)"
-          />
-        </div>
-        <v-btn class="mt-4" @click="addServer">Add Server</v-btn>
-      </v-window-item>
-      <v-window-item value="rules" class="pa-4">
-        <div class="d-flex flex-column" style="gap: 16px;">
-          <dnsRuleEditor
-            v-if="dns.rules"
-            v-for="(rule, i) in dns.rules"
-            :key="i"
-            v-model="dns.rules[i]"
-            :dns-servers="serverTags"
-            @remove="removeRule(i)"
-          />
-        </div>
-        <v-btn class="mt-4" @click="addRule">Add Rule</v-btn>
-      </v-window-item>
-      <v-window-item value="advanced" class="pa-4">
-        <outboundsSelector v-model="dns.final" label="Final" />
-        <v-select
-          v-model="dns.strategy"
-          label="Strategy"
-          :items="['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only']"
-        />
-        <v-checkbox v-model="dns.disable_cache" label="Disable Cache" />
-        <v-checkbox v-model="dns.disable_expire" label="Disable Expire" />
-      </v-window-item>
-    </v-window>
-  </Editor>
+  <Card>
+    <template #title>
+      <div class="text-2xl font-bold">DNS</div>
+    </template>
+    <template #content>
+      <TabView>
+        <TabPanel header="Servers" value="servers">
+          <div class="flex flex-col gap-4">
+            <dnsServerEditor
+              v-for="(server, i) in dns.servers"
+              :key="i"
+              v-model="dns.servers[i]"
+              @remove="removeServer(i)"
+            />
+          </div>
+          <Button class="mt-4" label="Add Server" icon="i-mdi-plus" @click="addServer" />
+        </TabPanel>
+        <TabPanel header="Rules" value="rules">
+          <div class="flex flex-col gap-4">
+            <dnsRuleEditor
+              v-if="dns.rules"
+              v-for="(rule, i) in dns.rules"
+              :key="i"
+              v-model="dns.rules[i]"
+              :dns-servers="serverTags"
+              @remove="removeRule(i)"
+            />
+          </div>
+          <Button class="mt-4" label="Add Rule" icon="i-mdi-plus" @click="addRule" />
+        </TabPanel>
+        <TabPanel header="Advanced" value="advanced">
+          <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="field col-span-1">
+                <label>Final</label>
+                <outboundsSelector v-model="dns.final" />
+            </div>
+            <div class="field col-span-1">
+              <label for="strategy">Strategy</label>
+              <Select
+                id="strategy"
+                v-model="dns.strategy"
+                :options="['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only']"
+              />
+            </div>
+            <div class="field col-span-1 flex items-center">
+                <div class="flex items-center">
+                    <Checkbox v-model="dns.disable_cache" inputId="disable_cache" :binary="true" />
+                    <label for="disable_cache" class="ml-2"> Disable Cache </label>
+                </div>
+            </div>
+             <div class="field col-span-1 flex items-center">
+                <div class="flex items-center">
+                    <Checkbox v-model="dns.disable_expire" inputId="disable_expire" :binary="true" />
+                    <label for="disable_expire" class="ml-2"> Disable Expire </label>
+                </div>
+            </div>
+          </div>
+        </TabPanel>
+      </TabView>
+    </template>
+  </Card>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { type Dns, dnsSchema } from '@/schemas/dns'
-import Editor from '@/components/common/Editor.vue'
+import Card from 'primevue/card'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
+import Checkbox from 'primevue/checkbox'
 import dnsServerEditor from '../dnsServerEditor.vue'
 import dnsRuleEditor from '../dnsRuleEditor/dnsRuleEditor.vue'
 import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
@@ -61,7 +84,6 @@ const emit = defineEmits<{
 }>()
 
 const dns = ref(props.modelValue || dnsSchema.parse({ servers: [] }))
-const tab = ref('servers')
 
 const serverTags = computed(() => dns.value.servers.map((s) => s.tag))
 
@@ -92,3 +114,11 @@ watch(
   { deep: true }
 )
 </script>
+
+<style scoped>
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+</style>

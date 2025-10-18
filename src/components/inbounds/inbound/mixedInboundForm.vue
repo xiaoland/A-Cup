@@ -1,79 +1,102 @@
 <template>
-  <div>
+  <div class="p-fluid form-grid">
     <!-- Listen Fields -->
-    <v-row dense>
-      <v-col cols="12" md="4">
-        <v-text-field v-model="form.listen" label="Listen" />
-      </v-col>
-      <v-col cols="12" md="4">
-        <v-text-field type="number" v-model.number="form.listen_port" label="Listen Port" />
-      </v-col>
-      <v-col cols="12" md="4" class="d-flex align-center">
-        <v-switch v-model="form.set_system_proxy" label="Set System Proxy" />
-      </v-col>
-    </v-row>
+    <div class="field col-span-4">
+      <label for="listen">Listen</label>
+      <InputText id="listen" v-model="form.listen" />
+    </div>
+    <div class="field col-span-4">
+      <label for="listen_port">Listen Port</label>
+      <InputNumber id="listen_port" v-model="form.listen_port" />
+    </div>
+    <div class="field col-span-4 flex items-center">
+      <div class="flex items-center">
+        <Checkbox v-model="form.set_system_proxy" inputId="set_system_proxy" :binary="true"/>
+        <label for="set_system_proxy" class="ml-2"> Set System Proxy </label>
+      </div>
+    </div>
 
     <!-- Users -->
-    <v-expansion-panels variant="accordion" class="mt-2">
-      <v-expansion-panel>
-        <v-expansion-panel-title>Users</v-expansion-panel-title>
-        <v-expansion-panel-text>
-          <div class="d-flex flex-column" style="gap: 8px">
-            <div v-for="(user, index) in (form.users || [])" :key="index" class="d-flex" style="gap: 8px">
-              <v-text-field v-model="user.username" label="Username" density="comfortable" />
-              <v-text-field v-model="user.password" label="Password" type="password" density="comfortable" />
-              <v-btn icon="mdi-close" size="small" variant="text" @click="removeUser(index)" />
+    <div class="col-span-12">
+      <Accordion>
+        <AccordionPanel value="users" header="Users">
+          <div class="flex flex-col gap-2">
+            <div v-for="(user, index) in form.users || []" :key="index" class="flex gap-2 items-center">
+              <InputText v-model="user.username" placeholder="Username" class="flex-1" />
+              <Password v-model="user.password" placeholder="Password" class="flex-1" :feedback="false" toggleMask/>
+              <Button icon="i-mdi-close" severity="danger" text rounded @click="removeUser(index)" />
             </div>
-            <div>
-              <v-btn size="small" variant="text" @click="addUser" prepend-icon="mdi-plus">Add user</v-btn>
-            </div>
+            <Button label="Add user" text @click="addUser" class="self-start" />
           </div>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+        </AccordionPanel>
+      </Accordion>
+    </div>
 
-    <!-- Advanced (Listen Fields) -->
-    <v-expansion-panels variant="accordion" class="mt-4">
-      <v-expansion-panel>
-        <v-expansion-panel-title>Advanced</v-expansion-panel-title>
-        <v-expansion-panel-text>
-          <v-row dense>
-            <v-col cols="12" md="4">
-              <v-text-field v-model="form.bind_interface" label="Bind Interface" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field v-model="form.routing_mark" label="Routing Mark" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-switch v-model="form.reuse_addr" label="Reuse Addr" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field v-model="form.netns" label="netns" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-switch v-model="form.tcp_fast_open" label="TCP Fast Open" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-switch v-model="form.tcp_multi_path" label="TCP Multi Path" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-switch v-model="form.udp_fragment" label="UDP Fragment" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field v-model="form.udp_timeout" label="UDP Timeout (e.g. 5m)" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field v-model="form.detour" label="Detour" />
-            </v-col>
-          </v-row>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
+    <!-- Advanced -->
+    <div class="col-span-12">
+        <Accordion>
+            <AccordionPanel value="advanced" header="Advanced">
+                <div class="p-fluid form-grid">
+                    <div class="field col-span-4">
+                        <label for="bind_interface">Bind Interface</label>
+                        <InputText id="bind_interface" v-model="form.bind_interface" />
+                    </div>
+                    <div class="field col-span-4">
+                        <label for="routing_mark">Routing Mark</label>
+                        <InputNumber id="routing_mark" v-model.number="form.routing_mark" />
+                    </div>
+                    <div class="field col-span-4 flex items-center">
+                        <div class="flex items-center">
+                            <Checkbox v-model="form.reuse_addr" inputId="reuse_addr" :binary="true"/>
+                            <label for="reuse_addr" class="ml-2"> Reuse Addr </label>
+                        </div>
+                    </div>
+                    <div class="field col-span-4">
+                        <label for="netns">netns</label>
+                        <InputText id="netns" v-model="form.netns" />
+                    </div>
+                    <div class="field col-span-4 flex items-center">
+                        <div class="flex items-center">
+                            <Checkbox v-model="form.tcp_fast_open" inputId="tcp_fast_open" :binary="true"/>
+                            <label for="tcp_fast_open" class="ml-2"> TCP Fast Open </label>
+                        </div>
+                    </div>
+                    <div class="field col-span-4 flex items-center">
+                        <div class="flex items-center">
+                            <Checkbox v-model="form.tcp_multi_path" inputId="tcp_multi_path" :binary="true"/>
+                            <label for="tcp_multi_path" class="ml-2"> TCP Multi Path </label>
+                        </div>
+                    </div>
+                    <div class="field col-span-4 flex items-center">
+                        <div class="flex items-center">
+                            <Checkbox v-model="form.udp_fragment" inputId="udp_fragment" :binary="true"/>
+                            <label for="udp_fragment" class="ml-2"> UDP Fragment </label>
+                        </div>
+                    </div>
+                    <div class="field col-span-4">
+                        <label for="udp_timeout">UDP Timeout</label>
+                        <InputText id="udp_timeout" v-model="form.udp_timeout" />
+                    </div>
+                    <div class="field col-span-4">
+                        <label for="detour">Detour</label>
+                        <InputText id="detour" v-model="form.detour" />
+                    </div>
+                </div>
+            </AccordionPanel>
+        </Accordion>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
+import Checkbox from 'primevue/checkbox'
+import Accordion from 'primevue/accordion'
+import AccordionPanel from 'primevue/accordionpanel'
+import Button from 'primevue/button'
+import Password from 'primevue/password'
 import type { MixedInbound } from './schema'
 
 const props = defineProps<{ form: MixedInbound }>()
@@ -81,10 +104,9 @@ const emit = defineEmits<{ (e: 'update:form', v: MixedInbound): void }>()
 
 const form = computed({
   get: () => props.form,
-  set: (v) => emit('update:form', v)
+  set: (v) => emit('update:form', v),
 })
 
-// Users helpers
 const addUser = () => {
   if (!form.value.users) form.value.users = []
   form.value.users.push({ username: '', password: '' })
@@ -101,4 +123,20 @@ const removeUser = (index: number) => {
 </script>
 
 <style scoped>
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.col-span-4 {
+  grid-column: span 4 / span 4;
+}
+.col-span-12 {
+  grid-column: span 12 / span 12;
+}
 </style>
