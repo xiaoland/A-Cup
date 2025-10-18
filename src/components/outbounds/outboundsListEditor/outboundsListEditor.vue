@@ -3,7 +3,7 @@
     <template #title>
       <div class="flex justify-between items-center">
         <div class="text-2xl font-bold">Outbounds</div>
-        <Button label="Add Outbound" icon="pi pi-plus" @click="showAddDialog = true" />
+        <Button label="Add Outbound" icon="i-mdi-plus" @click="showAddDialog = true" />
       </div>
     </template>
     <template #content>
@@ -19,7 +19,7 @@
   </Card>
 
   <Dialog v-model:visible="showAddDialog" modal header="Add Outbound" :style="{ width: '50vw' }">
-    <OutboundsSelector :multiple="true" value-as="id" :mask="modelValue" @update:modelValue="addOutbounds" />
+    <OutboundsSelector :multiple="true" value-as="id" :mask="modelValue" @confirm="addOutbounds" @cancel="showAddDialog = false" />
   </Dialog>
 
   <Sidebar v-model:visible="showEditDialog" position="right" class="w-full md:w-3/5">

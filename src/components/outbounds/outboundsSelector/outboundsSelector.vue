@@ -1,18 +1,23 @@
 <template>
-  <div class="flex items-center gap-2">
-    <div class="flex-grow">
-      <Select
-        v-model="selected"
-        :options="availableOutbounds"
-        :multiple="multiple"
-        option-label="name"
-        :option-value="valueAs === 'id' ? 'id' : 'name'"
-        placeholder="Select Outbound(s)"
-        class="w-full"
-        @update:modelValue="onSelection"
-      />
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center gap-2">
+      <div class="flex-grow">
+        <Select
+          v-model="selected"
+          :options="availableOutbounds"
+          :multiple="multiple"
+          option-label="name"
+          :option-value="valueAs === 'id' ? 'id' : 'name'"
+          placeholder="Select Outbound(s)"
+          class="w-full"
+        />
+      </div>
+      <Button icon="i-mdi-plus" @click="showCreateDialog = true" text />
     </div>
-    <Button icon="pi pi-plus" @click="showCreateDialog = true" />
+    <div class="flex justify-end gap-2">
+      <Button label="Cancel" severity="secondary" @click="$emit('cancel')" />
+      <Button label="Confirm" @click="onConfirm" />
+    </div>
     <Dialog v-model:visible="showCreateDialog" modal header="Create New Outbound" :style="{ width: '50vw' }">
       <OutboundEditor :form="emptyOutbound" @saved="onOutboundCreated" @cancel="showCreateDialog = false" />
     </Dialog>
@@ -47,7 +52,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'confirm', 'cancel'])
 
 const outboundStore = useOutboundStore()
 const selected = ref<any>(props.multiple ? [] : null)
@@ -75,16 +80,16 @@ const onOutboundCreated = (newOutbound: Outbound) => {
   if (newOutbound.id) {
     if (props.multiple) {
       const currentVal = Array.isArray(selected.value) ? selected.value : []
-      onSelection([...currentVal, newOutbound.id])
+      selected.value = [...currentVal, newOutbound.id]
     } else {
-      onSelection(newOutbound.id)
+      selected.value = newOutbound.id
     }
   }
   showCreateDialog.value = false
 }
 
-const onSelection = (value: any) => {
-  emit('update:modelValue', value)
+const onConfirm = () => {
+  emit('confirm', selected.value)
 }
 
 const updateSelected = (modelValue: any) => {
