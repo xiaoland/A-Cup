@@ -57,7 +57,7 @@
       <Card>
         <template #title>
           <div class="flex justify-between items-center">
-            <div class="text-2xl font-bold">Outbounds</div>
+            <span>Outbounds</span>
             <Button label="Add Outbound" icon="i-mdi-plus" @click="showAddOutboundDialog = true" />
           </div>
         </template>
@@ -106,7 +106,7 @@
       </template>
     </Dialog>
 
-    <Drawer v-model:visible="showEditOutboundDialog" position="right" class="w-full md:w-3/5">
+    <Dialog v-model:visible="showEditOutboundDialog" modal header="Edit Outbound" class="w-full max-w-4xl">
       <OutboundEditor
         v-if="selectedOutbound"
         :form="selectedOutbound"
@@ -115,7 +115,7 @@
         @deleted="onOutboundDeleted"
         @cancel="showEditOutboundDialog = false"
       />
-    </Drawer>
+    </Dialog>
   </div>
 </template>
 

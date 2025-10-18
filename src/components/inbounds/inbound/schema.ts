@@ -87,13 +87,37 @@ export const TunInboundSchema = z
   })
   .strict()
 
-export const InboundSchema = z.union([MixedInboundSchema, TunInboundSchema])
+// HTTP inbound schema
+export const HttpInboundSchema = z
+  .object({
+    tag: z.string().min(1, { message: 'Tag is required' }),
+    type: z.literal('http'),
+    ...ListenFieldsSchema.shape,
+    users: z.array(z.string()).optional(),
+  })
+  .strict()
+
+// SOCKS inbound schema
+export const SocksInboundSchema = z
+  .object({
+    tag: z.string().min(1, { message: 'Tag is required' }),
+    type: z.literal('socks'),
+    ...ListenFieldsSchema.shape,
+    users: z.array(z.string()).optional(),
+  })
+  .strict()
+
+export const InboundSchema = z.union([MixedInboundSchema, TunInboundSchema, HttpInboundSchema, SocksInboundSchema])
 
 export type MixedInbound = z.infer<typeof MixedInboundSchema>
 export type TunInbound = z.infer<typeof TunInboundSchema>
+export type HttpInbound = z.infer<typeof HttpInboundSchema>
+export type SocksInbound = z.infer<typeof SocksInboundSchema>
 export type Inbound = z.infer<typeof InboundSchema>
 export type PlatformHTTPProxy = z.infer<typeof PlatformHTTPProxySchema>
 
 export const defaultMixed = (): MixedInbound => ({ type: 'mixed', tag: '' })
 export const defaultTun = (): TunInbound => ({ type: 'tun', tag: '', mtu: 9000, stack: 'mixed' })
+export const defaultHttp = (): HttpInbound => ({ type: 'http', tag: '' })
+export const defaultSocks = (): SocksInbound => ({ type: 'socks', tag: '' })
 export const defaultInbound = (): Inbound => defaultMixed()

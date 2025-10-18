@@ -34,7 +34,7 @@
           </div>
 
           <!-- Profile List -->
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div v-else class="flex flex-col gap-4">
             <ProfileCard
               v-for="profile in profiles"
               :key="profile.id"

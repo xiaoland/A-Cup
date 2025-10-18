@@ -22,26 +22,27 @@
 
         <Accordion>
           <AccordionPanel value="0" header="Servers">
-            <div class="flex flex-col gap-4 p-4">
-              <dnsServerEditor
-                v-for="(server, i) in dns.servers"
-                :key="i"
-                v-model="dns.servers[i]"
-                @remove="removeServer(i)"
-              />
+            <div class="flex flex-col gap-2">
+                <dns-server-card
+                    v-for="(server, index) in dns.servers"
+                    :key="index"
+                    :server="server"
+                    @edit="editServer(server, index)"
+                    @delete="removeServer(index)"
+                />
             </div>
             <Button class="mt-4" label="Add Server" icon="i-mdi-plus" @click="addServer" />
           </AccordionPanel>
           <AccordionPanel value="1" header="Rules">
-            <div class="flex flex-col gap-4 p-4">
-              <dnsRuleEditor
-                v-if="dns.rules"
-                v-for="(rule, i) in dns.rules"
-                :key="i"
-                v-model="dns.rules[i]"
-                :dns-servers="serverTags"
-                @remove="removeRule(i)"
-              />
+            <div class="flex flex-col gap-2">
+                <dns-rule-card
+                    v-if="dns.rules"
+                    v-for="(rule, index) in dns.rules"
+                    :key="index"
+                    :rule="rule"
+                    @edit="editRule(rule, index)"
+                    @delete="removeRule(index)"
+                />
             </div>
             <Button class="mt-4" label="Add Rule" icon="i-mdi-plus" @click="addRule" />
           </AccordionPanel>
@@ -55,39 +56,29 @@
                 <label for="cache_capacity">Cache Capacity</label>
                 <InputNumber id="cache_capacity" v-model="dns.cache_capacity" />
               </div>
-              <div class="field col-span-1 flex items-center">
+              <div class="field col-span-2">
+                <div class="flex flex-wrap gap-4">
                   <div class="flex items-center">
                       <Checkbox v-model="dns.disable_cache" inputId="disable_cache" :binary="true" />
                       <label for="disable_cache" class="ml-2"> Disable Cache </label>
                   </div>
-              </div>
-               <div class="field col-span-1 flex items-center">
                   <div class="flex items-center">
                       <Checkbox v-model="dns.disable_expire" inputId="disable_expire" :binary="true" />
                       <label for="disable_expire" class="ml-2"> Disable Expire </label>
                   </div>
-              </div>
-              <div class="field col-span-1 flex items-center">
                   <div class="flex items-center">
                       <Checkbox v-model="dns.independent_cache" inputId="independent_cache" :binary="true" />
                       <label for="independent_cache" class="ml-2"> Independent Cache </label>
                   </div>
-              </div>
-              <div class="field col-span-1 flex items-center">
                   <div class="flex items-center">
                       <Checkbox v-model="dns.reverse_mapping" inputId="reverse_mapping" :binary="true" />
                       <label for="reverse_mapping" class="ml-2"> Reverse Mapping </label>
                   </div>
+                </div>
               </div>
-            </div>
-          </AccordionPanel>
-          <AccordionPanel value="3" header="FakeIP">
-            <div class="p-4">
-              <fakeIpEditor v-model="dns.fakeip" />
-            </div>
-          </AccordionPanel>
-          <AccordionPanel value="4" header="Misc">
-            <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <div class="field col-span-2">
+                <fakeIpEditor v-model="dns.fakeip" />
+              </div>
               <div class="field col-span-2">
                 <label>Hosts (JSON)</label>
                 <JSONEditor v-model="dns.hosts" :rows="6" />
@@ -104,13 +95,19 @@
           </AccordionPanel>
         </Accordion>
       </div>
+      <Dialog v-model:visible="showServerEditor" modal header="Edit DNS Server" class="w-full max-w-lg">
+        <dns-server-editor v-if="editableServer" v-model="editableServer" @save="saveServer" @cancel="showServerEditor = false" />
+      </Dialog>
+      <Dialog v-model:visible="showRuleEditor" modal header="Edit DNS Rule" class="w-full max-w-lg">
+        <dns-rule-editor v-if="editableRule" v-model="editableRule" :dns-servers="serverTags" @save="saveRule" @cancel="showRuleEditor = false" />
+      </Dialog>
     </template>
   </Card>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { type Dns, dnsSchema } from '@/schemas/dns'
+import { type Dns, dnsSchema, type DnsRule } from '@/schemas/dns'
 import Card from 'primevue/card'
 import Tabs from 'primevue/tabs'
 import Tab from 'primevue/tab'
@@ -118,6 +115,9 @@ import Button from 'primevue/button'
 import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
 import dnsServerEditor from '../dnsServerEditor.vue'
+import DnsServerCard from '../dnsServerCard.vue'
+import DnsRuleCard from '../dnsRuleCard.vue'
+import Dialog from 'primevue/dialog'
 import dnsRuleEditor from '../dnsRuleEditor/dnsRuleEditor.vue'
 import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
 import fakeIpEditor from '../fakeIpEditor.vue'
@@ -134,11 +134,34 @@ const emit = defineEmits<{
 }>()
 
 const dns = ref(props.modelValue || dnsSchema.parse({ servers: [] }))
+const showServerEditor = ref(false)
+const editableServer = ref<Dns['servers'][0] | null>(null)
+const editingServerIndex = ref<number | null>(null)
+const showRuleEditor = ref(false)
+const editableRule = ref<DnsRule | null>(null)
+const editingRuleIndex = ref<number | null>(null)
 
 const serverTags = computed(() => dns.value.servers.map((s) => s.tag))
 
 const addServer = () => {
-  dns.value.servers.push(dnsSchema.shape.servers.element.parse({ tag: 'new-server', address: '' }))
+  editableServer.value = dnsSchema.shape.servers.element.parse({ tag: 'new-server', address: '' })
+  editingServerIndex.value = null
+  showServerEditor.value = true
+}
+
+const editServer = (server: Dns['servers'][0], index: number) => {
+  editableServer.value = JSON.parse(JSON.stringify(server))
+  editingServerIndex.value = index
+  showServerEditor.value = true
+}
+
+const saveServer = (savedServer: Dns['servers'][0]) => {
+  if (editingServerIndex.value !== null) {
+    dns.value.servers[editingServerIndex.value] = savedServer
+  } else {
+    dns.value.servers.push(savedServer)
+  }
+  showServerEditor.value = false
 }
 
 const removeServer = (index: number) => {
@@ -149,7 +172,24 @@ const addRule = () => {
   if (!dns.value.rules) {
     dns.value.rules = []
   }
-  dns.value.rules.push(dnsSchema.shape.rules.unwrap().element.parse({ server: '' }))
+  editableRule.value = { server: '' }
+  editingRuleIndex.value = null
+  showRuleEditor.value = true
+}
+
+const editRule = (rule: DnsRule, index: number) => {
+  editableRule.value = JSON.parse(JSON.stringify(rule))
+  editingRuleIndex.value = index
+  showRuleEditor.value = true
+}
+
+const saveRule = (savedRule: DnsRule) => {
+  if (editingRuleIndex.value !== null) {
+    dns.value.rules![editingRuleIndex.value] = savedRule
+  } else {
+    dns.value.rules!.push(savedRule)
+  }
+  showRuleEditor.value = false
 }
 
 const removeRule = (index: number) => {
