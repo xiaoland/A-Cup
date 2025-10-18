@@ -6,7 +6,7 @@ export const ListenFieldsSchema = z
     listen: z.string().optional(),
     listen_port: z.number().int().min(0).max(65535).optional(),
     bind_interface: z.string().optional(),
-    routing_mark: z.union([z.number().int(), z.string()]).optional(),
+    routing_mark: z.number().int().optional(),
     reuse_addr: z.boolean().optional(),
     netns: z.string().optional(),
     tcp_fast_open: z.boolean().optional(),
@@ -16,6 +16,16 @@ export const ListenFieldsSchema = z
     detour: z.string().optional(),
   })
   .partial()
+
+export const PlatformHTTPProxySchema = z
+    .object({
+        enabled: z.boolean().optional(),
+        server: z.string().optional(),
+        server_port: z.number().int().min(0).max(65535).optional(),
+        bypass_domain: z.array(z.string()).optional(),
+        match_domain: z.array(z.string()).optional(),
+    })
+    .partial()
 
 // Mixed inbound schema
 export const MixedInboundSchema = z
@@ -70,16 +80,7 @@ export const TunInboundSchema = z
     exclude_package: z.array(z.string()).optional(),
     platform: z
       .object({
-        http_proxy: z
-          .object({
-            enabled: z.boolean().optional(),
-            server: z.string().optional(),
-            server_port: z.number().int().min(0).max(65535).optional(),
-            bypass_domain: z.array(z.string()).optional(),
-            match_domain: z.array(z.string()).optional(),
-          })
-          .partial()
-          .optional(),
+        http_proxy: PlatformHTTPProxySchema.optional(),
       })
       .partial()
       .optional(),
@@ -91,6 +92,7 @@ export const InboundSchema = z.union([MixedInboundSchema, TunInboundSchema])
 export type MixedInbound = z.infer<typeof MixedInboundSchema>
 export type TunInbound = z.infer<typeof TunInboundSchema>
 export type Inbound = z.infer<typeof InboundSchema>
+export type PlatformHTTPProxy = z.infer<typeof PlatformHTTPProxySchema>
 
 export const defaultMixed = (): MixedInbound => ({ type: 'mixed', tag: '' })
 export const defaultTun = (): TunInbound => ({ type: 'tun', tag: '', mtu: 9000, stack: 'mixed' })
