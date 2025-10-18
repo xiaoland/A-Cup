@@ -111,9 +111,16 @@ const onFileChange = (event: Event) => {
 const onSave = async () => {
   saving.value = true
   try {
-    const body = { ...props.modelValue }
-    const url = body.id ? `/api/profiles/${body.id}` : '/api/profiles'
-    const method = body.id ? 'PUT' : 'POST'
+    const { id, created_by, rule_sets, ...rest } = props.modelValue
+    const body = {
+        ...rest,
+        route: {
+            ...rest.route,
+            rule_set: rule_sets,
+        }
+    }
+    const url = id ? `/api/profiles/${id}` : '/api/profiles'
+    const method = id ? 'PUT' : 'POST'
     const res = await userStore.authorizedFetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
