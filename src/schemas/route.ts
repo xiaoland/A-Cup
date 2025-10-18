@@ -3,7 +3,7 @@ import { z } from 'zod';
 // Schema for a single rule within a route
 export const RouteRuleSchema = z.object({
   action: z.string().optional(), // 'proxy' or 'direct' or 'block'
-  outbound: z.string().optional(), // outbound tag
+  outbound: z.number().optional(), // outbound id
   rule_set: z.array(z.string()).optional(),
   domain: z.array(z.string()).optional(),
   domain_suffix: z.array(z.string()).optional(),
@@ -15,7 +15,7 @@ export const RouteRuleSchema = z.object({
 export const RouteSchema = z.object({
   rules: z.array(RouteRuleSchema).optional(),
   rule_set: z.array(z.number()).optional(), // array of rule-set ids
-  final: z.string().optional(),
+  final: z.number().optional(),
   auto_detect_interface: z.boolean().optional(),
   default_interface: z.string().optional(),
   default_mark: z.number().optional(),
@@ -35,7 +35,7 @@ export const RuleSetSchema = z.object({
   type: z.enum(['inline', 'remote']),
   format: z.string().nullable(),
   content: z.string().optional(),
-  download_detour: z.string().optional(),
+  download_detour: z.number().optional(),
   update_interval: z.string().optional(),
 });
 

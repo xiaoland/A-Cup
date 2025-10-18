@@ -6,40 +6,29 @@
         :options="availableOutbounds"
         :multiple="multiple"
         option-label="name"
-        :option-value="valueAs === 'id' ? 'id' : 'name'"
+        option-value="id"
         placeholder="Select Outbound(s)"
         class="w-full"
-        @update:modelValue="onSelection"
       />
     </div>
-    <Button icon="i-mdi-plus" @click="showCreateDialog = true" text />
-    <Dialog v-model:visible="showCreateDialog" modal header="Create New Outbound" :style="{ width: '50vw' }">
-      <OutboundEditor :form="emptyOutbound" @saved="onOutboundCreated" @cancel="showCreateDialog = false" />
-    </Dialog>
+    <Button icon="i-mdi-plus" @click="$emit('create')" text />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useOutboundStore } from '@/stores/outbound'
-import type { Outbound } from '@/types/outbound'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
-import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue'
 
 const props = defineProps({
   modelValue: {
-    type: [String, Array, Number, Array] as import('vue').PropType<string | string[] | number | number[]>,
-    default: '',
+    type: [Number, Array] as import('vue').PropType<number | number[]>,
+    default: null,
   },
   multiple: {
     type: Boolean,
     default: false,
-  },
-  valueAs: {
-    type: String as () => 'id' | 'tag',
-    default: 'tag',
   },
   mask: {
     type: Array as () => number[],
@@ -47,20 +36,13 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'create'])
 
 const outboundStore = useOutboundStore()
-const selected = ref<any>(props.multiple ? [] : null)
-const showCreateDialog = ref(false)
-const emptyOutbound = computed((): Outbound => ({
-  name: '',
-  type: 'vmess',
-  tag: '',
-  server: '',
-  server_port: 443,
-  uuid: '',
-  security: 'auto',
-}))
+const selected = computed({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value),
+})
 
 const availableOutbounds = computed(() => {
   return outboundStore.outbounds.filter(o => !props.mask.includes(o.id!))
@@ -68,32 +50,7 @@ const availableOutbounds = computed(() => {
 
 onMounted(async () => {
   await outboundStore.fetchOutbounds()
-  updateSelected(props.modelValue)
 })
-
-const onOutboundCreated = (newOutbound: Outbound) => {
-  if (newOutbound.id) {
-    if (props.multiple) {
-      const currentVal = Array.isArray(selected.value) ? selected.value : []
-      onSelection([...currentVal, newOutbound.id])
-    } else {
-      onSelection(newOutbound.id)
-    }
-  }
-  showCreateDialog.value = false
-}
-
-const onSelection = (value: any) => {
-  emit('update:modelValue', value)
-}
-
-const updateSelected = (modelValue: any) => {
-  selected.value = modelValue
-}
-
-watch(() => props.modelValue, (newValue) => {
-  updateSelected(newValue)
-}, { immediate: true, deep: true })
 </script>
 
 <style scoped></style>

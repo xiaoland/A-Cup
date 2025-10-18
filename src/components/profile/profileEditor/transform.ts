@@ -99,6 +99,11 @@ export async function transformSingboxToProfile(
     )
   }
 
+  const findOutboundIdByTag = (tag: string) => {
+    const outbound = outboundStore.outbounds.find(o => o.name === tag)
+    return outbound?.id
+  }
+
   const newProfile: Profile = {
     ...existingProfile,
     name: existingProfile.name || 'Imported Profile',
@@ -114,6 +119,7 @@ export async function transformSingboxToProfile(
         domain_regex: ensureArray(rule.domain_regex),
         rule_set: ensureArray(rule.rule_set),
       })) || [],
+      final: singboxProfile.dns?.final ? findOutboundIdByTag(singboxProfile.dns.final) : undefined,
     },
     route: {
       ...singboxProfile.route,
@@ -124,8 +130,10 @@ export async function transformSingboxToProfile(
         domain_keyword: ensureArray(rule.domain_keyword),
         domain_regex: ensureArray(rule.domain_regex),
         rule_set: ensureArray(rule.rule_set),
+        outbound: rule.outbound ? findOutboundIdByTag(rule.outbound) : undefined,
       })) || [],
       rule_set: ruleSetIds.filter((id) => id !== undefined) as number[],
+      final: singboxProfile.route?.final ? findOutboundIdByTag(singboxProfile.route.final) : undefined,
     },
     inbounds: singboxProfile.inbounds?.map(inbound => {
       const { type, tag, ...rest } = inbound

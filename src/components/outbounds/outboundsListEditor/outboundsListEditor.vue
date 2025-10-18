@@ -19,14 +19,14 @@
   </Card>
 
   <Dialog v-model:visible="showAddDialog" modal header="Add Outbound" :style="{ width: '50vw' }">
-    <OutboundsSelector :multiple="true" value-as="id" :mask="modelValue" v-model="selectedToAdd" />
+    <OutboundsSelector :multiple="true" :mask="modelValue" v-model="selectedToAdd" @create="openCreateDialog" />
     <template #footer>
       <Button label="Cancel" severity="secondary" @click="showAddDialog = false" />
       <Button label="Confirm" @click="addOutbounds" />
     </template>
   </Dialog>
 
-  <Sidebar v-model:visible="showEditDialog" position="right" class="w-full md:w-3/5">
+  <Drawer v-model:visible="showEditDialog" position="right" class="w-full md:w-3/5">
     <OutboundEditor
       v-if="selectedOutbound"
       :form="selectedOutbound"
@@ -35,7 +35,7 @@
       @deleted="onOutboundDeleted"
       @cancel="showEditDialog = false"
     />
-  </Sidebar>
+  </Drawer>
 </template>
 
 <script setup lang="ts">
@@ -43,7 +43,7 @@ import { ref, onMounted } from 'vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Sidebar from 'primevue/sidebar'
+import Drawer from 'primevue/drawer'
 import OutboundEditor from '../outboundEditor/outboundEditor.vue'
 import OutboundCard from '../outboundCard/outboundCard.vue'
 import OutboundsSelector from '../outboundsSelector/outboundsSelector.vue'
@@ -72,10 +72,16 @@ onMounted(async () => {
 })
 
 const addOutbounds = () => {
-  const newOutboundIds = [...new Set([...props.modelValue, ...selectedToAdd.value])]
+  const toAdd = Array.isArray(selectedToAdd.value) ? selectedToAdd.value : [selectedToAdd.value]
+  const newOutboundIds = [...new Set([...props.modelValue, ...toAdd])]
   emit('update:modelValue', newOutboundIds)
   showAddDialog.value = false
   selectedToAdd.value = []
+}
+
+const openCreateDialog = () => {
+  selectedOutbound.value = { name: '', type: 'shadowsocks' } as any // Default type
+  showEditDialog.value = true
 }
 
 const openEditDialog = (id: number) => {
@@ -88,7 +94,9 @@ const openEditDialog = (id: number) => {
 
 const onOutboundSaved = (savedOutbound: Outbound) => {
   if (savedOutbound.id === undefined) return
-  // The outbound is already in the list, so we don't need to do anything
+  if (!props.modelValue.includes(savedOutbound.id)) {
+    emit('update:modelValue', [...props.modelValue, savedOutbound.id])
+  }
   showEditDialog.value = false
 }
 

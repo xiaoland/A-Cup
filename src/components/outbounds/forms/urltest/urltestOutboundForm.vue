@@ -10,7 +10,14 @@
     </div>
     <div class="field col-span-2">
       <label for="outbounds">Outbounds</label>
-      <Chips id="outbounds" v-model="form.outbounds" />
+      <AutoComplete
+        id="outbounds"
+        v-model="form.outbounds"
+        :suggestions="filteredOutbounds"
+        @complete="searchOutbounds"
+        multiple
+        typeahead
+      />
     </div>
   </div>
 </template>
@@ -18,11 +25,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import InputText from 'primevue/inputtext'
-import Chips from 'primevue/chips'
+import AutoComplete from 'primevue/autocomplete'
 import type { UrlTestOutbound } from '@/types/outbound'
+import { useOutboundStore } from '@/stores/outbound'
 
 const props = defineProps<{ form: UrlTestOutbound }>()
 const form = ref(props.form)
+const outboundStore = useOutboundStore()
+const filteredOutbounds = ref<string[]>([])
+
+const searchOutbounds = (event: { query: string }) => {
+  const query = event.query.toLowerCase()
+  filteredOutbounds.value = outboundStore.outbounds
+    .map(o => o.name)
+    .filter(name => name.toLowerCase().includes(query))
+}
 </script>
 
 <style scoped>

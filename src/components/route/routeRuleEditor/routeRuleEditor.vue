@@ -18,24 +18,24 @@
         </div>
         <div v-if="rule.action === 'route'" class="field">
             <label>Outbound</label>
-            <outbounds-selector v-model="rule.outbound" />
+            <outbounds-selector v-model="rule.outbound" value-as="id" />
         </div>
 
         <div v-if="isFieldVisible('domain')" class="field">
           <label for="domain">Domains</label>
-          <InputChips id="domain" v-model="rule.domain" />
+          <AutoComplete id="domain" v-model="rule.domain" multiple typeahead />
         </div>
         <div v-if="isFieldVisible('domain_suffix')" class="field">
           <label for="domain_suffix">Domain Suffixes</label>
-          <InputChips id="domain_suffix" v-model="rule.domain_suffix" />
+          <AutoComplete id="domain_suffix" v-model="rule.domain_suffix" multiple typeahead />
         </div>
         <div v-if="isFieldVisible('domain_keyword')" class="field">
           <label for="domain_keyword">Domain Keywords</label>
-          <InputChips id="domain_keyword" v-model="rule.domain_keyword" />
+          <AutoComplete id="domain_keyword" v-model="rule.domain_keyword" multiple typeahead />
         </div>
         <div v-if="isFieldVisible('domain_regex')" class="field">
           <label for="domain_regex">Domain Regex</label>
-          <InputChips id="domain_regex" v-model="rule.domain_regex" />
+          <AutoComplete id="domain_regex" v-model="rule.domain_regex" multiple typeahead />
         </div>
         <div v-if="isFieldVisible('rule_set')" class="field">
           <label>Rule Sets</label>
@@ -59,7 +59,7 @@ import { type RouteRule } from '@/schemas/route'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
-import InputChips from 'primevue/inputchips'
+import AutoComplete from 'primevue/autocomplete'
 import SplitButton from 'primevue/splitbutton'
 import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
 import RuleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue'
