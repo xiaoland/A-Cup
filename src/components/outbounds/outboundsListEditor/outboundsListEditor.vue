@@ -18,7 +18,7 @@
     </template>
   </Card>
 
-  <Dialog v-model:visible="showEditDialog" modal header="Outbound Editor" :style="{ width: '50vw' }">
+  <Sidebar v-model:visible="showEditDialog" position="right" class="w-full md:w-1/2 lg:w-1/3">
     <OutboundEditor
       v-if="selectedOutbound"
       :form="selectedOutbound"
@@ -27,14 +27,14 @@
       @deleted="onOutboundDeleted"
       @cancel="showEditDialog = false"
     />
-  </Dialog>
+  </Sidebar>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
+import Sidebar from 'primevue/sidebar'
 import OutboundEditor from '../outboundEditor/outboundEditor.vue'
 import OutboundCard from '../outboundCard/outboundCard.vue'
 import type { Outbound } from '@/types/outbound'
