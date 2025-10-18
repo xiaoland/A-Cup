@@ -19,7 +19,7 @@
   </Card>
 
   <Dialog v-model:visible="showAddDialog" modal header="Add Outbound" :style="{ width: '50vw' }">
-    <OutboundsSelector :multiple="true" value-as="id" @update:modelValue="addOutbounds" />
+    <OutboundsSelector :multiple="true" value-as="id" :mask="modelValue" @update:modelValue="addOutbounds" />
   </Dialog>
 
   <Sidebar v-model:visible="showEditDialog" position="right" class="w-full md:w-3/5">

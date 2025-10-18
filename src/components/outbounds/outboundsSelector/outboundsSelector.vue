@@ -3,7 +3,7 @@
     <div class="flex-grow">
       <Select
         v-model="selected"
-        :options="outboundStore.outbounds"
+        :options="availableOutbounds"
         :multiple="multiple"
         option-label="name"
         :option-value="valueAs === 'id' ? 'id' : 'name'"
@@ -41,6 +41,10 @@ const props = defineProps({
     type: String as () => 'id' | 'tag',
     default: 'tag',
   },
+  mask: {
+    type: Array as () => number[],
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -57,6 +61,10 @@ const emptyOutbound = computed((): Outbound => ({
   uuid: '',
   security: 'auto',
 }))
+
+const availableOutbounds = computed(() => {
+  return outboundStore.outbounds.filter(o => !props.mask.includes(o.id!))
+})
 
 onMounted(async () => {
   await outboundStore.fetchOutbounds()
