@@ -24,7 +24,7 @@
 
         <div>
             <h3 class="text-lg font-bold mb-2">Final Outbound</h3>
-            <outbounds-selector v-model="route.final" />
+            <outbounds-selector v-model="route.final" value-as="id" />
         </div>
 
         <Accordion>
@@ -110,7 +110,7 @@ const addRule = () => {
   }
   route.value.rules.push({
     action: 'route',
-    outbound: '',
+    outbound: undefined,
   } as RouteRule)
 }
 

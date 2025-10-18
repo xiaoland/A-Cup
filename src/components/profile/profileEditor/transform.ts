@@ -2,8 +2,17 @@ import type { Profile } from './schema'
 import type { SingboxProfile } from '@/schemas/singbox'
 import { useOutboundStore } from '@/stores/outbound'
 import { useRuleSetStore } from '@/stores/ruleSet'
-import type { Outbound } from '@/components/outbounds/outboundEditor/types'
+import type { Outbound } from '@/types/outbound'
 import type { RuleSet } from '@/schemas/route'
+import {
+  ShadowsocksOutboundSchema,
+  VmessOutboundSchema,
+  VlessOutboundSchema,
+  Hysteria2OutboundSchema,
+  SelectorOutboundSchema,
+  UrlTestOutboundSchema,
+  OutboundSchema,
+} from '@/schemas/outbound'
 
 function ensureArray<T>(value: T | T[] | undefined): T[] {
   if (Array.isArray(value)) {
@@ -17,46 +26,29 @@ function ensureArray<T>(value: T | T[] | undefined): T[] {
 
 function transformSingboxToOutbound(singboxOutbound: any): Omit<Outbound, 'id'> {
   const { tag, type, ...rest } = singboxOutbound
-  let credential = {}
+
+  const baseOutbound = {
+    name: tag,
+    tag: tag,
+    type,
+    ...rest,
+  }
 
   switch (type) {
     case 'vmess':
-      credential = {
-        uuid: rest.uuid,
-        alter_id: rest.alter_id,
-        security: rest.security,
-      }
-      break
+      return VmessOutboundSchema.parse({ ...baseOutbound, security: rest.security || 'auto' })
     case 'vless':
-      credential = {
-        uuid: rest.uuid,
-        flow: rest.flow,
-      }
-      break
+      return VlessOutboundSchema.parse({ ...baseOutbound })
     case 'shadowsocks':
-      credential = {
-        method: rest.method,
-        password: rest.password,
-      }
-      break
-    case 'trojan':
-      credential = {
-        password: rest.password,
-      }
-      break
+      return ShadowsocksOutboundSchema.parse({ ...baseOutbound, method: rest.method || '', password: rest.password || '' })
+    case 'hysteria2':
+      return Hysteria2OutboundSchema.parse({ ...baseOutbound, password: rest.password || ''})
+    case 'selector':
+      return SelectorOutboundSchema.parse({ ...baseOutbound, outbounds: rest.outbounds || [], default: rest.default || ''})
+    case 'urltest':
+      return UrlTestOutboundSchema.parse({ ...baseOutbound, outbounds: rest.outbounds || [], url: rest.url || '', interval: rest.interval || ''})
     default:
-      break
-  }
-
-  return {
-    name: tag,
-    type,
-    server: rest.server || '',
-    server_port: rest.server_port || 0,
-    credential,
-    transport: rest.transport,
-    tls: rest.tls,
-    mux: rest.mux,
+      return OutboundSchema.parse(baseOutbound)
   }
 }
 
@@ -107,6 +99,11 @@ export async function transformSingboxToProfile(
     )
   }
 
+  const findOutboundIdByTag = (tag: string) => {
+    const outbound = outboundStore.outbounds.find(o => o.name === tag)
+    return outbound?.id
+  }
+
   const newProfile: Profile = {
     ...existingProfile,
     name: existingProfile.name || 'Imported Profile',
@@ -122,6 +119,7 @@ export async function transformSingboxToProfile(
         domain_regex: ensureArray(rule.domain_regex),
         rule_set: ensureArray(rule.rule_set),
       })) || [],
+      final: singboxProfile.dns?.final ? findOutboundIdByTag(singboxProfile.dns.final) : undefined,
     },
     route: {
       ...singboxProfile.route,
@@ -132,8 +130,10 @@ export async function transformSingboxToProfile(
         domain_keyword: ensureArray(rule.domain_keyword),
         domain_regex: ensureArray(rule.domain_regex),
         rule_set: ensureArray(rule.rule_set),
+        outbound: rule.outbound ? findOutboundIdByTag(rule.outbound) : undefined,
       })) || [],
       rule_set: ruleSetIds.filter((id) => id !== undefined) as number[],
+      final: singboxProfile.route?.final ? findOutboundIdByTag(singboxProfile.route.final) : undefined,
     },
     inbounds: singboxProfile.inbounds?.map(inbound => {
       const { type, tag, ...rest } = inbound

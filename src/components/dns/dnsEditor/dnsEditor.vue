@@ -33,7 +33,7 @@
           <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
             <div class="field col-span-1">
                 <label>Final</label>
-                <outboundsSelector v-model="dns.final" />
+                <outboundsSelector v-model="dns.final" value-as="id" />
             </div>
             <div class="field col-span-1">
               <label for="strategy">Strategy</label>

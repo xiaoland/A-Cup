@@ -1,39 +1,54 @@
 <template>
-  <v-card variant="outlined" class="form-section">
-    <v-card-title class="text-h6 d-flex align-center justify-space-between">
-      Outbounds
-      <div class="d-flex" style="gap: 8px">
-        <v-btn color="primary" size="small" @click="showAddDialog = true" prepend-icon="mdi-plus">
-          Add Outbound
-        </v-btn>
+  <Card>
+    <template #title>
+      <div class="flex justify-between items-center">
+        <div class="text-2xl font-bold">Outbounds</div>
+        <Button label="Add Outbound" icon="i-mdi-plus" @click="showAddDialog = true" />
       </div>
-    </v-card-title>
-  </v-card>
+    </template>
+    <template #content>
+      <div class="flex flex-col gap-2">
+        <OutboundCard
+          v-for="id in modelValue"
+          :key="id"
+          :id="id"
+          @edit="openEditDialog(id)"
+          @delete="removeOutbound(id)"
+        />
+      </div>
+    </template>
+  </Card>
 
-  <div v-for="(item, idx) in outbounds" :key="item.id ?? `new-${idx}`" class="mt-4">
+  <Dialog v-model:visible="showAddDialog" modal header="Add Outbound" :style="{ width: '50vw' }">
+    <OutboundsSelector :multiple="true" :mask="modelValue" v-model="selectedToAdd" @create="openCreateDialog" />
+    <template #footer>
+      <Button label="Cancel" severity="secondary" @click="showAddDialog = false" />
+      <Button label="Confirm" @click="addOutbounds" />
+    </template>
+  </Dialog>
+
+  <Drawer v-model:visible="showEditDialog" position="right" class="w-full md:w-3/5">
     <OutboundEditor
-      :form="item"
-      :start-editable="true"
+      v-if="selectedOutbound"
+      :form="selectedOutbound"
       :show-delete="true"
-      @saved="updateOutbound(idx, $event)"
-      @deleted="removeOutbound(idx)"
+      @saved="onOutboundSaved"
+      @deleted="onOutboundDeleted"
+      @cancel="showEditDialog = false"
     />
-  </div>
-  <v-dialog v-model="showAddDialog" max-width="500px">
-    <v-card>
-      <v-card-title>Add Outbound</v-card-title>
-      <v-card-text>
-        <outbounds-selector :multiple="true" value-as="id" @update:modelValue="addOutbound" />
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+  </Drawer>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted } from 'vue'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import Drawer from 'primevue/drawer'
 import OutboundEditor from '../outboundEditor/outboundEditor.vue'
+import OutboundCard from '../outboundCard/outboundCard.vue'
 import OutboundsSelector from '../outboundsSelector/outboundsSelector.vue'
-import type { Outbound } from '../outboundEditor/types'
+import type { Outbound } from '@/types/outbound'
 import { useOutboundStore } from '@/stores/outbound'
 
 export interface Props {
@@ -49,42 +64,50 @@ const emit = defineEmits<Emits>()
 
 const outboundStore = useOutboundStore()
 const showAddDialog = ref(false)
-const outbounds = ref<Outbound[]>([])
+const showEditDialog = ref(false)
+const selectedOutbound = ref<Outbound | null>(null)
+const selectedToAdd = ref<number[]>([])
 
-const fetchOutbounds = async () => {
+onMounted(async () => {
   await outboundStore.fetchOutbounds()
-  updateOutbounds()
-}
+})
 
-onMounted(fetchOutbounds)
-
-const updateOutbounds = () => {
-  outbounds.value = (props.modelValue || [])
-    .map((id) => outboundStore.outbounds.find((o) => o.id === id))
-    .filter((o) => o) as Outbound[]
-}
-
-watch(() => props.modelValue, updateOutbounds, { deep: true })
-watch(() => outboundStore.outbounds, updateOutbounds, { deep: true })
-
-const addOutbound = (selectedIds: number[]) => {
-  const newOutboundIds = [...(props.modelValue || []), ...selectedIds]
+const addOutbounds = () => {
+  const toAdd = Array.isArray(selectedToAdd.value) ? selectedToAdd.value : [selectedToAdd.value]
+  const newOutboundIds = [...new Set([...props.modelValue, ...toAdd])]
   emit('update:modelValue', newOutboundIds)
   showAddDialog.value = false
+  selectedToAdd.value = []
 }
 
-const updateOutbound = (index: number, updatedOutbound: Outbound) => {
-  const newOutboundIds = [...(props.modelValue || [])]
-  if (updatedOutbound.id) {
-    newOutboundIds[index] = updatedOutbound.id
-    emit('update:modelValue', newOutboundIds)
+const openCreateDialog = () => {
+  selectedOutbound.value = { name: '', type: 'shadowsocks' } as any // Default type
+  showEditDialog.value = true
+}
+
+const openEditDialog = (id: number) => {
+  const outbound = outboundStore.outbounds.find(o => o.id === id)
+  if (outbound) {
+    selectedOutbound.value = { ...outbound }
+    showEditDialog.value = true
   }
 }
 
-const removeOutbound = (index: number) => {
-  const newOutboundIds = [...(props.modelValue || [])]
-  newOutboundIds.splice(index, 1)
-  emit('update:modelValue', newOutboundIds)
+const removeOutbound = (id: number) => {
+  emit('update:modelValue', props.modelValue.filter((outboundId) => outboundId !== id))
+}
+
+const onOutboundSaved = (savedOutbound: Outbound) => {
+  if (savedOutbound.id === undefined) return
+  if (!props.modelValue.includes(savedOutbound.id)) {
+    emit('update:modelValue', [...props.modelValue, savedOutbound.id])
+  }
+  showEditDialog.value = false
+}
+
+const onOutboundDeleted = (deletedId: number) => {
+  emit('update:modelValue', props.modelValue.filter((id) => id !== deletedId))
+  showEditDialog.value = false
 }
 </script>
 

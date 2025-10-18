@@ -35,7 +35,7 @@
         </div>
         <div class="field col-span-1">
             <label for="download_detour">Download Detour</label>
-            <OutboundsSelector v-model="form.download_detour" />
+            <OutboundsSelector v-model="form.download_detour" value-as="id" />
         </div>
         <div class="field col-span-1">
           <label for="update_interval">Update Interval</label>

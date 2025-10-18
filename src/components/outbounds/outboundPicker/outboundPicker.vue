@@ -1,30 +1,31 @@
 <template>
   <div>
-    <v-select
+    <Select
       v-model="selected"
-      :items="outboundStore.outbounds"
-      item-title="name"
-      label="Select an Outbound"
+      :options="outboundStore.outbounds"
+      option-label="name"
+      placeholder="Select an Outbound"
       @update:modelValue="onSelection"
-      return-object
-    ></v-select>
+      class="w-full"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useOutboundStore } from '@/stores/outbound';
-import type { Outbound } from '../outboundEditor/types';
+import { ref, onMounted } from 'vue'
+import { useOutboundStore } from '@/stores/outbound'
+import type { Outbound } from '@/types/outbound'
+import Select from 'primevue/select'
 
-const emit = defineEmits(['update:modelValue']);
-const outboundStore = useOutboundStore();
-const selected = ref<Outbound | null>(null);
+const emit = defineEmits(['update:modelValue'])
+const outboundStore = useOutboundStore()
+const selected = ref<Outbound | null>(null)
 
 onMounted(() => {
-  outboundStore.fetchOutbounds();
-});
+  outboundStore.fetchOutbounds()
+})
 
 const onSelection = (value: Outbound) => {
-  emit('update:modelValue', value);
-};
+  emit('update:modelValue', value)
+}
 </script>

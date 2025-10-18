@@ -1,58 +1,75 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useUserStore } from './user'
-import type { Outbound } from '@/components/outbounds/outboundEditor/types'
+import type { Outbound } from '@/types/outbound'
 
 export const useOutboundStore = defineStore('outbound', () => {
   const outbounds = ref<Outbound[]>([])
   const userStore = useUserStore()
 
   async function fetchOutbounds() {
-    const response = await userStore.authorizedFetch('/api/outbounds')
-    if (response.ok) {
+    try {
+      const response = await userStore.authorizedFetch('/api/outbounds')
+      if (!response.ok) {
+        throw new Error('Failed to fetch outbounds')
+      }
       outbounds.value = await response.json()
-    } else {
-      console.error('Failed to fetch outbounds')
+    } catch (error) {
+      console.error(error)
     }
   }
 
-  async function createOutbound(outboundData: any): Promise<Outbound | undefined> {
-    const response = await userStore.authorizedFetch('/api/outbounds', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(outboundData),
-    })
-    if (response.ok) {
+  async function createOutbound(outboundData: Omit<Outbound, 'id'>): Promise<Outbound | undefined> {
+    try {
+      const response = await userStore.authorizedFetch('/api/outbounds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(outboundData),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to create outbound')
+      }
       const newOutbound = await response.json()
       await fetchOutbounds()
       return newOutbound
-    } else {
-      console.error('Failed to create outbound')
+    } catch (error) {
+      console.error(error)
       return undefined
     }
   }
 
-  async function updateOutbound(id: number, outboundData: any) {
-    const response = await userStore.authorizedFetch(`/api/outbounds/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(outboundData),
-    })
-    if (response.ok) {
-      fetchOutbounds()
-    } else {
-      console.error('Failed to update outbound')
+  async function updateOutbound(id: number, outboundData: Partial<Outbound>): Promise<Outbound | undefined> {
+    try {
+      const response = await userStore.authorizedFetch(`/api/outbounds/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(outboundData),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to update outbound')
+      }
+      const updatedOutbound = await response.json()
+      await fetchOutbounds()
+      return updatedOutbound
+    } catch (error) {
+      console.error(error)
+      return undefined
     }
   }
 
-  async function deleteOutbound(id: number) {
-    const response = await userStore.authorizedFetch(`/api/outbounds/${id}`, {
-      method: 'DELETE',
-    })
-    if (response.ok) {
-      fetchOutbounds()
-    } else {
-      console.error('Failed to delete outbound')
+  async function deleteOutbound(id: number): Promise<boolean> {
+    try {
+      const response = await userStore.authorizedFetch(`/api/outbounds/${id}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error('Failed to delete outbound')
+      }
+      await fetchOutbounds()
+      return true
+    } catch (error) {
+      console.error(error)
+      return false
     }
   }
 
