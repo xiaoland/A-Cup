@@ -19,7 +19,11 @@
   </Card>
 
   <Dialog v-model:visible="showAddDialog" modal header="Add Outbound" :style="{ width: '50vw' }">
-    <OutboundsSelector :multiple="true" value-as="id" :mask="modelValue" @confirm="addOutbounds" @cancel="showAddDialog = false" />
+    <OutboundsSelector :multiple="true" value-as="id" :mask="modelValue" v-model="selectedToAdd" />
+    <template #footer>
+      <Button label="Cancel" severity="secondary" @click="showAddDialog = false" />
+      <Button label="Confirm" @click="addOutbounds" />
+    </template>
   </Dialog>
 
   <Sidebar v-model:visible="showEditDialog" position="right" class="w-full md:w-3/5">
@@ -61,15 +65,17 @@ const outboundStore = useOutboundStore()
 const showAddDialog = ref(false)
 const showEditDialog = ref(false)
 const selectedOutbound = ref<Outbound | null>(null)
+const selectedToAdd = ref<number[]>([])
 
 onMounted(async () => {
   await outboundStore.fetchOutbounds()
 })
 
-const addOutbounds = (selectedIds: number[]) => {
-  const newOutboundIds = [...new Set([...props.modelValue, ...selectedIds])]
+const addOutbounds = () => {
+  const newOutboundIds = [...new Set([...props.modelValue, ...selectedToAdd.value])]
   emit('update:modelValue', newOutboundIds)
   showAddDialog.value = false
+  selectedToAdd.value = []
 }
 
 const openEditDialog = (id: number) => {
