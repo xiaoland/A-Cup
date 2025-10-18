@@ -1,14 +1,15 @@
 <template>
-  <v-card v-if="outbound" @click="onClick" class="ma-2" hover>
-    <v-card-title>{{ outbound.name }}</v-card-title>
-    <v-card-subtitle>{{ outbound.type }}</v-card-subtitle>
-  </v-card>
+  <Card v-if="outbound" @click="onClick" class="m-2 cursor-pointer">
+    <template #title>{{ outbound.name }}</template>
+    <template #subtitle>{{ outbound.type }}</template>
+  </Card>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useOutboundStore } from '@/stores/outbound'
 import type { Outbound } from '@/types/outbound'
+import Card from 'primevue/card'
 
 const props = defineProps<{ id: number }>()
 const emit = defineEmits<{ (e: 'click'): void }>()

@@ -1,17 +1,20 @@
 <template>
-  <v-textarea
-    :model-value="text"
-    :label="label"
-    :rows="rows"
-    variant="outlined"
-    :error-messages="error || undefined"
-    @update:model-value="onInput"
-    @blur="onBlur"
-  />
+  <div>
+    <Textarea
+      :model-value="text"
+      :rows="rows"
+      :class="{ 'p-invalid': error }"
+      class="w-full"
+      @update:model-value="onInput"
+      @blur="onBlur"
+    />
+    <small v-if="error" class="p-error">{{ error }}</small>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import Textarea from 'primevue/textarea'
 
 const props = defineProps<{ modelValue: any; label?: string; rows?: number }>()
 const emit = defineEmits<{ (e: 'update:modelValue', v: any): void }>()

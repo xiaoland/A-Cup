@@ -1,24 +1,24 @@
 <template>
-  <v-card variant="outlined" class="form-section">
-    <v-card-title class="text-h6 d-flex align-center justify-space-between">
-      Outbounds
-      <div class="d-flex" style="gap: 8px">
-        <v-btn color="primary" size="small" @click="openAddDialog" prepend-icon="mdi-plus">
-          Add Outbound
-        </v-btn>
+  <Card>
+    <template #title>
+      <div class="flex justify-between items-center">
+        <div class="text-2xl font-bold">Outbounds</div>
+        <Button label="Add Outbound" icon="pi pi-plus" @click="openAddDialog" />
       </div>
-    </v-card-title>
-    <div class="d-flex flex-wrap">
-      <OutboundCard
-        v-for="id in modelValue"
-        :key="id"
-        :id="id"
-        @click="openEditDialog(id)"
-      />
-    </div>
-  </v-card>
+    </template>
+    <template #content>
+      <div class="flex flex-wrap">
+        <OutboundCard
+          v-for="id in modelValue"
+          :key="id"
+          :id="id"
+          @click="openEditDialog(id)"
+        />
+      </div>
+    </template>
+  </Card>
 
-  <v-dialog v-model="showEditDialog" max-width="800px">
+  <Dialog v-model:visible="showEditDialog" modal header="Outbound Editor" :style="{ width: '50vw' }">
     <OutboundEditor
       v-if="selectedOutbound"
       :form="selectedOutbound"
@@ -27,11 +27,14 @@
       @deleted="onOutboundDeleted"
       @cancel="showEditDialog = false"
     />
-  </v-dialog>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import OutboundEditor from '../outboundEditor/outboundEditor.vue'
 import OutboundCard from '../outboundCard/outboundCard.vue'
 import type { Outbound } from '@/types/outbound'
