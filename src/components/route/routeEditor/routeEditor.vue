@@ -28,7 +28,7 @@
         </div>
 
         <Accordion>
-          <AccordionPanel value="advanced" header="Advanced">
+          <AccordionPanel value="additional_settings" header="Additional Settings">
              <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="field col-span-1 flex items-center">
                     <div class="flex items-center">
@@ -44,27 +44,15 @@
                     <label for="default_mark">Default Mark</label>
                     <InputNumber id="default_mark" v-model="route.default_mark" />
                 </div>
-                <div class="field col-span-1">
-                    <label for="default_domain_resolver">Default Domain Resolver</label>
-                    <InputText id="default_domain_resolver" v-model="route.default_domain_resolver" />
+                 <div class="field col-span-1">
+                    <label for="geoip_code">GeoIP Code</label>
+                    <InputText id="geoip_code" v-model="route.geoip_code" />
                 </div>
                 <div class="field col-span-1">
-                    <label for="default_network_strategy">Default Network Strategy</label>
-                    <InputText id="default_network_strategy" v-model="route.default_network_strategy" />
+                    <label for="geosite_code">GeoSite Code</label>
+                    <InputText id="geosite_code" v-model="route.geosite_code" />
                 </div>
-                <div class="field col-span-1">
-                    <label for="default_network_type">Default Network Type</label>
-                    <InputText id="default_network_type" v-model="route.default_network_type" />
-                </div>
-                <div class="field col-span-1">
-                    <label for="default_fallback_network_type">Default Fallback Network Type</label>
-                    <InputText id="default_fallback_network_type" v-model="route.default_fallback_network_type" />
-                </div>
-                <div class="field col-span-1">
-                    <label for="default_fallback_delay">Default Fallback Delay</label>
-                    <InputNumber id="default_fallback_delay" v-model="route.default_fallback_delay" />
-                </div>
-            </div>
+             </div>
           </AccordionPanel>
         </Accordion>
       </div>

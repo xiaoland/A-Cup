@@ -79,9 +79,9 @@ export async function transformSingboxToProfile(
   let ruleSetIds: (number | undefined)[] = []
   if (singboxProfile.route?.rule_set) {
     ruleSetIds = await Promise.all(
-      (singboxProfile.route.rule_set as any[]).map(async (rs) => {
+      (singboxProfile.route.rule_set as any[]).map(async (rs: { tag: string } | string) => {
         const tag = typeof rs === 'string' ? rs : rs.tag
-        const existing = ruleSetStore.ruleSets.find((r) => r.name === tag)
+        const existing = ruleSetStore.ruleSets.find((r: RuleSet) => r.name === tag)
         if (existing) {
           return existing.id
         }

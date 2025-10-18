@@ -59,7 +59,7 @@ const itemValue = computed(() => (props.valueAs === 'id' ? 'id' : 'tag'))
 const fetchRuleSets = async () => {
   await ruleSetStore.fetchRuleSets()
   const ruleSets = ruleSetStore.ruleSets
-  const tagsPromises = ruleSets.map(async (ruleSet) => {
+  const tagsPromises = ruleSets.map(async (ruleSet: RuleSetSchemaType) => {
     if (ruleSet.id) {
       const response = await userStore.authorizedFetch(`/api/rule_sets/${ruleSet.id}/tag`)
       if (response.ok) {
@@ -71,7 +71,7 @@ const fetchRuleSets = async () => {
   })
 
   const resolvedTags = await Promise.all(tagsPromises)
-  ruleSetsWithTags.value = resolvedTags.map((rs) => {
+  ruleSetsWithTags.value = resolvedTags.map((rs: RuleSetWithTag) => {
     const ruleSet = rs as any
     return {
       ...ruleSet,

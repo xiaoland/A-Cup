@@ -40,48 +40,48 @@
               <InputText :id="`provider-${uniqueId}`" v-model="form.provider" />
             </div>
           </div>
-          <div class="md:col-span-2" v-if="form.type === 'shadowsocks' || form.type === 'vmess' || form.type === 'vless' || form.type === 'hysteria2'">
-            <Accordion>
-              <AccordionPanel value="advanced" header="Advanced">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div class="field">
-                    <label>Transport (JSON)</label>
-                    <JSONEditor v-model="form.transport" :rows="6" />
-                  </div>
-                  <div class="field">
-                    <label>TLS (JSON)</label>
-                    <JSONEditor v-model="form.tls" :rows="6" />
-                  </div>
-                  <div class="field">
-                    <label>Mux (JSON)</label>
-                    <JSONEditor v-model="form.mux" :rows="6" />
-                  </div>
-                  <div class="field">
-                    <label>Other (JSON)</label>
-                    <JSONEditor v-model="form.other" :rows="6" />
-                  </div>
+          <Accordion :multiple="true" :active-index="[0]">
+            <AccordionPanel value="credential" header="Credential">
+              <div v-if="form.type === 'shadowsocks'">
+                <ShadowsocksOutboundForm :form="form as any" />
+              </div>
+              <div v-else-if="form.type === 'vmess'">
+                <VmessOutboundForm :form="form as any" />
+              </div>
+              <div v-else-if="form.type === 'vless'">
+                <VlessOutboundForm :form="form as any" />
+              </div>
+              <div v-else-if="form.type === 'hysteria2'">
+                <Hysteria2OutboundForm :form="form as any" />
+              </div>
+              <div v-else-if="form.type === 'selector'">
+                <SelectorOutboundForm :form="form as any" />
+              </div>
+              <div v-else-if="form.type === 'urltest'">
+                <UrlTestOutboundForm :form="form as any" />
+              </div>
+            </AccordionPanel>
+            <AccordionPanel value="advanced" header="Advanced" v-if="form.type === 'shadowsocks' || form.type === 'vmess' || form.type === 'vless' || form.type === 'hysteria2'">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                  <label>Transport (JSON)</label>
+                  <JSONEditor v-model="form.transport" :rows="6" />
                 </div>
-              </AccordionPanel>
-            </Accordion>
-          </div>
-          <div v-if="form.type === 'shadowsocks'">
-            <ShadowsocksOutboundForm :form="form" />
-          </div>
-          <div v-else-if="form.type === 'vmess'">
-            <VmessOutboundForm :form="form" />
-          </div>
-          <div v-else-if="form.type === 'vless'">
-            <VlessOutboundForm :form="form" />
-          </div>
-          <div v-else-if="form.type === 'hysteria2'">
-            <Hysteria2OutboundForm :form="form" />
-          </div>
-          <div v-else-if="form.type === 'selector'">
-            <SelectorOutboundForm :form="form" />
-          </div>
-          <div v-else-if="form.type === 'urltest'">
-            <UrlTestOutboundForm :form="form" />
-          </div>
+                <div class="field">
+                  <label>TLS (JSON)</label>
+                  <JSONEditor v-model="form.tls" :rows="6" />
+                </div>
+                <div class="field">
+                  <label>Mux (JSON)</label>
+                  <JSONEditor v-model="form.mux" :rows="6" />
+                </div>
+                <div class="field">
+                  <label>Other (JSON)</label>
+                  <JSONEditor v-model="form.other" :rows="6" />
+                </div>
+              </div>
+            </AccordionPanel>
+          </Accordion>
         </form>
       </template>
     </Card>
@@ -131,9 +131,28 @@ const form = ref(props.form)
 const errors = ref<Record<string, string>>({})
 const uniqueId = computed(() => Math.random().toString(36).substring(7))
 
+const getDefaultOutbound = (type: string) => {
+  const base = { name: '', tag: '', type }
+  switch (type) {
+    case 'shadowsocks':
+      return { ...base, server: '', server_port: 443, method: '2022-blake3-aes-128-gcm', password: '' }
+    case 'vmess':
+      return { ...base, server: '', server_port: 443, uuid: '', security: 'auto' }
+    case 'vless':
+      return { ...base, server: '', server_port: 443, uuid: '' }
+    case 'hysteria2':
+      return { ...base, server: '', server_port: 443, password: '' }
+    case 'selector':
+      return { ...base, outbounds: [], default: '' }
+    case 'urltest':
+      return { ...base, outbounds: [], url: '', interval: '' }
+    default:
+      return base
+  }
+}
+
 const onTypeChange = () => {
-  // Reset the form when the type changes
-  form.value = { type: form.value.type, name: form.value.name } as any
+  form.value = getDefaultOutbound(form.value.type) as any
 }
 
 const onSave = async () => {

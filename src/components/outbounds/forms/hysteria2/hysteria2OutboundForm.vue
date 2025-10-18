@@ -19,7 +19,7 @@
 import { ref } from 'vue'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
-import type { Hysteria2Outbound } from '@/types/outbound'
+import type { Hysteria2Outbound } from '@/schemas/outbound'
 
 const props = defineProps<{ form: Hysteria2Outbound }>()
 const form = ref(props.form)

@@ -23,7 +23,7 @@
 import { ref } from 'vue'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
-import type { ShadowsocksOutbound } from '@/types/outbound'
+import type { ShadowsocksOutbound } from '@/schemas/outbound'
 
 const props = defineProps<{ form: ShadowsocksOutbound }>()
 const form = ref(props.form)

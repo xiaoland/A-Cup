@@ -4,60 +4,106 @@
       <div class="text-2xl font-bold">DNS</div>
     </template>
     <template #content>
-      <Tabs value="0">
-        <Tab value="0" header="Servers">
-          <div class="flex flex-col gap-4 p-4">
-            <dnsServerEditor
-              v-for="(server, i) in dns.servers"
-              :key="i"
-              v-model="dns.servers[i]"
-              @remove="removeServer(i)"
+      <div class="flex flex-col gap-4">
+        <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="field col-span-1">
+            <label>Final</label>
+            <outboundsSelector v-model="dns.final" value-as="id" />
+          </div>
+          <div class="field col-span-1">
+            <label for="strategy">Strategy</label>
+            <Select
+              id="strategy"
+              v-model="dns.strategy"
+              :options="['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only']"
             />
           </div>
-          <Button class="mt-4" label="Add Server" icon="i-mdi-plus" @click="addServer" />
-        </Tab>
-        <Tab value="1" header="Rules">
-          <div class="flex flex-col gap-4 p-4">
-            <dnsRuleEditor
-              v-if="dns.rules"
-              v-for="(rule, i) in dns.rules"
-              :key="i"
-              v-model="dns.rules[i]"
-              :dns-servers="serverTags"
-              @remove="removeRule(i)"
-            />
-          </div>
-          <Button class="mt-4" label="Add Rule" icon="i-mdi-plus" @click="addRule" />
-        </Tab>
-        <Tab value="2" header="Advanced">
-          <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-            <div class="field col-span-1">
-                <label>Final</label>
-                <outboundsSelector v-model="dns.final" value-as="id" />
-            </div>
-            <div class="field col-span-1">
-              <label for="strategy">Strategy</label>
-              <Select
-                id="strategy"
-                v-model="dns.strategy"
-                :options="['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only']"
+        </div>
+
+        <Accordion>
+          <AccordionPanel value="0" header="Servers">
+            <div class="flex flex-col gap-4 p-4">
+              <dnsServerEditor
+                v-for="(server, i) in dns.servers"
+                :key="i"
+                v-model="dns.servers[i]"
+                @remove="removeServer(i)"
               />
             </div>
-            <div class="field col-span-1 flex items-center">
-                <div class="flex items-center">
-                    <Checkbox v-model="dns.disable_cache" inputId="disable_cache" :binary="true" />
-                    <label for="disable_cache" class="ml-2"> Disable Cache </label>
-                </div>
+            <Button class="mt-4" label="Add Server" icon="i-mdi-plus" @click="addServer" />
+          </AccordionPanel>
+          <AccordionPanel value="1" header="Rules">
+            <div class="flex flex-col gap-4 p-4">
+              <dnsRuleEditor
+                v-if="dns.rules"
+                v-for="(rule, i) in dns.rules"
+                :key="i"
+                v-model="dns.rules[i]"
+                :dns-servers="serverTags"
+                @remove="removeRule(i)"
+              />
             </div>
-             <div class="field col-span-1 flex items-center">
-                <div class="flex items-center">
-                    <Checkbox v-model="dns.disable_expire" inputId="disable_expire" :binary="true" />
-                    <label for="disable_expire" class="ml-2"> Disable Expire </label>
-                </div>
+            <Button class="mt-4" label="Add Rule" icon="i-mdi-plus" @click="addRule" />
+          </AccordionPanel>
+          <AccordionPanel value="2" header="Advanced">
+            <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <div class="field col-span-1">
+                <label for="client_subnet">Client Subnet</label>
+                <InputText id="client_subnet" v-model="dns.client_subnet" />
+              </div>
+              <div class="field col-span-1">
+                <label for="cache_capacity">Cache Capacity</label>
+                <InputNumber id="cache_capacity" v-model="dns.cache_capacity" />
+              </div>
+              <div class="field col-span-1 flex items-center">
+                  <div class="flex items-center">
+                      <Checkbox v-model="dns.disable_cache" inputId="disable_cache" :binary="true" />
+                      <label for="disable_cache" class="ml-2"> Disable Cache </label>
+                  </div>
+              </div>
+               <div class="field col-span-1 flex items-center">
+                  <div class="flex items-center">
+                      <Checkbox v-model="dns.disable_expire" inputId="disable_expire" :binary="true" />
+                      <label for="disable_expire" class="ml-2"> Disable Expire </label>
+                  </div>
+              </div>
+              <div class="field col-span-1 flex items-center">
+                  <div class="flex items-center">
+                      <Checkbox v-model="dns.independent_cache" inputId="independent_cache" :binary="true" />
+                      <label for="independent_cache" class="ml-2"> Independent Cache </label>
+                  </div>
+              </div>
+              <div class="field col-span-1 flex items-center">
+                  <div class="flex items-center">
+                      <Checkbox v-model="dns.reverse_mapping" inputId="reverse_mapping" :binary="true" />
+                      <label for="reverse_mapping" class="ml-2"> Reverse Mapping </label>
+                  </div>
+              </div>
             </div>
-          </div>
-        </Tab>
-      </Tabs>
+          </AccordionPanel>
+          <AccordionPanel value="3" header="FakeIP">
+            <div class="p-4">
+              <fakeIpEditor v-model="dns.fakeip" />
+            </div>
+          </AccordionPanel>
+          <AccordionPanel value="4" header="Misc">
+            <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              <div class="field col-span-2">
+                <label>Hosts (JSON)</label>
+                <JSONEditor v-model="dns.hosts" :rows="6" />
+              </div>
+              <div class="field col-span-2">
+                <label>Rewrite (JSON)</label>
+                <JSONEditor v-model="dns.rewrite" :rows="6" />
+              </div>
+              <div class="field col-span-2">
+                <label>Local Domain</label>
+                <InputChips v-model="dns.local_domain" />
+              </div>
+            </div>
+          </AccordionPanel>
+        </Accordion>
+      </div>
     </template>
   </Card>
 </template>
@@ -74,6 +120,10 @@ import Checkbox from 'primevue/checkbox'
 import dnsServerEditor from '../dnsServerEditor.vue'
 import dnsRuleEditor from '../dnsRuleEditor/dnsRuleEditor.vue'
 import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
+import fakeIpEditor from '../fakeIpEditor.vue'
+import InputNumber from "primevue/inputnumber";
+import JSONEditor from '@/components/common/JSONEditor.vue'
+import InputChips from 'primevue/inputchips'
 
 const props = defineProps<{
   modelValue?: Dns

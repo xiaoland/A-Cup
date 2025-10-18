@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useUserStore } from './user'
-import type { Profile } from '@/components/profile/profileList/types'
+import type { Profile } from '@/components/profile/profileEditor/schema'
 
 export const useProfileStore = defineStore('profile', () => {
   const profiles = ref<Profile[]>([])

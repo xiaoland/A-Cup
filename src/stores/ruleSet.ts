@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useUserStore } from './user'
-import type { RuleSet } from '@/components/route/ruleSets/ruleSetList/types'
+import type { RuleSet } from '@/schemas/route'
 
 export const useRuleSetStore = defineStore('ruleSet', () => {
   const ruleSets = ref<RuleSet[]>([])
