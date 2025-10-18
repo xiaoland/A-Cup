@@ -3,7 +3,7 @@
     <template #title>
       <div class="flex justify-between items-center">
         <div class="text-2xl font-bold">Outbounds</div>
-        <Button label="Add Outbound" icon="pi pi-plus" @click="openAddDialog" />
+        <Button label="Add Outbound" icon="pi pi-plus" @click="showAddDialog = true" />
       </div>
     </template>
     <template #content>
@@ -18,7 +18,11 @@
     </template>
   </Card>
 
-  <Sidebar v-model:visible="showEditDialog" position="right" class="w-full md:w-1/2 lg:w-1/3">
+  <Dialog v-model:visible="showAddDialog" modal header="Add Outbound" :style="{ width: '50vw' }">
+    <OutboundsSelector :multiple="true" value-as="id" @update:modelValue="addOutbounds" />
+  </Dialog>
+
+  <Sidebar v-model:visible="showEditDialog" position="right" class="w-full md:w-3/5">
     <OutboundEditor
       v-if="selectedOutbound"
       :form="selectedOutbound"
@@ -34,9 +38,11 @@
 import { ref, onMounted } from 'vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import Sidebar from 'primevue/sidebar'
 import OutboundEditor from '../outboundEditor/outboundEditor.vue'
 import OutboundCard from '../outboundCard/outboundCard.vue'
+import OutboundsSelector from '../outboundsSelector/outboundsSelector.vue'
 import type { Outbound } from '@/types/outbound'
 import { useOutboundStore } from '@/stores/outbound'
 
@@ -52,6 +58,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const outboundStore = useOutboundStore()
+const showAddDialog = ref(false)
 const showEditDialog = ref(false)
 const selectedOutbound = ref<Outbound | null>(null)
 
@@ -59,9 +66,10 @@ onMounted(async () => {
   await outboundStore.fetchOutbounds()
 })
 
-const openAddDialog = () => {
-  selectedOutbound.value = { name: '', type: 'shadowsocks' } as any // Default type
-  showEditDialog.value = true
+const addOutbounds = (selectedIds: number[]) => {
+  const newOutboundIds = [...new Set([...props.modelValue, ...selectedIds])]
+  emit('update:modelValue', newOutboundIds)
+  showAddDialog.value = false
 }
 
 const openEditDialog = (id: number) => {
@@ -74,10 +82,7 @@ const openEditDialog = (id: number) => {
 
 const onOutboundSaved = (savedOutbound: Outbound) => {
   if (savedOutbound.id === undefined) return
-
-  if (!props.modelValue.includes(savedOutbound.id)) {
-    emit('update:modelValue', [...props.modelValue, savedOutbound.id])
-  }
+  // The outbound is already in the list, so we don't need to do anything
   showEditDialog.value = false
 }
 
