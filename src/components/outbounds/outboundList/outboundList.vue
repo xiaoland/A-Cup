@@ -109,7 +109,7 @@
           :model-value="exportedConfig"
           readonly
           rows="15"
-          class="w-full font-mono"
+          class="w-full"
         />
       </div>
       <template #footer>
