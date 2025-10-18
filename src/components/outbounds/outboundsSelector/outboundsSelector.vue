@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useOutboundStore } from '@/stores/outbound'
 import type { Outbound } from '@/types/outbound'
 import Select from 'primevue/select'
@@ -34,10 +34,6 @@ import Dialog from 'primevue/dialog'
 import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue'
 
 const props = defineProps({
-  modelValue: {
-    type: [String, Array, Number, Array] as import('vue').PropType<string | string[] | number | number[]>,
-    default: '',
-  },
   multiple: {
     type: Boolean,
     default: false,
@@ -52,7 +48,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue', 'confirm', 'cancel'])
+const emit = defineEmits(['confirm', 'cancel'])
 
 const outboundStore = useOutboundStore()
 const selected = ref<any>(props.multiple ? [] : null)
@@ -73,7 +69,6 @@ const availableOutbounds = computed(() => {
 
 onMounted(async () => {
   await outboundStore.fetchOutbounds()
-  updateSelected(props.modelValue)
 })
 
 const onOutboundCreated = (newOutbound: Outbound) => {
@@ -91,18 +86,6 @@ const onOutboundCreated = (newOutbound: Outbound) => {
 const onConfirm = () => {
   emit('confirm', selected.value)
 }
-
-const updateSelected = (modelValue: any) => {
-  selected.value = modelValue
-}
-
-watch(() => props.modelValue, (newValue) => {
-  updateSelected(newValue)
-}, { immediate: true, deep: true })
-
-watch(() => outboundStore.outbounds, () => {
-  updateSelected(props.modelValue)
-})
 </script>
 
 <style scoped></style>
