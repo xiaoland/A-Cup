@@ -8,15 +8,14 @@
         </v-btn>
       </div>
     </v-card-title>
-    <v-list>
-      <v-list-item v-for="item in outbounds" :key="item.id">
-        <v-list-item-title>{{ item.name }}</v-list-item-title>
-        <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
-        <template #append>
-          <v-btn icon="mdi-pencil" variant="text" @click="openEditDialog(item)"></v-btn>
-        </template>
-      </v-list-item>
-    </v-list>
+    <div class="d-flex flex-wrap">
+      <OutboundCard
+        v-for="id in modelValue"
+        :key="id"
+        :id="id"
+        @click="openEditDialog(id)"
+      />
+    </div>
   </v-card>
 
   <v-dialog v-model="showEditDialog" max-width="800px">
@@ -32,8 +31,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import OutboundEditor from '../outboundEditor/outboundEditor.vue'
+import OutboundCard from '../outboundCard/outboundCard.vue'
 import type { Outbound } from '@/types/outbound'
 import { useOutboundStore } from '@/stores/outbound'
 
@@ -52,12 +52,6 @@ const outboundStore = useOutboundStore()
 const showEditDialog = ref(false)
 const selectedOutbound = ref<Outbound | null>(null)
 
-const outbounds = computed(() => {
-  return (props.modelValue || [])
-    .map((id) => outboundStore.outbounds.find((o) => o.id === id))
-    .filter((o): o is Outbound => !!o)
-})
-
 onMounted(async () => {
   await outboundStore.fetchOutbounds()
 })
@@ -67,9 +61,12 @@ const openAddDialog = () => {
   showEditDialog.value = true
 }
 
-const openEditDialog = (outbound: Outbound) => {
-  selectedOutbound.value = { ...outbound }
-  showEditDialog.value = true
+const openEditDialog = (id: number) => {
+  const outbound = outboundStore.outbounds.find(o => o.id === id)
+  if (outbound) {
+    selectedOutbound.value = { ...outbound }
+    showEditDialog.value = true
+  }
 }
 
 const onOutboundSaved = (savedOutbound: Outbound) => {

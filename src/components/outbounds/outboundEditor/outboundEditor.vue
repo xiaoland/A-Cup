@@ -8,13 +8,14 @@
         <form @submit.prevent="onSave">
           <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="field col-span-1">
-              <label for="name">Name</label>
-              <InputText id="name" v-model="form.name" />
+              <label :for="`name-${uniqueId}`">Name</label>
+              <InputText :id="`name-${uniqueId}`" v-model="form.name" />
+              <small v-if="errors.name" class="p-error">{{ errors.name }}</small>
             </div>
             <div class="field col-span-1">
-              <label for="type">Type</label>
+              <label :for="`type-${uniqueId}`">Type</label>
               <Select
-                id="type"
+                :id="`type-${uniqueId}`"
                 v-model="form.type"
                 :options="typeOptions"
                 option-label="title"
@@ -23,9 +24,9 @@
               />
             </div>
             <div class="field col-span-1">
-              <label for="region">Region</label>
+              <label :for="`region-${uniqueId}`">Region</label>
               <Select
-                id="region"
+                :id="`region-${uniqueId}`"
                 v-model="form.region"
                 :options="regionOptions"
                 option-label="title"
@@ -35,8 +36,8 @@
               />
             </div>
             <div class="field col-span-1">
-              <label for="provider">Provider</label>
-              <InputText id="provider" v-model="form.provider" />
+              <label :for="`provider-${uniqueId}`">Provider</label>
+              <InputText :id="`provider-${uniqueId}`" v-model="form.provider" />
             </div>
           </div>
           <div class="md:col-span-2" v-if="form.type === 'shadowsocks' || form.type === 'vmess' || form.type === 'vless' || form.type === 'hysteria2'">
@@ -93,7 +94,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { z } from 'zod'
 import { useOutboundStore } from '@/stores/outbound'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
@@ -126,6 +128,8 @@ const outboundStore = useOutboundStore()
 const saving = ref(false)
 const deleting = ref(false)
 const form = ref(props.form)
+const errors = ref<Record<string, string>>({})
+const uniqueId = computed(() => Math.random().toString(36).substring(7))
 
 const onTypeChange = () => {
   // Reset the form when the type changes
@@ -134,6 +138,7 @@ const onTypeChange = () => {
 
 const onSave = async () => {
   saving.value = true
+  errors.value = {}
   try {
     let validatedData
     switch (form.value.type) {
@@ -160,14 +165,27 @@ const onSave = async () => {
     }
 
     validatedData.tag = validatedData.name
+    let savedOutbound
     if (props.form.id) {
-      await outboundStore.updateOutbound(props.form.id, validatedData)
+      savedOutbound = await outboundStore.updateOutbound(props.form.id, validatedData)
     } else {
-      await outboundStore.createOutbound(validatedData)
+      savedOutbound = await outboundStore.createOutbound(validatedData)
     }
-    emit('saved', validatedData)
+    if (savedOutbound) {
+      emit('saved', savedOutbound)
+    }
   } catch (error) {
-    console.error(error)
+    if (error instanceof z.ZodError) {
+      errors.value = error.issues.reduce((acc: Record<string, string>, curr) => {
+        const path = curr.path[0]
+        if (typeof path === 'string') {
+          acc[path] = curr.message
+        }
+        return acc
+      }, {})
+    } else {
+      console.error(error)
+    }
   } finally {
     saving.value = false
   }
