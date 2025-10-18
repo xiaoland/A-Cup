@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue'
-import type { Outbound } from '@/components/outbounds/outboundEditor/types'
+import type { VmessOutbound } from '@/types/outbound'
 
-const form = ref<Outbound>({
+const form = ref<VmessOutbound>({
   name: '',
-  region: undefined,
-  provider: undefined,
-  tag: undefined,
+  tag: '',
   type: 'vmess',
   server: '',
-  server_port: 0,
-  credential: {},
+  server_port: 443,
+  uuid: '',
+  security: 'auto',
 })
 </script>
 

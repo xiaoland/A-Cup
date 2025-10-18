@@ -3,37 +3,38 @@
     <v-card-title class="text-h6 d-flex align-center justify-space-between">
       Outbounds
       <div class="d-flex" style="gap: 8px">
-        <v-btn color="primary" size="small" @click="showAddDialog = true" prepend-icon="mdi-plus">
+        <v-btn color="primary" size="small" @click="openAddDialog" prepend-icon="mdi-plus">
           Add Outbound
         </v-btn>
       </div>
     </v-card-title>
+    <v-list>
+      <v-list-item v-for="item in outbounds" :key="item.id">
+        <v-list-item-title>{{ item.name }}</v-list-item-title>
+        <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
+        <template #append>
+          <v-btn icon="mdi-pencil" variant="text" @click="openEditDialog(item)"></v-btn>
+        </template>
+      </v-list-item>
+    </v-list>
   </v-card>
 
-  <div v-for="(item, idx) in outbounds" :key="item.id ?? `new-${idx}`" class="mt-4">
+  <v-dialog v-model="showEditDialog" max-width="800px">
     <OutboundEditor
-      :form="item"
-      :start-editable="true"
+      v-if="selectedOutbound"
+      :form="selectedOutbound"
       :show-delete="true"
-      @saved="updateOutbound(idx, $event)"
-      @deleted="removeOutbound(idx)"
+      @saved="onOutboundSaved"
+      @deleted="onOutboundDeleted"
+      @cancel="showEditDialog = false"
     />
-  </div>
-  <v-dialog v-model="showAddDialog" max-width="500px">
-    <v-card>
-      <v-card-title>Add Outbound</v-card-title>
-      <v-card-text>
-        <outbounds-selector :multiple="true" value-as="id" @update:modelValue="addOutbound" />
-      </v-card-text>
-    </v-card>
   </v-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import OutboundEditor from '../outboundEditor/outboundEditor.vue'
-import OutboundsSelector from '../outboundsSelector/outboundsSelector.vue'
-import type { Outbound } from '../outboundEditor/types'
+import type { Outbound } from '@/types/outbound'
 import { useOutboundStore } from '@/stores/outbound'
 
 export interface Props {
@@ -48,43 +49,41 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const outboundStore = useOutboundStore()
-const showAddDialog = ref(false)
-const outbounds = ref<Outbound[]>([])
+const showEditDialog = ref(false)
+const selectedOutbound = ref<Outbound | null>(null)
 
-const fetchOutbounds = async () => {
-  await outboundStore.fetchOutbounds()
-  updateOutbounds()
-}
-
-onMounted(fetchOutbounds)
-
-const updateOutbounds = () => {
-  outbounds.value = (props.modelValue || [])
+const outbounds = computed(() => {
+  return (props.modelValue || [])
     .map((id) => outboundStore.outbounds.find((o) => o.id === id))
-    .filter((o) => o) as Outbound[]
+    .filter((o): o is Outbound => !!o)
+})
+
+onMounted(async () => {
+  await outboundStore.fetchOutbounds()
+})
+
+const openAddDialog = () => {
+  selectedOutbound.value = { name: '', type: 'shadowsocks' } as any // Default type
+  showEditDialog.value = true
 }
 
-watch(() => props.modelValue, updateOutbounds, { deep: true })
-watch(() => outboundStore.outbounds, updateOutbounds, { deep: true })
-
-const addOutbound = (selectedIds: number[]) => {
-  const newOutboundIds = [...(props.modelValue || []), ...selectedIds]
-  emit('update:modelValue', newOutboundIds)
-  showAddDialog.value = false
+const openEditDialog = (outbound: Outbound) => {
+  selectedOutbound.value = { ...outbound }
+  showEditDialog.value = true
 }
 
-const updateOutbound = (index: number, updatedOutbound: Outbound) => {
-  const newOutboundIds = [...(props.modelValue || [])]
-  if (updatedOutbound.id) {
-    newOutboundIds[index] = updatedOutbound.id
-    emit('update:modelValue', newOutboundIds)
+const onOutboundSaved = (savedOutbound: Outbound) => {
+  if (savedOutbound.id === undefined) return
+
+  if (!props.modelValue.includes(savedOutbound.id)) {
+    emit('update:modelValue', [...props.modelValue, savedOutbound.id])
   }
+  showEditDialog.value = false
 }
 
-const removeOutbound = (index: number) => {
-  const newOutboundIds = [...(props.modelValue || [])]
-  newOutboundIds.splice(index, 1)
-  emit('update:modelValue', newOutboundIds)
+const onOutboundDeleted = (deletedId: number) => {
+  emit('update:modelValue', props.modelValue.filter((id) => id !== deletedId))
+  showEditDialog.value = false
 }
 </script>
 

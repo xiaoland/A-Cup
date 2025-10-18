@@ -1,56 +1,25 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue'
-import type { Outbound } from '@/components/outbounds/outboundEditor/types'
-import { useUserStore } from '@/stores/user'
+import { useOutboundStore } from '@/stores/outbound'
+import type { Outbound } from '@/types/outbound'
 
 const route = useRoute()
-const outbound = ref<Outbound | undefined>(undefined)
-const loading = ref(true)
+const outboundStore = useOutboundStore()
+const outbound = ref<Outbound | null>(null)
 
-const userStore = useUserStore()
+const outboundId = computed(() => Number(route.params.id))
 
-const loadOutbound = async () => {
-  const id = route.params.id
-  if (!id) return
-
-  try {
-    const response = await userStore.authorizedFetch(`/api/outbounds/${id}`)
-    
-    if (response.ok) {
-      outbound.value = await response.json()
-    } else {
-      console.error('Failed to load outbound')
-    }
-  } catch (error) {
-    console.error('Error loading outbound:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  loadOutbound()
+onMounted(async () => {
+  await outboundStore.fetchOutbounds()
+  outbound.value = outboundStore.outbounds.find(o => o.id === outboundId.value) || null
 })
 </script>
 
 <template>
-  <div v-if="loading" class="d-flex justify-center align-center" style="height: 400px;">
-    <v-progress-circular indeterminate color="primary" size="64" />
-  </div>
-  
-  <OutboundEditor
-    v-else-if="outbound"
-    :form="outbound"
-  />
-  
-  <v-alert
-    v-else
-    type="error"
-    variant="tonal"
-    class="ma-4"
-  >
+  <OutboundEditor v-if="outbound" :form="outbound" />
+  <v-alert v-else type="error" variant="tonal" class="ma-4">
     Outbound not found
   </v-alert>
 </template>

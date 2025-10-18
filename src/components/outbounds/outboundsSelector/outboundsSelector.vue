@@ -3,7 +3,7 @@
     <div class="flex-grow-1">
       <v-select
         v-model="selected"
-        :items="outboundsWithTags"
+        :items="outboundStore.outbounds"
         :multiple="multiple"
         item-title="name"
         :item-value="itemValue"
@@ -29,12 +29,8 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { useOutboundStore } from '@/stores/outbound';
 import { useUserStore } from '@/stores/user';
-import type { Outbound } from '@/components/outbounds/outboundEditor/types';
+import type { Outbound } from '@/types/outbound';
 import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue';
-
-interface OutboundWithTag extends Outbound {
-  tag: string;
-}
 
 const props = defineProps({
   modelValue: {
@@ -55,45 +51,28 @@ const emit = defineEmits(['update:modelValue']);
 
 const outboundStore = useOutboundStore();
 const userStore = useUserStore();
-const outboundsWithTags = ref<OutboundWithTag[]>([]);
 const selected = ref<any>(props.multiple ? [] : '');
 const showCreateDialog = ref(false);
 const emptyOutbound: Outbound = {
   name: '',
   type: 'vmess',
+  tag: '',
   server: '',
   server_port: 443,
-  credential: {
-    uuid: '',
-    alter_id: 0,
-    security: 'auto',
-  },
+  uuid: '',
+  security: 'auto',
 };
 const itemValue = computed(() => (props.valueAs === 'id' ? 'id' : 'tag'));
 
-const fetchOutboundsWithTags = async () => {
+const fetchOutbounds = async () => {
   await outboundStore.fetchOutbounds();
-  const outbounds = outboundStore.outbounds;
-  const tagsPromises = outbounds.map(async (outbound) => {
-    if (outbound.id) {
-      const response = await userStore.authorizedFetch(`/api/outbounds/${outbound.id}/tag`);
-      if (response.ok) {
-        const data = await response.json();
-        return { ...outbound, tag: data.tag };
-      }
-    }
-    return { ...outbound, tag: `outbound-${outbound.id}` };
-  });
-
-  const resolvedTags = await Promise.all(tagsPromises);
-  outboundsWithTags.value = resolvedTags as OutboundWithTag[];
   updateSelected(props.modelValue);
 };
 
-onMounted(fetchOutboundsWithTags);
+onMounted(fetchOutbounds);
 
 const onOutboundCreated = () => {
-  fetchOutboundsWithTags();
+  fetchOutbounds();
   showCreateDialog.value = false;
 };
 
@@ -122,14 +101,14 @@ const updateSelected = (modelValue: any) => {
   }
 
   if (props.multiple) {
-    const tags = (Array.isArray(modelValue) ? modelValue : []) as string[];
-    selected.value = tags
-      .map((tag) => outboundsWithTags.value.find((o) => o.tag === tag)?.tag)
-      .filter((tag) => tag) as string[];
+    const names = (Array.isArray(modelValue) ? modelValue : []) as string[];
+    selected.value = names
+      .map((name) => outboundStore.outbounds.find((o) => o.name === name)?.name)
+      .filter((name) => name) as string[];
   } else {
-    const tag = modelValue as string;
-    const found = outboundsWithTags.value.find((o) => o.tag === tag);
-    selected.value = found ? found.tag : '';
+    const name = modelValue as string;
+    const found = outboundStore.outbounds.find((o) => o.name === name);
+    selected.value = found ? found.name : '';
   }
 };
 
@@ -141,7 +120,7 @@ watch(
   { immediate: true, deep: true }
 );
 
-watch(outboundsWithTags, () => {
+watch(() => outboundStore.outbounds, () => {
   updateSelected(props.modelValue);
 });
 </script>

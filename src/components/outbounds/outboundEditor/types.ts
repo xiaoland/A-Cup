@@ -1,24 +1,6 @@
-// Shared types and options for Outbounds module
+import type { Outbound } from '@/types/outbound'
 
-export interface Outbound {
-  id?: number
-  name: string
-  region?: string
-  provider?: string
-  tag?: string
-  type: string
-  server: string
-  server_port: number
-  credential: any
-  transport?: any
-  tls?: any
-  mux?: any
-  other?: any
-  readable_by?: number[]
-  writable_by?: number[]
-  created_at?: number
-  updated_at?: number
-}
+export type { Outbound }
 
 export interface SelectOption<T extends string = string> {
   title: string
@@ -48,4 +30,3 @@ export const networkOptions: SelectOption[] = [
   { title: 'TCP', value: 'tcp' },
   { title: 'UDP', value: 'udp' },
 ]
-
