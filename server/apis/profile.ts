@@ -19,7 +19,7 @@ const IDPathParamSchema = z.object({
 // Create Profile
 profileRouter.post('/', zValidator('json', CreateProfileSchema), async (c) => {
   const body = c.req.valid('json');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const profileService = new ProfileService(c.get('db'), c.env);
 
   try {
@@ -32,7 +32,7 @@ profileRouter.post('/', zValidator('json', CreateProfileSchema), async (c) => {
 
 // Get All Profiles
 profileRouter.get('/', async (c) => {
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const profileService = new ProfileService(c.get('db'), c.env);
 
   const profiles = await profileService.getProfiles(user_id);
@@ -42,7 +42,7 @@ profileRouter.get('/', async (c) => {
 // Get Profile by ID
 profileRouter.get('/:id', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const profileService = new ProfileService(c.get('db'), c.env);
 
   const profile = await profileService.getProfileById(user_id, id);
@@ -58,7 +58,7 @@ profileRouter.get('/:id', zValidator('param', IDPathParamSchema), async (c) => {
 profileRouter.put('/:id', zValidator('param', IDPathParamSchema), zValidator('json', UpdateProfileSchema), async (c) => {
   const { id } = c.req.valid('param');
   const body = c.req.valid('json');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const profileService = new ProfileService(c.get('db'), c.env);
 
   try {
@@ -75,7 +75,7 @@ profileRouter.put('/:id', zValidator('param', IDPathParamSchema), zValidator('js
 // Delete Profile
 profileRouter.delete('/:id', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const profileService = new ProfileService(c.get('db'), c.env);
 
   const deleted = await profileService.deleteProfile(user_id, id);
@@ -90,7 +90,7 @@ profileRouter.delete('/:id', zValidator('param', IDPathParamSchema), async (c) =
 // Export Profile
 profileRouter.get('/:id/export', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const profileService = new ProfileService(c.get('db'), c.env);
 
   try {

@@ -27,7 +27,7 @@ const IDPathParamSchema = z.object({
 
 outboundRouter.get('/:id', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const outboundService = new OutboundService(c.get('db'), c.env);
 
   try {
@@ -42,7 +42,7 @@ outboundRouter.get('/:id', zValidator('param', IDPathParamSchema), async (c) => 
 });
 
 outboundRouter.get('/', async (c) => {
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const outboundService = new OutboundService(c.get('db'), c.env);
 
   const outbounds = await outboundService.getOutbounds(user_id);
@@ -51,7 +51,7 @@ outboundRouter.get('/', async (c) => {
 
 outboundRouter.post('/', zValidator('json', CreateOutboundBody), async (c) => {
   const body = c.req.valid('json');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const outboundService = new OutboundService(c.get('db'), c.env);
 
   const newOutbound = await outboundService.createOutbound(user_id, body);
@@ -61,7 +61,7 @@ outboundRouter.post('/', zValidator('json', CreateOutboundBody), async (c) => {
 outboundRouter.put('/:id', zValidator('param', IDPathParamSchema), zValidator('json', CreateOutboundBody.partial()), async (c) => {
   const { id } = c.req.valid('param');
   const body = c.req.valid('json');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const outboundService = new OutboundService(c.get('db'), c.env);
 
   try {
@@ -77,7 +77,7 @@ outboundRouter.put('/:id', zValidator('param', IDPathParamSchema), zValidator('j
 
 outboundRouter.delete('/:id', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const outboundService = new OutboundService(c.get('db'), c.env);
 
   try {
@@ -93,7 +93,7 @@ outboundRouter.delete('/:id', zValidator('param', IDPathParamSchema), async (c) 
 
 outboundRouter.get('/:id/tag', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const outboundService = new OutboundService(c.get('db'), c.env);
 
   try {
@@ -109,7 +109,7 @@ outboundRouter.get('/:id/tag', zValidator('param', IDPathParamSchema), async (c)
 
 outboundRouter.get('/:id/export', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const outboundService = new OutboundService(c.get('db'), c.env);
 
   try {

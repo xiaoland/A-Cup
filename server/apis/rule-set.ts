@@ -22,7 +22,7 @@ const IDPathParamSchema = z.object({
 
 ruleSetRouter.post('/', zValidator('json', CreateRuleSetSchema), async (c) => {
   const body = c.req.valid('json');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const ruleSetService = new RuleSetService(c.get('db'), c.env);
 
   const newRuleSet = await ruleSetService.createRuleSet(user_id, body);
@@ -32,7 +32,7 @@ ruleSetRouter.post('/', zValidator('json', CreateRuleSetSchema), async (c) => {
 ruleSetRouter.put('/:id', zValidator('param', IDPathParamSchema), zValidator('json', CreateRuleSetSchema.partial()), async (c) => {
   const { id } = c.req.valid('param');
   const body = c.req.valid('json');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const ruleSetService = new RuleSetService(c.get('db'), c.env);
 
   try {
@@ -48,7 +48,7 @@ ruleSetRouter.put('/:id', zValidator('param', IDPathParamSchema), zValidator('js
 
 ruleSetRouter.get('/:id', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const ruleSetService = new RuleSetService(c.get('db'), c.env);
 
   const ruleSet = await ruleSetService.getRuleSetById(user_id, id);
@@ -60,7 +60,7 @@ ruleSetRouter.get('/:id', zValidator('param', IDPathParamSchema), async (c) => {
 
 ruleSetRouter.get('/:id/tag', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const ruleSetService = new RuleSetService(c.get('db'), c.env);
 
   try {
@@ -75,7 +75,7 @@ ruleSetRouter.get('/:id/tag', zValidator('param', IDPathParamSchema), async (c) 
 });
 
 ruleSetRouter.get('/', async (c) => {
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const ruleSetService = new RuleSetService(c.get('db'), c.env);
 
   const ruleSets = await ruleSetService.getRuleSets(user_id);
@@ -84,7 +84,7 @@ ruleSetRouter.get('/', async (c) => {
 
 ruleSetRouter.delete('/:id', zValidator('param', IDPathParamSchema), async (c) => {
   const { id } = c.req.valid('param');
-  const user_id = parseInt((c.get('token_payload')?.sub || '0').toString());
+  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
   const ruleSetService = new RuleSetService(c.get('db'), c.env);
 
   try {
