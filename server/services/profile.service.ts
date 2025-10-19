@@ -40,12 +40,36 @@ export class ProfileService {
       eq(Profiles.created_by, userId)
     );
 
-    return profiles.map((profile: any) => ({
-      ...profile,
-      tags: JSON.parse(profile.tags as string),
-      outbounds: JSON.parse(profile.outbounds as string),
-      rule_sets: JSON.parse(profile.rule_sets as string),
-    }));
+    return Promise.all(
+      profiles.map(async (profile) => {
+        let r2Config: any = {};
+        if (this.env.OSS) {
+          const r2Object = await this.env.OSS.get(`profiles/${profile.id}`);
+          if (r2Object) {
+            try {
+              const data = await r2Object.json();
+              if (data) {
+                r2Config = data;
+              }
+            } catch (error) {
+              console.error(`Failed to parse R2 config for profile ${profile.id}`, error);
+            }
+          }
+        }
+
+        return {
+          ...r2Config,
+          id: profile.id,
+          name: profile.name,
+          tags: JSON.parse(profile.tags as string),
+          outbounds: JSON.parse(profile.outbounds as string),
+          route: {
+            ...(r2Config.route || {}),
+            rule_set: JSON.parse(profile.rule_sets as string),
+          },
+        };
+      })
+    );
   }
 
   async getProfileById(userId: number, profileId: string) {
