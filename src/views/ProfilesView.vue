@@ -12,7 +12,7 @@
       />
     </div>
 
-    <Card>
+    <div>
       <template #content>
         <!-- Loading State -->
         <div v-if="loading">
@@ -47,7 +47,7 @@
           </div>
         </div>
       </template>
-    </Card>
+      </div>
 
     <!-- Export Result Dialog -->
     <Dialog
