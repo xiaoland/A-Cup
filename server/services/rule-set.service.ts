@@ -28,8 +28,8 @@ export class RuleSetService {
       type: body.type,
       format: body.format,
       content: body.content ?? '',
-      readableBy: readableBy,
-      writeableBy: writeableBy,
+      readableBy: JSON.stringify(readableBy),
+      writeableBy: JSON.stringify(writeableBy),
       download_detour: body.download_detour,
       update_interval: body.update_interval,
     }).returning();
@@ -40,8 +40,8 @@ export class RuleSetService {
   async getRuleSets(userId: number) {
     const result = await this.db.select().from(RuleSets);
     return (result as any[]).filter((rs) => {
-      const r: number[] = rs.readableBy ?? [];
-      const w: number[] = rs.writeableBy ?? [];
+      const r = Array.isArray(rs.readableBy) ? rs.readableBy : JSON.parse(rs.readableBy || '[]');
+      const w = Array.isArray(rs.writeableBy) ? rs.writeableBy : JSON.parse(rs.writeableBy || '[]');
       return [...r, ...w].includes(userId);
     });
   }
@@ -51,8 +51,8 @@ export class RuleSetService {
     if (ruleSets.length === 0) return null;
 
     const rs = ruleSets[0] as any;
-    const r: number[] = rs.readableBy ?? [];
-    const w: number[] = rs.writeableBy ?? [];
+    const r = Array.isArray(rs.readableBy) ? rs.readableBy : JSON.parse(rs.readableBy || '[]');
+    const w = Array.isArray(rs.writeableBy) ? rs.writeableBy : JSON.parse(rs.writeableBy || '[]');
     const readable = [...r, ...w].includes(userId);
 
     return readable ? rs : null;
@@ -63,7 +63,7 @@ export class RuleSetService {
     if (existingList.length === 0) return null;
 
     const existing = existingList[0] as any;
-    const writable: number[] = existing.writeableBy ?? [];
+    const writable = Array.isArray(existing.writeableBy) ? existing.writeableBy : JSON.parse(existing.writeableBy || '[]');
     if (!writable.includes(userId)) {
       throw new Error('Forbidden');
     }
@@ -73,8 +73,8 @@ export class RuleSetService {
     if (body.type !== undefined) updateData.type = body.type;
     if (body.format !== undefined) updateData.format = body.format;
     if (body.content !== undefined) updateData.content = body.content;
-    if (body.readableBy !== undefined) updateData.readableBy = body.readableBy;
-    if (body.writeableBy !== undefined) updateData.writeableBy = body.writeableBy;
+    if (body.readableBy !== undefined) updateData.readableBy = JSON.stringify(body.readableBy);
+    if (body.writeableBy !== undefined) updateData.writeableBy = JSON.stringify(body.writeableBy);
     if (body.download_detour !== undefined) updateData.download_detour = body.download_detour;
     if (body.update_interval !== undefined) updateData.update_interval = body.update_interval;
 
@@ -82,7 +82,7 @@ export class RuleSetService {
 
     const allProfiles = await this.db.select().from(Profiles);
     const referencing = (allProfiles as any[]).filter((p) => {
-      const rs: number[] = p.rule_sets ?? [];
+      const rs = Array.isArray(p.rule_sets) ? p.rule_sets : JSON.parse(p.rule_sets || '[]');
       return rs.includes(ruleSetId);
     });
     if (this.env.OSS) {
@@ -97,7 +97,7 @@ export class RuleSetService {
     if (existingList.length === 0) return false;
 
     const existing = existingList[0] as any;
-    const writable: number[] = existing.writeableBy ?? [];
+    const writable = Array.isArray(existing.writeableBy) ? existing.writeableBy : JSON.parse(existing.writeableBy || '[]');
     if (!writable.includes(userId)) {
       throw new Error('Forbidden');
     }
@@ -111,8 +111,8 @@ export class RuleSetService {
     if (existing.length === 0) return null;
 
     const row: any = existing[0];
-    const r: number[] = row.readableBy ?? [];
-    const w: number[] = row.writeableBy ?? [];
+    const r = Array.isArray(row.readableBy) ? row.readableBy : JSON.parse(row.readableBy || '[]');
+    const w = Array.isArray(row.writeableBy) ? row.writeableBy : JSON.parse(row.writeableBy || '[]');
     if (![...r, ...w].includes(userId)) {
       throw new Error('Forbidden');
     }

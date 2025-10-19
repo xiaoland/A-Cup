@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import { bearerAuth } from 'hono/bearer-auth';
 import { jwt } from 'hono/jwt';
 import { outboundRouter } from "./apis/outbound";
 import { userRouter } from "./apis/user";
@@ -10,6 +9,7 @@ import * as schema from './db/schema';
 
 const app = new Hono();
 
+// Response time logger
 app.use('*', async (c, next) => {
   const start = Date.now();
   await next();
@@ -17,18 +17,23 @@ app.use('*', async (c, next) => {
   c.res.headers.set('X-Response-Time', `${end - start}`);
 });
 
-app.use('/api/*', async (c, next) => {
+
+const api = new Hono();
+
+// DB middleware on the api router
+api.use('*', async (c, next) => {
   const d1 = c.env.DB;
   const db = drizzle(d1, { schema });
   c.set('db', db);
   await next();
 });
 
-app.use('/api/*', async (c, next) => {
-  if (c.req.path === '/api/users' && c.req.method === 'POST') {
+// JWT middleware on the api router
+api.use('*', async (c, next) => {
+  if (c.req.path === '/users' && c.req.method === 'POST') {
     return await next();
   }
-  if (c.req.path.startsWith('/api/users/') && c.req.method === 'PUT') {
+  if (c.req.path.startsWith('/users/') && c.req.method === 'PUT') {
     return await next();
   }
 
@@ -36,9 +41,13 @@ app.use('/api/*', async (c, next) => {
   return auth(c, next);
 });
 
-app.route('/api/outbounds', outboundRouter);
-app.route('/api/users', userRouter);
-app.route('/api/rule-sets', ruleSetRouter);
-app.route('/api/profiles', profileRouter);
+// Register module routers
+api.route('/outbounds', outboundRouter);
+api.route('/users', userRouter);
+api.route('/rule-sets', ruleSetRouter);
+api.route('/profiles', profileRouter);
+
+// Mount the api router under /api
+app.route('/api', api);
 
 export default app;
