@@ -34,3 +34,5 @@ coverage
 # wrangler files
 .wrangler
 .dev.vars*
+
+package-lock.json

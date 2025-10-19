@@ -12,42 +12,40 @@
       />
     </div>
 
-    <Card>
-      <template #content>
-        <!-- Loading State -->
-        <div v-if="loading">
-          <Skeleton v-for="i in 3" :key="i" height="6rem" class="mb-2" />
+    <div>
+      <!-- Loading State -->
+      <div v-if="loading">
+        <Skeleton v-for="i in 3" :key="i" height="6rem" class="mb-2" />
+      </div>
+
+      <div v-else>
+        <!-- Empty State -->
+        <div v-if="profiles.length === 0" class="text-center p-4">
+          <span class="i-mdi-account-network-outline text-6xl text-gray-400" />
+          <h3 class="text-xl font-bold mt-4">No profiles found</h3>
+          <p class="text-gray-500">Start by creating your first proxy profile</p>
+          <Button
+            label="Create First Profile"
+            icon="i-mdi-plus"
+            class="mt-4"
+            @click="handleCreate"
+          />
         </div>
 
-        <div v-else>
-          <!-- Empty State -->
-          <div v-if="profiles.length === 0" class="text-center p-4">
-            <span class="i-mdi-account-network-outline text-6xl text-gray-400" />
-            <h3 class="text-xl font-bold mt-4">No profiles found</h3>
-            <p class="text-gray-500">Start by creating your first proxy profile</p>
-            <Button
-              label="Create First Profile"
-              icon="i-mdi-plus"
-              class="mt-4"
-              @click="handleCreate"
-            />
-          </div>
-
-          <!-- Profile List -->
-          <div v-else class="flex flex-col gap-4">
-            <ProfileCard
-              v-for="profile in profiles"
-              :key="profile.id"
-              :profile="profile"
-              @edit="handleEdit"
-              @delete="confirmDelete"
-              @duplicate="duplicateProfile"
-              @export="exportProfile"
-            />
-          </div>
+        <!-- Profile List -->
+        <div v-else class="flex flex-col gap-4">
+          <ProfileCard
+            v-for="profile in profiles"
+            :key="profile.id"
+            :profile="profile"
+            @edit="handleEdit"
+            @delete="confirmDelete"
+            @duplicate="duplicateProfile"
+            @export="exportProfile"
+          />
         </div>
-      </template>
-    </Card>
+      </div>
+    </div>
 
     <!-- Export Result Dialog -->
     <Dialog
@@ -134,7 +132,6 @@ import { useRouter } from 'vue-router'
 import { useProfileStore } from '@/stores/profile'
 import ProfileCard from '@/components/profile/profileCard/profileCard.vue'
 import Button from 'primevue/button'
-import Card from 'primevue/card'
 import Skeleton from 'primevue/skeleton'
 import Dialog from 'primevue/dialog'
 import ProgressSpinner from 'primevue/progressspinner'
