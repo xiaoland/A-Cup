@@ -42,31 +42,11 @@ export class ProfileService {
 
     return Promise.all(
       profiles.map(async (profile) => {
-        let r2Config: any = {};
-        if (this.env.OSS) {
-          const r2Object = await this.env.OSS.get(`profiles/${profile.id}`);
-          if (r2Object) {
-            try {
-              const data = await r2Object.json();
-              if (data) {
-                r2Config = data;
-              }
-            } catch (error) {
-              console.error(`Failed to parse R2 config for profile ${profile.id}`, error);
-            }
-          }
-        }
-
         return {
-          ...r2Config,
-          id: profile.id,
-          name: profile.name,
+          ...profile,
           tags: JSON.parse(profile.tags as string),
           outbounds: JSON.parse(profile.outbounds as string),
-          route: {
-            ...(r2Config.route || {}),
-            rule_set: JSON.parse(profile.rule_sets as string),
-          },
+          rule_sets: JSON.parse(profile.rule_sets as string),
         };
       })
     );
@@ -85,11 +65,30 @@ export class ProfileService {
     }
 
     const profileData = profile[0] as any;
+    let r2Config: any = {};
+    if (this.env.OSS) {
+      const r2Object = await this.env.OSS.get(`profiles/${profileData.id}`);
+      if (r2Object) {
+        try {
+          const data = await r2Object.json();
+          if (data) {
+            r2Config = data;
+          }
+        } catch (error) {
+          console.error(`Failed to parse R2 config for profile ${profileData.id}`, error);
+        }
+      }
+    }
     return {
-      ...profileData,
+      ...r2Config,
+      id: profileData.id,
+      name: profileData.name,
       tags: JSON.parse(profileData.tags as string),
       outbounds: JSON.parse(profileData.outbounds as string),
-      rule_sets: JSON.parse(profileData.rule_sets as string),
+      route: {
+        ...(r2Config.route || {}),
+        rule_set: JSON.parse(profileData.rule_sets as string),
+      },
     };
   }
 
