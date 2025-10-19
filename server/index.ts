@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { jwt } from 'hono/jwt';
 import { outboundRouter } from "./apis/outbound";
-import { userRouter } from "./apis/user";
+import { userRouter, securedUserRouter } from "./apis/user";
 import { ruleSetRouter } from "./apis/rule-set";
 import { profileRouter } from "./apis/profile";
 import { drizzle } from 'drizzle-orm/d1';
@@ -17,37 +17,31 @@ app.use('*', async (c, next) => {
   c.res.headers.set('X-Response-Time', `${end - start}`);
 });
 
-
 const api = new Hono();
 
-// DB middleware on the api router
+// DB middleware for all API routes
 api.use('*', async (c, next) => {
-  const d1 = c.env.DB;
-  const db = drizzle(d1, { schema });
-  c.set('db', db);
-  await next();
+    const d1 = c.env.DB;
+    const db = drizzle(d1, { schema });
+    c.set('db', db);
+    await next();
 });
 
-// JWT middleware on the api router
-api.use('*', async (c, next) => {
-  if (c.req.path === '/users' && c.req.method === 'POST') {
-    return await next();
-  }
-  if (c.req.path.startsWith('/users/') && c.req.method === 'PUT') {
-    return await next();
-  }
+// Secured routes
+const secured = new Hono();
+secured.use('*', jwt({ secret: c.env.JWT_SECRET }));
+secured.route('/outbounds', outboundRouter);
+secured.route('/rule-sets', ruleSetRouter);
+secured.route('/profiles', profileRouter);
+secured.route('/users', securedUserRouter);
 
-  const auth = jwt({ secret: c.env.JWT_SECRET });
-  return auth(c, next);
-});
-
-// Register module routers
-api.route('/outbounds', outboundRouter);
+// Public routes (user login/signup) are handled by userRouter
 api.route('/users', userRouter);
-api.route('/rule-sets', ruleSetRouter);
-api.route('/profiles', profileRouter);
 
-// Mount the api router under /api
+// All other API routes are secured
+api.route('/', secured);
+
+// Mount the main api router under /api
 app.route('/api', api);
 
 export default app;

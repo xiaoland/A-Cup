@@ -4,6 +4,7 @@ import { UserService } from '../services/user.service';
 import { zValidator } from '@hono/zod-validator';
 
 export const userRouter = new Hono();
+export const securedUserRouter = new Hono();
 
 const UserLoginBody = z.object({
     password: z.string().min(1, "Password is required"),
