@@ -30,8 +30,8 @@ export class OutboundService {
 
     const result = await this.db.insert(Outbounds).values({
       ...body,
-      readable_by: JSON.stringify(readable_by),
-      writable_by: JSON.stringify(writable_by),
+      readable_by: readable_by,
+      writable_by: writable_by,
     }).returning();
 
     return result[0];
@@ -40,8 +40,8 @@ export class OutboundService {
   async getOutbounds(userId: number) {
     const outbounds = await this.db.select().from(Outbounds);
     const filtered = outbounds.filter((row: any) => {
-      const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
-      const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+      const readable: number[] = row.readable_by ?? [];
+      const writable: number[] = row.writable_by ?? [];
       return [...readable, ...writable].includes(userId);
     });
 
@@ -56,8 +56,8 @@ export class OutboundService {
     if (outbounds.length === 0) return null;
 
     const row: any = outbounds[0];
-    const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
-    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+    const readable: number[] = row.readable_by ?? [];
+    const writable: number[] = row.writable_by ?? [];
     if (![...readable, ...writable].includes(userId)) {
       throw new Error('Forbidden');
     }
@@ -70,7 +70,7 @@ export class OutboundService {
     if (existing.length === 0) return null;
 
     const row: any = existing[0];
-    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+    const writable: number[] = row.writable_by ?? [];
     if (!writable.includes(userId)) {
       throw new Error('Forbidden');
     }
@@ -82,12 +82,8 @@ export class OutboundService {
 
     const allProfiles = await this.db.select().from(Profiles);
     const referencing = (allProfiles as any[]).filter((p) => {
-      try {
-        const outs = Array.isArray(p.outbounds) ? p.outbounds : JSON.parse(p.outbounds || '[]');
-        return outs.includes(outboundId);
-      } catch {
-        return false;
-      }
+      const outs: number[] = p.outbounds ?? [];
+      return outs.includes(outboundId);
     });
     if (this.env.OSS) {
       await Promise.all(referencing.map((p: any) => exportProfileToR2(this.db, this.env, p.id)));
@@ -101,7 +97,7 @@ export class OutboundService {
     if (existing.length === 0) return false;
 
     const row: any = existing[0];
-    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+    const writable: number[] = row.writable_by ?? [];
     if (!writable.includes(userId)) {
       throw new Error('Forbidden');
     }
@@ -115,8 +111,8 @@ export class OutboundService {
     if (existing.length === 0) return null;
 
     const row: any = existing[0];
-    const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
-    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
+    const readable: number[] = row.readable_by ?? [];
+    const writable: number[] = row.writable_by ?? [];
     if (![...readable, ...writable].includes(userId)) {
       throw new Error('Forbidden');
     }

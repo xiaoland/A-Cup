@@ -28,8 +28,8 @@ export class RuleSetService {
       type: body.type,
       format: body.format,
       content: body.content ?? '',
-      readableBy: JSON.stringify(readableBy),
-      writeableBy: JSON.stringify(writeableBy),
+      readableBy: readableBy,
+      writeableBy: writeableBy,
       download_detour: body.download_detour,
       update_interval: body.update_interval,
     }).returning();
@@ -40,13 +40,9 @@ export class RuleSetService {
   async getRuleSets(userId: number) {
     const result = await this.db.select().from(RuleSets);
     return (result as any[]).filter((rs) => {
-      try {
-        const r = JSON.parse(rs.readableBy as string) as number[];
-        const w = JSON.parse(rs.writeableBy as string) as number[];
-        return (Array.isArray(r) && r.includes(userId)) || (Array.isArray(w) && w.includes(userId));
-      } catch {
-        return false;
-      }
+      const r: number[] = rs.readableBy ?? [];
+      const w: number[] = rs.writeableBy ?? [];
+      return [...r, ...w].includes(userId);
     });
   }
 
@@ -55,15 +51,9 @@ export class RuleSetService {
     if (ruleSets.length === 0) return null;
 
     const rs = ruleSets[0] as any;
-    const readable = (() => {
-      try {
-        const r = JSON.parse(rs.readableBy as string) as number[];
-        const w = JSON.parse(rs.writeableBy as string) as number[];
-        return (Array.isArray(r) && r.includes(userId)) || (Array.isArray(w) && w.includes(userId));
-      } catch {
-        return false;
-      }
-    })();
+    const r: number[] = rs.readableBy ?? [];
+    const w: number[] = rs.writeableBy ?? [];
+    const readable = [...r, ...w].includes(userId);
 
     return readable ? rs : null;
   }
@@ -73,18 +63,18 @@ export class RuleSetService {
     if (existingList.length === 0) return null;
 
     const existing = existingList[0] as any;
-    const writable = Array.isArray(existing.writeableBy ? JSON.parse(existing.writeableBy as string) : [])
-      ? (JSON.parse(existing.writeableBy as string) as number[]).includes(userId)
-      : false;
-    if (!writable) throw new Error('Forbidden');
+    const writable: number[] = existing.writeableBy ?? [];
+    if (!writable.includes(userId)) {
+      throw new Error('Forbidden');
+    }
 
     const updateData: any = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.type !== undefined) updateData.type = body.type;
     if (body.format !== undefined) updateData.format = body.format;
     if (body.content !== undefined) updateData.content = body.content;
-    if (body.readableBy !== undefined) updateData.readableBy = JSON.stringify(body.readableBy);
-    if (body.writeableBy !== undefined) updateData.writeableBy = JSON.stringify(body.writeableBy);
+    if (body.readableBy !== undefined) updateData.readableBy = body.readableBy;
+    if (body.writeableBy !== undefined) updateData.writeableBy = body.writeableBy;
     if (body.download_detour !== undefined) updateData.download_detour = body.download_detour;
     if (body.update_interval !== undefined) updateData.update_interval = body.update_interval;
 
@@ -92,12 +82,8 @@ export class RuleSetService {
 
     const allProfiles = await this.db.select().from(Profiles);
     const referencing = (allProfiles as any[]).filter((p) => {
-      try {
-        const rs = Array.isArray(p.rule_sets) ? p.rule_sets : JSON.parse(p.rule_sets || '[]');
-        return rs.includes(ruleSetId);
-      } catch {
-        return false;
-      }
+      const rs: number[] = p.rule_sets ?? [];
+      return rs.includes(ruleSetId);
     });
     if (this.env.OSS) {
       await Promise.all(referencing.map((p: any) => exportProfileToR2(this.db, this.env, p.id)));
@@ -111,10 +97,10 @@ export class RuleSetService {
     if (existingList.length === 0) return false;
 
     const existing = existingList[0] as any;
-    const writable = (() => {
-      try { return (JSON.parse(existing.writeableBy as string) as number[]).includes(userId); } catch { return false; }
-    })();
-    if (!writable) throw new Error('Forbidden');
+    const writable: number[] = existing.writeableBy ?? [];
+    if (!writable.includes(userId)) {
+      throw new Error('Forbidden');
+    }
 
     await this.db.delete(RuleSets).where(eq(RuleSets.id, ruleSetId));
     return true;
@@ -125,16 +111,11 @@ export class RuleSetService {
     if (existing.length === 0) return null;
 
     const row: any = existing[0];
-    const readable = (() => {
-      try {
-        const r = JSON.parse(row.readableBy as string) as number[];
-        const w = JSON.parse(row.writeableBy as string) as number[];
-        return (Array.isArray(r) && r.includes(userId)) || (Array.isArray(w) && w.includes(userId));
-      } catch {
-        return false;
-      }
-    })();
-    if (!readable) throw new Error('Forbidden');
+    const r: number[] = row.readableBy ?? [];
+    const w: number[] = row.writeableBy ?? [];
+    if (![...r, ...w].includes(userId)) {
+      throw new Error('Forbidden');
+    }
 
     return { tag: row.name };
   }
