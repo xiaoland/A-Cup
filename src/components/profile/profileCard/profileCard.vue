@@ -17,7 +17,7 @@
             icon="i-mdi-pencil"
             text
             rounded
-            @click.stop="$emit('edit', profile.id)"
+            @click.stop="$emit('edit', profile)"
           />
           <Menu ref="menu" :model="menuItems" :popup="true" />
           <Button

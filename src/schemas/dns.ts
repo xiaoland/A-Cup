@@ -42,6 +42,12 @@ export const dnsRuleSchema = z.object({
   rule_set: z.array(z.string()).optional(),
 })
 
+export const fakeIpSchema = z.object({
+  enabled: z.boolean().optional(),
+  inet4_range: z.string().optional(),
+  inet6_range: z.string().optional(),
+});
+
 export const dnsSchema = z.object({
   servers: z.array(dnsServerSchema),
   rules: z.array(dnsRuleSchema).optional(),
@@ -49,6 +55,17 @@ export const dnsSchema = z.object({
   strategy: z.string().optional(),
   disable_cache: z.boolean().optional(),
   disable_expire: z.boolean().optional(),
+  independent_cache: z.boolean().optional(),
+  reverse_mapping: z.boolean().optional(),
+  client_subnet: z.string().optional(),
+  cache_capacity: z.number().optional(),
+  fakeip: fakeIpSchema.optional(),
+  hosts: z.record(z.string(), z.string()).optional(),
+  rewrite: z.array(z.object({
+    qname: z.string(),
+    answer: z.string(),
+  })).optional(),
+  local_domain: z.array(z.string()).optional(),
 })
 
 export type DnsServer = z.infer<typeof dnsServerSchema>

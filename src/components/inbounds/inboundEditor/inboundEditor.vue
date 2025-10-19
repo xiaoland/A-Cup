@@ -22,6 +22,12 @@
     <div class="col-span-12">
       <MixedInboundForm v-if="editableForm.type === 'mixed'" v-model:form="editableForm" />
       <TunInboundForm v-else-if="editableForm.type === 'tun'" v-model:form="editableForm" />
+      <HttpInboundForm v-else-if="editableForm.type === 'http'" v-model:form="editableForm" />
+      <SocksInboundForm v-else-if="editableForm.type === 'socks'" v-model:form="editableForm" />
+    </div>
+
+    <div class="col-span-12">
+      <listen-fields-editor :form="editableForm" :inbounds="allInbounds" />
     </div>
   </div>
 
@@ -39,12 +45,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
-import MixedInboundForm from './mixedInboundForm.vue'
-import TunInboundForm from './tunInboundForm.vue'
+import HttpInboundForm from '../forms/httpInboundForm.vue'
+import SocksInboundForm from '../forms/socksInboundForm.vue'
+import ListenFieldsEditor from '@/components/shared/listenFieldsEditor.vue'
 import { InboundSchema, type Inbound } from './schema'
 import { z } from 'zod'
 
@@ -56,8 +63,9 @@ const emit = defineEmits<{
 }>()
 
 const editableForm = ref<Inbound>(JSON.parse(JSON.stringify(props.form)))
-const types = ref(['mixed', 'tun'])
+const types = ref(['mixed', 'tun', 'http', 'socks'])
 const tagErrors = ref<string[]>([])
+const allInbounds = computed(() => props.allTags.map(tag => ({ tag } as Inbound)))
 
 const validationSchema = InboundSchema.superRefine((data, ctx) => {
   if (!data.tag) {

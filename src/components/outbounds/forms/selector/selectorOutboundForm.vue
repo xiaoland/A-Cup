@@ -22,7 +22,7 @@
 import { ref } from 'vue'
 import InputText from 'primevue/inputtext'
 import AutoComplete from 'primevue/autocomplete'
-import type { SelectorOutbound } from '@/types/outbound'
+import type { SelectorOutbound } from '@/schemas/outbound'
 import { useOutboundStore } from '@/stores/outbound'
 
 const props = defineProps<{ form: SelectorOutbound }>()

@@ -26,6 +26,8 @@ export const RouteSchema = z.object({
   default_fallback_delay: z.number().optional(),
   geoip: z.any().optional(),
   geosite: z.any().optional(),
+  geoip_code: z.string().optional(),
+  geosite_code: z.string().optional(),
 });
 
 // Schema for a rule set, used in the ruleSetEditor
@@ -37,6 +39,9 @@ export const RuleSetSchema = z.object({
   content: z.string().optional(),
   download_detour: z.number().optional(),
   update_interval: z.string().optional(),
+  owner: z.number().optional(),
+  share: z.boolean().optional(),
+  rules: z.array(z.string()).optional(),
 });
 
 export type Route = z.infer<typeof RouteSchema>;

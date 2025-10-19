@@ -26,7 +26,7 @@
 import { ref } from 'vue'
 import InputText from 'primevue/inputtext'
 import AutoComplete from 'primevue/autocomplete'
-import type { UrlTestOutbound } from '@/types/outbound'
+import type { UrlTestOutbound } from '@/schemas/outbound'
 import { useOutboundStore } from '@/stores/outbound'
 
 const props = defineProps<{ form: UrlTestOutbound }>()

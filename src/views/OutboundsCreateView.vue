@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue'
-import type { VmessOutbound } from '@/types/outbound'
+import type { VmessOutbound } from '@/schemas/outbound'
 
 const form = ref<VmessOutbound>({
   name: '',

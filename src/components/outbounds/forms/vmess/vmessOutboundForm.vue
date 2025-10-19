@@ -23,7 +23,7 @@
 import { ref } from 'vue'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
-import type { VmessOutbound } from '@/types/outbound'
+import type { VmessOutbound } from '@/schemas/outbound'
 
 const props = defineProps<{ form: VmessOutbound }>()
 const form = ref(props.form)
