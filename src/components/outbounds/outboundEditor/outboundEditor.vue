@@ -40,7 +40,7 @@
               <InputText :id="`provider-${uniqueId}`" v-model="form.provider" />
             </div>
           </div>
-          <Accordion :multiple="true" :active-index="[0]">
+          <Accordion :multiple="true" :value="['credential']">
             <AccordionPanel value="credential" header="Credential">
               <div v-if="form.type === 'shadowsocks'">
                 <ShadowsocksOutboundForm :form="form as any" />

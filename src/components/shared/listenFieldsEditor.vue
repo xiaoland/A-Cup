@@ -1,5 +1,5 @@
 <template>
-  <Accordion>
+  <Accordion :value="[]">
     <AccordionPanel value="listen" header="Listen Fields">
       <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="field col-span-1">
@@ -67,7 +67,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Checkbox from 'primevue/checkbox'
 import inboundPicker from '@/components/inbounds/inboundPicker.vue'
-import type { Inbound } from '@/components/inbounds/inbound/schema'
+import type { Inbound } from '@/components/inbounds/inboundEditor/schema'
 
 const props = defineProps<{
   form: any

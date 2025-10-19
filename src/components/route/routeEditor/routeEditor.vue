@@ -37,8 +37,8 @@
             <outbounds-selector v-model="route.final" value-as="id" />
         </div>
 
-        <Accordion>
-          <AccordionPanel value="advanced" header="Advanced" :collapsed="true">
+        <Accordion :value="[]">
+          <AccordionPanel value="advanced" header="Advanced">
              <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="field col-span-1 flex items-center">
                     <div class="flex items-center">

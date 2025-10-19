@@ -20,7 +20,7 @@
           </div>
         </div>
 
-        <Accordion>
+        <Accordion :multiple="true" :value="['0', '1']">
           <AccordionPanel value="0" header="Servers">
             <div class="flex flex-col gap-2">
                 <dns-server-card
@@ -46,7 +46,7 @@
             </div>
             <Button class="mt-4" label="Add Rule" icon="i-mdi-plus" @click="addRule" />
           </AccordionPanel>
-          <AccordionPanel value="2" header="Advanced" :collapsed="true">
+          <AccordionPanel value="2" header="Advanced">
             <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
               <div class="field col-span-1">
                 <label for="client_subnet">Client Subnet</label>

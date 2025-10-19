@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { InboundSchema } from '@/components/inbounds/inbound/schema'
+import { InboundSchema } from '@/components/inbounds/inboundEditor/schema'
 import { RouteSchema } from '@/schemas/route'
 import { dnsSchema } from '@/schemas/dns'
 

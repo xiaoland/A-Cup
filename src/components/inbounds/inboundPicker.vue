@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import Select from 'primevue/select'
-import type { Inbound } from './inbound/schema'
+import type { Inbound } from './inboundEditor/schema'
 
 const props = defineProps<{
   modelValue: string

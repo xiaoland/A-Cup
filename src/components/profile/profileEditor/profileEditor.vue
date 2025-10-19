@@ -87,7 +87,7 @@
       :header="dialogHeader"
       class="w-full max-w-4xl"
     >
-      <Inbound
+      <InboundEditor
         v-if="editableInbound"
         :form="editableInbound"
         :all-tags="allInboundTags"
@@ -129,9 +129,9 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Dialog from 'primevue/dialog'
 import Drawer from 'primevue/drawer'
-import Inbound from '@/components/inbounds/inbound/inbound.vue'
-import { defaultInbound } from '@/components/inbounds/inbound/schema'
-import type { Inbound as APIInbound } from '@/components/inbounds/inbound/schema'
+import InboundEditor from '@/components/inbounds/inboundEditor/inboundEditor.vue'
+import { defaultInbound } from '@/components/inbounds/inboundEditor/schema'
+import type { Inbound as APIInbound } from '@/components/inbounds/inboundEditor/schema'
 import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue'
 import OutboundCard from '@/components/outbounds/outboundCard/outboundCard.vue'
 import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
@@ -160,7 +160,7 @@ const editableInbound = ref<APIInbound | null>(null)
 const editingInboundIndex = ref<number | null>(null)
 
 const allInboundTags = computed(() => {
-    const tags = (profile.value.inbounds || []).map((i) => i.tag).filter(Boolean) as string[];
+    const tags = (profile.value.inbounds || []).map((i: APIInbound) => i.tag).filter(Boolean) as string[];
     if (editingInboundIndex.value !== null && editableInbound.value) {
         const originalTag = profile.value.inbounds[editingInboundIndex.value].tag;
         return tags.filter(t => t !== originalTag);
@@ -202,7 +202,7 @@ const handleInboundDelete = (tag: string) => {
 }
 
 const removeInbound = (tag: string) => {
-  const newInbounds = (profile.value.inbounds || []).filter((inbound) => inbound.tag !== tag)
+  const newInbounds = (profile.value.inbounds || []).filter((inbound: APIInbound) => inbound.tag !== tag)
   profile.value.inbounds = newInbounds
   emit('update:modelValue', profile.value)
 }
