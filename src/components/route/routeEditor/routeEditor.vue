@@ -38,7 +38,7 @@
         </div>
 
         <Accordion>
-          <AccordionPanel value="advanced" header="Advanced">
+          <AccordionPanel value="advanced" header="Advanced" :collapsed="true">
              <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="field col-span-1 flex items-center">
                     <div class="flex items-center">
