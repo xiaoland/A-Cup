@@ -30,10 +30,11 @@ api.use('*', async (c, next) => {
 
 // JWT middleware on the api router
 api.use('*', async (c, next) => {
-  if (c.req.path === '/users' && c.req.method === 'POST') {
-    return await next();
-  }
-  if (c.req.path.startsWith('/users/') && c.req.method === 'PUT') {
+  // if (c.req.path === '/api/users' && c.req.method === 'POST') {
+  //   return await next();
+  // }
+  // Login does not requires credential
+  if (c.req.path.startsWith('/api/users/') && c.req.method === 'PUT') {
     return await next();
   }
 
