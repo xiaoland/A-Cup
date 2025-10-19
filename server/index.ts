@@ -1,21 +1,44 @@
-import { OUTBOUNDS_ROUTER } from "./apis/outbound";
-import { USERS_ROUTER } from "./apis/user";
-import { RULE_SET_ROUTER } from "./apis/rule-set";
-import { PROFILE_ROUTER } from "./apis/profile";
-import { api_router } from "./fund/router";
+import { Hono } from 'hono';
+import { bearerAuth } from 'hono/bearer-auth';
+import { jwt } from 'hono/jwt';
+import { outboundRouter } from "./apis/outbound";
+import { userRouter } from "./apis/user";
+import { ruleSetRouter } from "./apis/rule-set";
+import { profileRouter } from "./apis/profile";
+import { drizzle } from 'drizzle-orm/d1';
+import * as schema from './db/schema';
 
-api_router.merge(OUTBOUNDS_ROUTER);
-api_router.merge(USERS_ROUTER);
-api_router.merge(RULE_SET_ROUTER);
-api_router.merge(PROFILE_ROUTER);
+const app = new Hono();
 
-export default {
-	async fetch(request, env) {
-		const url = new URL(request.url);
+app.use('*', async (c, next) => {
+  const start = Date.now();
+  await next();
+  const end = Date.now();
+  c.res.headers.set('X-Response-Time', `${end - start}`);
+});
 
-		if (url.pathname.startsWith("/api/")) {
-			return await api_router.handle(request, env);
-		}
-		return new Response(null, { status: 404 });
-	},
-} satisfies ExportedHandler<Env>;
+app.use('/api/*', async (c, next) => {
+  const d1 = c.env.DB;
+  const db = drizzle(d1, { schema });
+  c.set('db', db);
+  await next();
+});
+
+app.use('/api/*', async (c, next) => {
+  if (c.req.path === '/api/users' && c.req.method === 'POST') {
+    return await next();
+  }
+  if (c.req.path.startsWith('/api/users/') && c.req.method === 'PUT') {
+    return await next();
+  }
+
+  const auth = jwt({ secret: c.env.JWT_SECRET });
+  return auth(c, next);
+});
+
+app.route('/api/outbounds', outboundRouter);
+app.route('/api/users', userRouter);
+app.route('/api/rule-sets', ruleSetRouter);
+app.route('/api/profiles', profileRouter);
+
+export default app;
