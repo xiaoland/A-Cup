@@ -17,29 +17,31 @@ app.use('*', async (c, next) => {
   c.res.headers.set('X-Response-Time', `${end - start}`);
 });
 
+const api = new Hono();
+
 // DB middleware for all API routes
-app.use('/api/*', async (c, next) => {
+api.use('*', async (c, next) => {
     const d1 = c.env.DB;
     const db = drizzle(d1, { schema });
     c.set('db', db);
     await next();
 });
 
-// --- Public Routes ---
-// User login and signup are public.
-app.route('/api/users', userRouter);
+// Secured routes
+const secured = new Hono();
+secured.use('*', jwt({ secret: c.env.JWT_SECRET }));
+secured.route('/outbounds', outboundRouter);
+secured.route('/rule-sets', ruleSetRouter);
+secured.route('/profiles', profileRouter);
+secured.route('/users', securedUserRouter);
 
+// Public routes (user login/signup) are handled by userRouter
+api.route('/users', userRouter);
 
-// --- JWT Middleware ---
-// All routes defined after this middleware will be protected.
-app.use('/api/*', jwt({ secret: c.env.JWT_SECRET }));
+// All other API routes are secured
+api.route('/', secured);
 
-
-// --- Secured Routes ---
-app.route('/api/outbounds', outboundRouter);
-app.route('/api/rule-sets', ruleSetRouter);
-app.route('/api/profiles', profileRouter);
-app.route('/api/users', securedUserRouter); // For future secured user endpoints
-
+// Mount the main api router under /api
+app.route('/api', api);
 
 export default app;
