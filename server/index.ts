@@ -45,7 +45,7 @@ api.use('*', async (c, next) => {
 // Register module routers
 api.route('/outbounds', outboundRouter);
 api.route('/users', userRouter);
-api.route('/rule-sets', ruleSetRouter);
+api.route('/rule_sets', ruleSetRouter);
 api.route('/profiles', profileRouter);
 
 // Mount the api router under /api
