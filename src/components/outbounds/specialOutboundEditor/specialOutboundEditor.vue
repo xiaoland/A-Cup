@@ -40,7 +40,6 @@
     <div class="flex justify-end gap-2 mt-4">
       <Button label="Cancel" severity="secondary" @click="onCancel" />
       <Button label="Save" @click="onSave" :loading="saving" />
-      <Button v-if="showDelete" label="Delete" severity="danger" @click="onDelete" :loading="deleting" />
     </div>
   </div>
 </template>
@@ -60,17 +59,13 @@ import SelectorOutboundForm from '@/components/outbounds/forms/selector/selector
 import UrlTestOutboundForm from '@/components/outbounds/forms/urltest/urltestOutboundForm.vue'
 import { SpecialOutboundSchema } from '@/schemas/outbound'
 
-const props = withDefaults(defineProps<{ form: SpecialOutbound; showDelete?: boolean }>(), {
-  showDelete: false,
-})
+const props = defineProps<{ form: SpecialOutbound }>()
 const emit = defineEmits<{
   (e: 'saved', value: SpecialOutbound): void
   (e: 'cancel'): void
-  (e: 'deleted'): void
 }>()
 
 const saving = ref(false)
-const deleting = ref(false)
 const form = ref(props.form)
 const errors = ref<Record<string, string>>({})
 const uniqueId = computed(() => Math.random().toString(36).substring(7))
@@ -118,10 +113,6 @@ const onSave = async () => {
 
 const onCancel = () => {
   emit('cancel')
-}
-
-const onDelete = () => {
-  emit('deleted')
 }
 </script>
 

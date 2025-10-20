@@ -5,50 +5,33 @@
       <template #title>
         <div class="flex justify-between items-center">
           <span>Outbounds</span>
-          <Button label="Add Outbound" icon="i-mdi-plus" @click="showAddOutboundDialog = true" />
+          <div>
+            <Button
+              label="Add Special Outbound"
+              icon="i-mdi-plus"
+              @click="openCreateSpecialOutboundDialog"
+              class="mr-2"
+            />
+            <Button label="Add Outbound" icon="i-mdi-plus" @click="showAddOutboundDialog = true" />
+          </div>
         </div>
       </template>
       <template #content>
         <div class="flex flex-col gap-2">
           <OutboundCard
             v-for="id in outbounds"
-            :key="id"
+            :key="`regular-${id}`"
             :id="id"
             @edit="openEditOutboundDialog(id)"
             @delete="removeOutbound(id)"
           />
-        </div>
-      </template>
-    </Card>
-
-    <!-- Special Outbounds Editor -->
-    <Card>
-      <template #title>
-        <div class="flex justify-between items-center">
-          <span>Special Outbounds</span>
-          <Button label="Add Special Outbound" icon="i-mdi-plus" @click="openCreateSpecialOutboundDialog" />
-        </div>
-      </template>
-      <template #content>
-        <div class="flex flex-col gap-2">
-          <div
+          <OutboundCard
             v-for="(item, idx) in specialOutbounds"
-            :key="item.tag ?? `new-${idx}`"
-            class="p-2 border rounded-md flex justify-between items-center cursor-pointer hover:bg-gray-100"
-            @click="openEditSpecialOutboundDialog(item, idx)"
-          >
-            <div>
-              <div class="font-bold">{{ item.tag }}</div>
-              <div class="text-sm text-gray-500">{{ item.type }}</div>
-            </div>
-            <Button
-              icon="i-mdi-delete"
-              severity="danger"
-              text
-              rounded
-              @click.stop="removeSpecialOutbound(idx)"
-            />
-          </div>
+            :key="`special-${item.tag ?? idx}`"
+            :special="item"
+            @edit="openEditSpecialOutboundDialog(item, idx)"
+            @delete="removeSpecialOutbound(idx)"
+          />
         </div>
       </template>
     </Card>
@@ -77,9 +60,7 @@
       <SpecialOutboundEditor
         v-if="selectedSpecialOutbound"
         :form="selectedSpecialOutbound"
-        :show-delete="true"
         @saved="onSpecialOutboundSaved"
-        @deleted="onSpecialOutboundDeleted"
         @cancel="showEditSpecialOutboundDialog = false"
       />
     </Dialog>
@@ -189,13 +170,6 @@ const onSpecialOutboundSaved = (savedOutbound: any) => {
     newSpecialOutbounds.push(savedOutbound)
   }
   emit('update:specialOutbounds', newSpecialOutbounds)
-  showEditSpecialOutboundDialog.value = false
-}
-
-const onSpecialOutboundDeleted = () => {
-  if (editingSpecialOutboundIndex.value !== null) {
-    removeSpecialOutbound(editingSpecialOutboundIndex.value)
-  }
   showEditSpecialOutboundDialog.value = false
 }
 </script>
