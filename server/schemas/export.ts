@@ -1,5 +1,13 @@
 import { z } from 'zod';
-import { SpecialOutboundSchema } from '../apis/outbound';
+
+export const SpecialOutboundSchema = z.object({
+  tag: z.string().min(1),
+  type: z.enum(['selector', 'urltest', 'direct']),
+  outbounds: z.array(z.string()).optional(),
+  url: z.string().optional(),
+  interval: z.string().optional(),
+  default: z.string().optional(),
+});
 
 // Zod schema for Outbound export result
 export const OutboundInSingBoxSchema = z.object({
