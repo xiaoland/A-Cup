@@ -5,11 +5,20 @@ import { zValidator } from '@hono/zod-validator';
 
 export const outboundRouter = new Hono();
 
+export const SpecialOutboundSchema = z.object({
+  tag: z.string().min(1),
+  type: z.enum(['selector', 'urltest', 'direct']),
+  outbounds: z.array(z.string()).optional(),
+  url: z.string().optional(),
+  interval: z.string().optional(),
+  default: z.string().optional(),
+});
+
 const CreateOutboundBody = z.object({
   name: z.string().min(1),
   region: z.string().optional(),
   provider: z.string().optional(),
-  type: z.string().min(1),
+  type: z.enum(['shadowsocks', 'vmess', 'vless', 'hysteria2']),
   server: z.string().min(1),
   server_port: z.number().int().positive(),
   credential: z.any(),

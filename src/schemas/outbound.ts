@@ -15,6 +15,11 @@ const BaseOutboundSchema = z.object({
   updated_at: z.number().optional(),
 });
 
+const SpecialOutboundBaseSchema = z.object({
+  type: z.string(),
+  tag: z.string(),
+});
+
 // Schema for outbounds with server and port, and advanced connection settings
 const ServerOutboundSchema = BaseOutboundSchema.extend({
   server: z.string(),
@@ -46,17 +51,21 @@ export const Hysteria2OutboundSchema = ServerOutboundSchema.extend({
   password: z.string(),
 });
 
-export const SelectorOutboundSchema = BaseOutboundSchema.extend({
+export const SelectorOutboundSchema = SpecialOutboundBaseSchema.extend({
   type: z.literal('selector'),
   outbounds: z.array(z.string()),
   default: z.string().optional(),
 });
 
-export const UrlTestOutboundSchema = BaseOutboundSchema.extend({
+export const UrlTestOutboundSchema = SpecialOutboundBaseSchema.extend({
   type: z.literal('urltest'),
   outbounds: z.array(z.string()),
   url: z.string().optional(),
   interval: z.string().optional(),
+});
+
+export const DirectOutboundSchema = SpecialOutboundBaseSchema.extend({
+  type: z.literal('direct'),
 });
 
 export const OutboundSchema = z.union([
@@ -64,8 +73,12 @@ export const OutboundSchema = z.union([
   VmessOutboundSchema,
   VlessOutboundSchema,
   Hysteria2OutboundSchema,
+]);
+
+export const SpecialOutboundSchema = z.union([
   SelectorOutboundSchema,
   UrlTestOutboundSchema,
+  DirectOutboundSchema,
 ]);
 
 export type ShadowsocksOutbound = z.infer<typeof ShadowsocksOutboundSchema>;
@@ -74,4 +87,6 @@ export type VlessOutbound = z.infer<typeof VlessOutboundSchema>;
 export type Hysteria2Outbound = z.infer<typeof Hysteria2OutboundSchema>;
 export type SelectorOutbound = z.infer<typeof SelectorOutboundSchema>;
 export type UrlTestOutbound = z.infer<typeof UrlTestOutboundSchema>;
+export type DirectOutbound = z.infer<typeof DirectOutboundSchema>;
 export type Outbound = z.infer<typeof OutboundSchema>;
+export type SpecialOutbound = z.infer<typeof SpecialOutboundSchema>;

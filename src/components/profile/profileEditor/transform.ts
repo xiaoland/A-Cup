@@ -24,7 +24,7 @@ function ensureArray<T>(value: T | T[] | undefined): T[] {
   return [value]
 }
 
-function transformSingboxToOutbound(singboxOutbound: any): Omit<Outbound, 'id'> {
+function transformSingboxToOutbound(singboxOutbound: any): any {
   const { tag, type, ...rest } = singboxOutbound
 
   const baseOutbound = {
@@ -60,17 +60,23 @@ export async function transformSingboxToProfile(
   const ruleSetStore = useRuleSetStore()
 
   let outboundIds: (number | undefined)[] = []
+  const special_outbounds: any[] = []
   if (singboxProfile.outbounds) {
-    outboundIds = await Promise.all(
+    await Promise.all(
       singboxProfile.outbounds.map(async (outbound) => {
-        const existing = outboundStore.outbounds.find((o) => o.name === outbound.tag)
-        if (existing) {
-          return existing.id
-        }
-        const newOutbound = transformSingboxToOutbound(outbound)
-        const created = await outboundStore.createOutbound(newOutbound)
-        if (created) {
-          return created.id
+        if (['selector', 'urltest', 'direct'].includes(outbound.type)) {
+          special_outbounds.push(transformSingboxToOutbound(outbound))
+        } else {
+          const existing = outboundStore.outbounds.find((o) => o.name === outbound.tag)
+          if (existing) {
+            outboundIds.push(existing.id)
+            return
+          }
+          const newOutbound = transformSingboxToOutbound(outbound)
+          const created = await outboundStore.createOutbound(newOutbound)
+          if (created) {
+            outboundIds.push(created.id)
+          }
         }
       })
     )
@@ -108,6 +114,7 @@ export async function transformSingboxToProfile(
     ...existingProfile,
     name: existingProfile.name || 'Imported Profile',
     outbounds: outboundIds.filter((id) => id !== undefined) as number[],
+    special_outbounds,
     dns: {
       ...singboxProfile.dns,
       servers: singboxProfile.dns?.servers || [],

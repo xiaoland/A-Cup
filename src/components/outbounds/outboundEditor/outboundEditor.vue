@@ -7,10 +7,15 @@
       <template #content>
         <form @submit.prevent="onSave">
           <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="field col-span-1">
+            <div class="field col-span-1" v-if="!isSpecialOutbound">
               <label :for="`name-${uniqueId}`">Name</label>
-              <InputText :id="`name-${uniqueId}`" v-model="form.name" />
+              <InputText :id="`name-${uniqueId}`" v-model="(form as any).name" />
               <small v-if="errors.name" class="p-error">{{ errors.name }}</small>
+            </div>
+            <div class="field col-span-1" v-if="isSpecialOutbound">
+              <label :for="`tag-${uniqueId}`">Tag</label>
+              <InputText :id="`tag-${uniqueId}`" v-model="form.tag" />
+              <small v-if="errors.tag" class="p-error">{{ errors.tag }}</small>
             </div>
             <div class="field col-span-1">
               <label :for="`type-${uniqueId}`">Type</label>
@@ -23,11 +28,11 @@
                 @change="onTypeChange"
               />
             </div>
-            <div class="field col-span-1">
+            <div class="field col-span-1" v-if="!isSpecialOutbound">
               <label :for="`region-${uniqueId}`">Region</label>
               <Select
                 :id="`region-${uniqueId}`"
-                v-model="form.region"
+                v-model="(form as any).region"
                 :options="regionOptions"
                 option-label="title"
                 option-value="value"
@@ -35,9 +40,9 @@
                 show-clear
               />
             </div>
-            <div class="field col-span-1">
+            <div class="field col-span-1" v-if="!isSpecialOutbound">
               <label :for="`provider-${uniqueId}`">Provider</label>
-              <InputText :id="`provider-${uniqueId}`" v-model="form.provider" />
+              <InputText :id="`provider-${uniqueId}`" v-model="(form as any).provider" />
             </div>
           </div>
           <Accordion :multiple="true" :value="['credential']">
@@ -105,7 +110,7 @@ import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
 import JSONEditor from '@/components/common/JSONEditor.vue'
 import { typeOptions, regionOptions } from './types'
-import type { Outbound } from '@/types/outbound'
+import type { Outbound, SpecialOutbound } from '@/types/outbound'
 import ShadowsocksOutboundForm from '@/components/outbounds/forms/shadowsocks/shadowsocksOutboundForm.vue'
 import VmessOutboundForm from '@/components/outbounds/forms/vmess/vmessOutboundForm.vue'
 import VlessOutboundForm from '@/components/outbounds/forms/vless/vlessOutboundForm.vue'
@@ -119,10 +124,12 @@ import {
   Hysteria2OutboundSchema,
   SelectorOutboundSchema,
   UrlTestOutboundSchema,
+  SpecialOutboundSchema,
+  DirectOutboundSchema,
 } from '@/schemas/outbound'
 
-const props = withDefaults(defineProps<{ form: Outbound; showDelete?: boolean }>(), { showDelete: false })
-const emit = defineEmits<{ (e: 'saved', value: Outbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
+const props = withDefaults(defineProps<{ form: Outbound | SpecialOutbound; showDelete?: boolean }>(), { showDelete: false })
+const emit = defineEmits<{ (e: 'saved', value: Outbound | SpecialOutbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
 
 const outboundStore = useOutboundStore()
 const saving = ref(false)
@@ -130,6 +137,9 @@ const deleting = ref(false)
 const form = ref(props.form)
 const errors = ref<Record<string, string>>({})
 const uniqueId = computed(() => Math.random().toString(36).substring(7))
+const isSpecialOutbound = computed(() => {
+  return ['selector', 'urltest', 'direct'].includes(form.value.type)
+})
 
 const getDefaultOutbound = (type: string) => {
   const base = { name: '', tag: '', type }
@@ -146,6 +156,8 @@ const getDefaultOutbound = (type: string) => {
       return { ...base, outbounds: [], default: '' }
     case 'urltest':
       return { ...base, outbounds: [], url: '', interval: '' }
+    case 'direct':
+      return { ...base }
     default:
       return base
   }
@@ -160,33 +172,33 @@ const onSave = async () => {
   errors.value = {}
   try {
     let validatedData
-    switch (form.value.type) {
-      case 'shadowsocks':
-        validatedData = ShadowsocksOutboundSchema.parse(form.value)
-        break
-      case 'vmess':
-        validatedData = VmessOutboundSchema.parse(form.value)
-        break
-      case 'vless':
-        validatedData = VlessOutboundSchema.parse(form.value)
-        break
-      case 'hysteria2':
-        validatedData = Hysteria2OutboundSchema.parse(form.value)
-        break
-      case 'selector':
-        validatedData = SelectorOutboundSchema.parse(form.value)
-        break
-      case 'urltest':
-        validatedData = UrlTestOutboundSchema.parse(form.value)
-        break
-      default:
-        throw new Error('Invalid outbound type')
+    if (isSpecialOutbound.value) {
+      validatedData = SpecialOutboundSchema.parse(form.value)
+      emit('saved', validatedData)
+      return
+    } else {
+      switch (form.value.type) {
+        case 'shadowsocks':
+          validatedData = ShadowsocksOutboundSchema.parse(form.value)
+          break
+        case 'vmess':
+          validatedData = VmessOutboundSchema.parse(form.value)
+          break
+        case 'vless':
+          validatedData = VlessOutboundSchema.parse(form.value)
+          break
+        case 'hysteria2':
+          validatedData = Hysteria2OutboundSchema.parse(form.value)
+          break
+        default:
+          throw new Error('Invalid outbound type')
+      }
+      validatedData.tag = validatedData.name
     }
 
-    validatedData.tag = validatedData.name
     let savedOutbound
-    if (props.form.id) {
-      savedOutbound = await outboundStore.updateOutbound(props.form.id, validatedData)
+    if ((props.form as any).id) {
+      savedOutbound = await outboundStore.updateOutbound((props.form as any).id, validatedData)
     } else {
       savedOutbound = await outboundStore.createOutbound(validatedData)
     }
@@ -215,11 +227,11 @@ const onCancel = () => {
 }
 
 const onDelete = async () => {
-  if (!props.form.id) return
+  if (!(props.form as any).id) return
   deleting.value = true
   try {
-    await outboundStore.deleteOutbound(props.form.id)
-    emit('deleted', props.form.id as number)
+    await outboundStore.deleteOutbound((props.form as any).id)
+    emit('deleted', (props.form as any).id as number)
   } catch (error) {
     console.error(error)
   } finally {

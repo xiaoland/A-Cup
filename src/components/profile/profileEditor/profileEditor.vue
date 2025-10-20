@@ -74,6 +74,38 @@
         </template>
       </Card>
 
+      <!-- Special Outbounds Editor -->
+      <Card>
+        <template #title>
+          <div class="flex justify-between items-center">
+            <span>Special Outbounds</span>
+            <Button label="Add Special Outbound" icon="i-mdi-plus" @click="openCreateSpecialOutboundDialog" />
+          </div>
+        </template>
+        <template #content>
+          <div class="flex flex-col gap-2">
+            <div
+              v-for="(item, idx) in (profile.special_outbounds as SpecialOutbound[])"
+              :key="item.tag ?? `new-${idx}`"
+              class="p-2 border rounded-md flex justify-between items-center cursor-pointer hover:bg-gray-100"
+              @click="openEditSpecialOutboundDialog(item, idx)"
+            >
+              <div>
+                <div class="font-bold">{{ item.tag }}</div>
+                <div class="text-sm text-gray-500">{{ item.type }}</div>
+              </div>
+              <Button
+                icon="i-mdi-delete"
+                severity="danger"
+                text
+                rounded
+                @click.stop="removeSpecialOutbound(idx)"
+              />
+            </div>
+          </div>
+        </template>
+      </Card>
+
       <RouteEditor v-model="profile.route" />
       <DnsEditor v-model="profile.dns" />
     </div>
@@ -116,6 +148,17 @@
         @cancel="showEditOutboundDialog = false"
       />
     </Dialog>
+
+    <Dialog v-model:visible="showEditSpecialOutboundDialog" modal header="Edit Special Outbound" class="w-full max-w-4xl">
+      <OutboundEditor
+        v-if="selectedSpecialOutbound"
+        :form="selectedSpecialOutbound"
+        :show-delete="true"
+        @saved="onSpecialOutboundSaved"
+        @deleted="onSpecialOutboundDeleted"
+        @cancel="showEditSpecialOutboundDialog = false"
+      />
+    </Dialog>
   </div>
 </template>
 
@@ -135,7 +178,7 @@ import type { Inbound as APIInbound } from '@/components/inbounds/inboundEditor/
 import OutboundEditor from '@/components/outbounds/outboundEditor/outboundEditor.vue'
 import OutboundCard from '@/components/outbounds/outboundCard/outboundCard.vue'
 import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
-import type { Outbound } from '@/types/outbound'
+import type { Outbound, SpecialOutbound } from '@/types/outbound'
 import RouteEditor from '@/components/route/routeEditor/routeEditor.vue'
 import DnsEditor from '@/components/dns/dnsEditor/dnsEditor.vue'
 import type { Profile } from './schema'
@@ -182,7 +225,10 @@ const openEditInboundDialog = (inbound: APIInbound, index: number) => {
   isDialogVisible.value = true
 }
 
-const profile = ref(props.modelValue)
+const profile = ref({
+  special_outbounds: [],
+  ...props.modelValue,
+})
 
 const handleInboundSave = (updatedInbound: APIInbound) => {
   const newInbounds = [...(profile.value.inbounds || [])]
@@ -212,6 +258,9 @@ const showAddOutboundDialog = ref(false)
 const showEditOutboundDialog = ref(false)
 const selectedOutbound = ref<Outbound | null>(null)
 const selectedOutboundsToAdd = ref<number[]>([])
+const showEditSpecialOutboundDialog = ref(false)
+const selectedSpecialOutbound = ref<SpecialOutbound | null>(null)
+const editingSpecialOutboundIndex = ref<number | null>(null)
 
 onMounted(async () => {
   await outboundStore.fetchOutbounds()
@@ -245,7 +294,7 @@ const removeOutbound = (id: number) => {
   emit('update:modelValue', profile.value)
 }
 
-const onOutboundSaved = (savedOutbound: Outbound) => {
+const onOutboundSaved = (savedOutbound: any) => {
   if (savedOutbound.id === undefined) return
   if (!profile.value.outbounds.includes(savedOutbound.id)) {
     const newOutbounds = [...profile.value.outbounds, savedOutbound.id]
@@ -262,6 +311,43 @@ const onOutboundDeleted = (deletedId: number) => {
   showEditOutboundDialog.value = false
 }
 
+const openCreateSpecialOutboundDialog = () => {
+  selectedSpecialOutbound.value = { tag: '', type: 'selector' } as any // Default type
+  editingSpecialOutboundIndex.value = null
+  showEditSpecialOutboundDialog.value = true
+}
+
+const openEditSpecialOutboundDialog = (outbound: SpecialOutbound, index: number) => {
+  selectedSpecialOutbound.value = { ...outbound }
+  editingSpecialOutboundIndex.value = index
+  showEditSpecialOutboundDialog.value = true
+}
+
+const removeSpecialOutbound = (index: number) => {
+  const newSpecialOutbounds = [...(profile.value.special_outbounds || [])]
+  newSpecialOutbounds.splice(index, 1)
+  profile.value.special_outbounds = newSpecialOutbounds
+  emit('update:modelValue', profile.value)
+}
+
+const onSpecialOutboundSaved = (savedOutbound: any) => {
+  const newSpecialOutbounds = [...(profile.value.special_outbounds || [])]
+  if (editingSpecialOutboundIndex.value !== null) {
+    newSpecialOutbounds[editingSpecialOutboundIndex.value] = savedOutbound
+  } else {
+    newSpecialOutbounds.push(savedOutbound)
+  }
+  profile.value.special_outbounds = newSpecialOutbounds as any
+  emit('update:modelValue', profile.value)
+  showEditSpecialOutboundDialog.value = false
+}
+
+const onSpecialOutboundDeleted = () => {
+  if (editingSpecialOutboundIndex.value !== null) {
+    removeSpecialOutbound(editingSpecialOutboundIndex.value)
+  }
+  showEditSpecialOutboundDialog.value = false
+}
 
 const onImport = () => {
   fileInput.value?.click()

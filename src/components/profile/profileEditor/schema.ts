@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { InboundSchema } from '@/components/inbounds/inboundEditor/schema'
 import { RouteSchema } from '@/schemas/route'
 import { dnsSchema } from '@/schemas/dns'
+import { SpecialOutboundSchema } from '@/schemas/outbound'
 
 export const OutboundSchema = z.object({
   id: z.number().optional(),
@@ -31,6 +32,7 @@ export const ProfileSchema = z.object({
   rule_sets: z.array(z.number()),
   inbounds: z.array(InboundSchema),
   outbounds: z.array(z.number()),
+  special_outbounds: z.array(SpecialOutboundSchema).optional(),
   route: RouteSchema,
   dns: dnsSchema,
 })

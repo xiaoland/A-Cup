@@ -5,7 +5,10 @@ import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { SingBoxProfileRequestSchema } from '../schemas/export';
 import { exportProfileToR2 } from '../fund/profile-export';
 
-const CreateProfileSchema = SingBoxProfileRequestSchema;
+const CreateProfileSchema = SingBoxProfileRequestSchema.extend({
+  name: z.string().min(1),
+  tags: z.array(z.string()).optional(),
+});
 const UpdateProfileSchema = SingBoxProfileRequestSchema.partial();
 
 export class ProfileService {
@@ -30,6 +33,13 @@ export class ProfileService {
     const baseConfig = { ...body };
     delete (baseConfig as any).name;
     delete (baseConfig as any).tags;
+    if (baseConfig.special_outbounds) {
+      if (!baseConfig.outbounds) {
+        baseConfig.outbounds = [];
+      }
+      baseConfig.outbounds.push(...(baseConfig.special_outbounds as any));
+      delete baseConfig.special_outbounds;
+    }
     await exportProfileToR2(this.db, this.env, newProfile.id, baseConfig);
 
     return newProfile;
@@ -116,6 +126,13 @@ export class ProfileService {
     const baseConfig = { ...body };
     delete (baseConfig as any).name;
     delete (baseConfig as any).tags;
+    if (baseConfig.special_outbounds) {
+      if (!baseConfig.outbounds) {
+        baseConfig.outbounds = [];
+      }
+      baseConfig.outbounds.push(...(baseConfig.special_outbounds as any));
+      delete baseConfig.special_outbounds;
+    }
     await exportProfileToR2(this.db, this.env, existingProfile.id, baseConfig);
 
     const resultData = result[0] as any;

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SpecialOutboundSchema } from '../apis/outbound';
 
 // Zod schema for Outbound export result
 export const OutboundInSingBoxSchema = z.object({
@@ -46,6 +47,7 @@ export const SingBoxProfileRequestSchema = z.object({
 
   // Adapted fields using ID arrays
   outbounds: z.array(z.number().int().positive()).default([]),
+  special_outbounds: z.array(SpecialOutboundSchema).default([]),
 
   route: z.object({
     rules: z.array(z.any()).optional(),
