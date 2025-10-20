@@ -51,7 +51,7 @@ export const fakeIpSchema = z.object({
 export const dnsSchema = z.object({
   servers: z.array(dnsServerSchema),
   rules: z.array(dnsRuleSchema).optional(),
-  final: z.number().optional(),
+  final: z.string().optional(),
   strategy: z.string().optional(),
   disable_cache: z.boolean().optional(),
   disable_expire: z.boolean().optional(),

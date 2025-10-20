@@ -105,7 +105,7 @@ import Dialog from 'primevue/dialog'
 import RouteRuleEditor from '../routeRuleEditor/routeRuleEditor.vue'
 import RouteRuleCard from '../routeRuleCard.vue'
 import RuleSetsSelector from '../ruleSets/ruleSetsSelector.vue'
-import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
+import OutboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPicker.vue'
 
 const props = withDefaults(defineProps<{
   modelValue: Route

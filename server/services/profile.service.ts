@@ -33,13 +33,6 @@ export class ProfileService {
     const baseConfig = { ...body };
     delete (baseConfig as any).name;
     delete (baseConfig as any).tags;
-    if (baseConfig.special_outbounds) {
-      if (!baseConfig.outbounds) {
-        baseConfig.outbounds = [];
-      }
-      baseConfig.outbounds.push(...(baseConfig.special_outbounds as any));
-      delete baseConfig.special_outbounds;
-    }
     await exportProfileToR2(this.db, this.env, newProfile.id, baseConfig);
 
     return newProfile;
@@ -126,13 +119,6 @@ export class ProfileService {
     const baseConfig = { ...body };
     delete (baseConfig as any).name;
     delete (baseConfig as any).tags;
-    if (baseConfig.special_outbounds) {
-      if (!baseConfig.outbounds) {
-        baseConfig.outbounds = [];
-      }
-      baseConfig.outbounds.push(...(baseConfig.special_outbounds as any));
-      delete baseConfig.special_outbounds;
-    }
     await exportProfileToR2(this.db, this.env, existingProfile.id, baseConfig);
 
     const resultData = result[0] as any;

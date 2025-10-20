@@ -10,13 +10,11 @@
     </div>
     <div class="field col-span-2">
       <label for="outbounds">Outbounds</label>
-      <AutoComplete
+      <outboundsPicker
         id="outbounds"
         v-model="form.outbounds"
-        :suggestions="filteredOutbounds"
-        @complete="searchOutbounds"
+        :available-outbound-tags="availableOutboundTags"
         multiple
-        typeahead
       />
     </div>
   </div>
@@ -25,21 +23,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import InputText from 'primevue/inputtext'
-import AutoComplete from 'primevue/autocomplete'
 import type { UrlTestOutbound } from '@/schemas/outbound'
-import { useOutboundStore } from '@/stores/outbound'
+import outboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPicker.vue'
 
-const props = defineProps<{ form: UrlTestOutbound }>()
+const props = defineProps<{
+  form: UrlTestOutbound
+  availableOutboundTags?: string[]
+}>()
 const form = ref(props.form)
-const outboundStore = useOutboundStore()
-const filteredOutbounds = ref<string[]>([])
-
-const searchOutbounds = (event: { query: string }) => {
-  const query = event.query.toLowerCase()
-  filteredOutbounds.value = outboundStore.outbounds
-    .map(o => o.name)
-    .filter(name => name.toLowerCase().includes(query))
-}
 </script>
 
 <style scoped>

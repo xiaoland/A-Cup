@@ -3,15 +3,13 @@
     <div class="flex-grow">
       <Select
         v-model="selected"
-        :options="availableOutbounds"
+        :options="options"
         :multiple="multiple"
-        option-label="name"
-        option-value="id"
         placeholder="Select Outbound(s)"
         class="w-full"
       />
     </div>
-    <Button icon="i-mdi-plus" @click="$emit('create')" text />
+    <Button v-if="!availableOutboundTags" icon="i-mdi-plus" @click="$emit('create')" text />
   </div>
 </template>
 
@@ -23,7 +21,7 @@ import Button from 'primevue/button'
 
 const props = defineProps({
   modelValue: {
-    type: [Number, Array] as import('vue').PropType<number | number[]>,
+    type: [String, Array] as import('vue').PropType<string | string[]>,
     default: null,
   },
   multiple: {
@@ -31,8 +29,12 @@ const props = defineProps({
     default: false,
   },
   mask: {
-    type: Array as () => number[],
+    type: Array as () => (string | number)[],
     default: () => [],
+  },
+  availableOutboundTags: {
+    type: Array as () => string[],
+    default: undefined,
   },
 })
 
@@ -44,12 +46,19 @@ const selected = computed({
   set: (value) => emit('update:modelValue', value),
 })
 
-const availableOutbounds = computed(() => {
-  return outboundStore.outbounds.filter(o => !props.mask.includes(o.id!))
+const options = computed(() => {
+  if (props.availableOutboundTags) {
+    return props.availableOutboundTags.filter(tag => !props.mask.includes(tag))
+  }
+  return outboundStore.outbounds
+    .filter(o => !props.mask.includes(o.id!))
+    .map(o => o.name)
 })
 
 onMounted(async () => {
-  await outboundStore.fetchOutbounds()
+  if (!props.availableOutboundTags) {
+    await outboundStore.fetchOutbounds()
+  }
 })
 </script>
 
