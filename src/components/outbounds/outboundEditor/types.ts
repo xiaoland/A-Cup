@@ -8,8 +8,6 @@ export interface SelectOption<T extends string = string> {
 }
 
 export const typeOptions: SelectOption[] = [
-  { title: 'URL Test', value: 'urltest' },
-  { title: 'Selector', value: 'selector' },
   { title: 'VMess', value: 'vmess' },
   { title: 'VLESS', value: 'vless' },
   { title: 'Shadowsocks', value: 'shadowsocks' },
