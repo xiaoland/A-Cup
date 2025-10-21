@@ -2,7 +2,7 @@
   <div>
     <div class="field">
         <label>Detour</label>
-        <outboundsSelector v-model="dial.detour" />
+        <outboundsPicker v-model="dial.detour" />
     </div>
     <template v-if="!dial.detour">
       <Accordion class="mt-4">
@@ -95,7 +95,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Checkbox from 'primevue/checkbox'
 import InputChips from 'primevue/inputchips'
-import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
+import outboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPicker.vue'
 
 const props = defineProps<{
   modelValue: any

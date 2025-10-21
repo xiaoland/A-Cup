@@ -61,7 +61,7 @@ import Button from 'primevue/button'
 import Select from 'primevue/select'
 import InputChips from 'primevue/inputchips'
 import SplitButton from 'primevue/splitbutton'
-import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
+import OutboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPicker.vue'
 import RuleSetsSelector from '@/components/route/ruleSets/ruleSetsSelector.vue'
 
 const props = defineProps({

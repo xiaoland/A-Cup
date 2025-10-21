@@ -61,7 +61,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
-import OutboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
+import OutboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPicker.vue'
 
 const props = defineProps({
   ruleSet: {

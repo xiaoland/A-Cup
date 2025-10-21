@@ -93,6 +93,10 @@ export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profile
   ]);
 
   config.outbounds = outbounds;
+  if (config.special_outbounds) {
+    config.outbounds.push(...config.special_outbounds);
+    delete config.special_outbounds;
+  }
   // Ensure route object exists
   config.route = config.route || {};
   config.route.rule_set = ruleSets;
