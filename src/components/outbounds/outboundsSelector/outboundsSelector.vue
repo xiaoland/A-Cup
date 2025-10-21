@@ -1,10 +1,9 @@
 <template>
   <div class="flex items-center gap-2">
     <div class="flex-grow">
-      <Select
+      <MultiSelect
         v-model="selected"
         :options="availableOutbounds"
-        :multiple="multiple"
         option-label="name"
         option-value="id"
         placeholder="Select Outbound(s)"
@@ -18,17 +17,13 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { useOutboundStore } from '@/stores/outbound'
-import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
 import Button from 'primevue/button'
 
 const props = defineProps({
   modelValue: {
     type: [Number, Array] as import('vue').PropType<number | number[]>,
     default: null,
-  },
-  multiple: {
-    type: Boolean,
-    default: false,
   },
   mask: {
     type: Array as () => number[],
