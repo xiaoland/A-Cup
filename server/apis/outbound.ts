@@ -9,7 +9,7 @@ const CreateOutboundBody = z.object({
   name: z.string().min(1),
   region: z.string().optional(),
   provider: z.string().optional(),
-  type: z.string().min(1),
+  type: z.enum(['shadowsocks', 'vmess', 'vless', 'hysteria2']),
   server: z.string().min(1),
   server_port: z.number().int().positive(),
   credential: z.any(),

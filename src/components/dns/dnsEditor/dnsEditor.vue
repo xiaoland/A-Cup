@@ -8,7 +8,7 @@
         <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="field col-span-1">
             <label>Final</label>
-            <outboundsSelector v-model="dns.final" value-as="id" />
+            <outboundsPicker v-model="dns.final" />
           </div>
           <div class="field col-span-1">
             <label for="strategy">Strategy</label>
@@ -119,7 +119,7 @@ import DnsServerCard from '../dnsServerCard.vue'
 import DnsRuleCard from '../dnsRuleCard.vue'
 import Dialog from 'primevue/dialog'
 import dnsRuleEditor from '../dnsRuleEditor/dnsRuleEditor.vue'
-import outboundsSelector from '@/components/outbounds/outboundsSelector/outboundsSelector.vue'
+import outboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPicker.vue'
 import fakeIpEditor from '../fakeIpEditor.vue'
 import InputNumber from "primevue/inputnumber";
 import JSONEditor from '@/components/common/JSONEditor.vue'

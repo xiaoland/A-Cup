@@ -5,7 +5,10 @@ import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { SingBoxProfileRequestSchema } from '../schemas/export';
 import { exportProfileToR2 } from '../fund/profile-export';
 
-const CreateProfileSchema = SingBoxProfileRequestSchema;
+const CreateProfileSchema = SingBoxProfileRequestSchema.extend({
+  name: z.string().min(1),
+  tags: z.array(z.string()).optional(),
+});
 const UpdateProfileSchema = SingBoxProfileRequestSchema.partial();
 
 export class ProfileService {
@@ -79,12 +82,14 @@ export class ProfileService {
         }
       }
     }
+    const special_outbounds = (r2Config.outbounds || []).filter((o: any) => ['selector', 'urltest', 'direct'].includes(o.type));
     return {
       ...r2Config,
       id: profileData.id,
       name: profileData.name,
       tags: JSON.parse(profileData.tags as string),
       outbounds: JSON.parse(profileData.outbounds as string),
+      special_outbounds,
       route: {
         ...(r2Config.route || {}),
         rule_set: JSON.parse(profileData.rule_sets as string),

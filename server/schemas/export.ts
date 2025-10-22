@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+export const SpecialOutboundSchema = z.object({
+  tag: z.string().min(1),
+  type: z.enum(['selector', 'urltest', 'direct']),
+  outbounds: z.array(z.string()).optional(),
+  url: z.string().optional(),
+  interval: z.string().optional(),
+  default: z.string().optional(),
+});
+
 // Zod schema for Outbound export result
 export const OutboundInSingBoxSchema = z.object({
   type: z.string(),
@@ -46,6 +55,7 @@ export const SingBoxProfileRequestSchema = z.object({
 
   // Adapted fields using ID arrays
   outbounds: z.array(z.number().int().positive()).default([]),
+  special_outbounds: z.array(SpecialOutboundSchema).default([]),
 
   route: z.object({
     rules: z.array(z.any()).optional(),
