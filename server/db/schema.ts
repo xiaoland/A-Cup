@@ -7,7 +7,7 @@ export const Users = sqliteTable("users", {
   password: text().notNull(),
 });
 
-export { OutboundTable as Outbounds } from './outbound';
+export { Outbounds } from './outbound';
 
 export const RuleSets = sqliteTable("rule_sets", {
   // Core fields

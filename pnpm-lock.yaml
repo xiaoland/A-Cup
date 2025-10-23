@@ -29,9 +29,6 @@ importers:
       drizzle-orm:
         specifier: ^0.44.2
         version: 0.44.6
-      drizzle-zod:
-        specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.44.6)(zod@4.1.12)
       hono:
         specifier: ^4.10.1
         version: 4.10.1
@@ -1674,12 +1671,6 @@ packages:
         optional: true
       sqlite3:
         optional: true
-
-  drizzle-zod@0.8.3:
-    resolution: {integrity: sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==}
-    peerDependencies:
-      drizzle-orm: '>=0.36.0'
-      zod: ^3.25.0 || ^4.0.0
 
   duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
@@ -3915,11 +3906,6 @@ snapshots:
       - supports-color
 
   drizzle-orm@0.44.6: {}
-
-  drizzle-zod@0.8.3(drizzle-orm@0.44.6)(zod@4.1.12):
-    dependencies:
-      drizzle-orm: 0.44.6
-      zod: 4.1.12
 
   duplexer@0.1.2: {}
 
