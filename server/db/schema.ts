@@ -7,8 +7,6 @@ export const Users = sqliteTable("users", {
   password: text().notNull(),
 });
 
-export { Outbounds } from './outbound';
-
 export const RuleSets = sqliteTable("rule_sets", {
   // Core fields
   id: int("id").primaryKey({ autoIncrement: true }),
