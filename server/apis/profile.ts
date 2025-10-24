@@ -4,11 +4,17 @@ import { ProfileService } from '../services/profile.service';
 import { zValidator, Hook } from '@hono/zod-validator';
 import { Profile } from '../business/profile';
 import { ProfileExportResponseSchema } from '../schemas/export';
+import { SpecialOutbound } from '../business/outbound';
 
 export const profileRouter = new Hono();
 
-const CreateProfileSchema = Profile.schema().omit({ id: true, created_by: true });
-const UpdateProfileSchema = CreateProfileSchema.partial();
+const ProfileForCreate = z.object({
+  name: z.string().min(1),
+  tags: z.array(z.string()),
+  outbounds: z.array(z.number().int().positive()),
+  special_outbounds: z.array(SpecialOutbound.schema()),
+  rule_sets: z.array(z.number().int().positive()),
+});
 
 const IDPathParamSchema = z.object({
   id: z.string(),
@@ -32,7 +38,7 @@ const validationHook: Hook<any, any, any, any> = (result, c) => {
 };
 
 // Create Profile
-profileRouter.post('/', zValidator('json', CreateProfileSchema, validationHook), async (c) => {
+profileRouter.post('/', zValidator('json', ProfileForCreate, validationHook), async (c) => {
   try {
     const body = c.req.valid('json');
     const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
@@ -73,7 +79,7 @@ profileRouter.get('/:id', zValidator('param', IDPathParamSchema, validationHook)
 });
 
 // Update Profile
-profileRouter.put('/:id', zValidator('param', IDPathParamSchema, validationHook), zValidator('json', UpdateProfileSchema, validationHook), async (c) => {
+profileRouter.put('/:id', zValidator('param', IDPathParamSchema, validationHook), zValidator('json', ProfileForCreate, validationHook), async (c) => {
   try {
     const { id } = c.req.valid('param');
     const body = c.req.valid('json');

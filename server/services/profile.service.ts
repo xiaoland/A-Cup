@@ -3,12 +3,18 @@ import { Profiles } from '../db/profile';
 import { eq, and } from 'drizzle-orm';
 import { ServiceBase } from '.';
 import { Profile } from '../business/profile';
+import { SpecialOutbound } from '../business/outbound';
 
-const CreateProfileSchema = Profile.schema().omit({ id: true, created_by: true });
-const UpdateProfileSchema = CreateProfileSchema.partial();
+const ProfileForCreate = z.object({
+  name: z.string().min(1),
+  tags: z.array(z.string()),
+  outbounds: z.array(z.number().int().positive()),
+  special_outbounds: z.array(SpecialOutbound.schema()),
+  rule_sets: z.array(z.number().int().positive()),
+});
 
 export class ProfileService extends ServiceBase {
-  async createProfile(userId: number, body: z.infer<typeof CreateProfileSchema>) {
+  async createProfile(userId: number, body: z.infer<typeof ProfileForCreate>) {
     const result = await this.db.insert(Profiles).values({
       created_by: userId,
       name: body.name,
@@ -23,9 +29,7 @@ export class ProfileService extends ServiceBase {
       throw new Error('Object storage not configured');
     }
 
-    const baseConfig = { ...body };
-    delete (baseConfig as any).name;
-    delete (baseConfig as any).tags;
+    const baseConfig = { special_outbounds: body.special_outbounds };
     await profile.exportToSingBox(this.db, this.env, baseConfig);
 
     return profile;
@@ -91,21 +95,20 @@ export class ProfileService extends ServiceBase {
     };
   }
 
-  async updateProfile(userId: number, profileId: string, body: z.infer<typeof UpdateProfileSchema>) {
+  async updateProfile(userId: number, profileId: string, body: z.infer<typeof ProfileForCreate>) {
     const existingProfile = await this.getProfileById(userId, profileId);
 
     if (!existingProfile) {
       return null;
     }
 
-    const updateData: any = {};
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.tags !== undefined) updateData.tags = JSON.stringify(body.tags);
-    if (body.outbounds !== undefined) updateData.outbounds = JSON.stringify(body.outbounds);
-    if (body.rule_sets !== undefined) updateData.rule_sets = JSON.stringify(body.rule_sets);
-
     const result = await this.db.update(Profiles)
-      .set(updateData)
+      .set({
+        name: body.name,
+        tags: JSON.stringify(body.tags),
+        outbounds: JSON.stringify(body.outbounds),
+        rule_sets: JSON.stringify(body.rule_sets),
+      })
       .where(eq(Profiles.id, profileId))
       .returning();
 
@@ -115,9 +118,7 @@ export class ProfileService extends ServiceBase {
       throw new Error('Object storage not configured');
     }
 
-    const baseConfig = { ...body };
-    delete (baseConfig as any).name;
-    delete (baseConfig as any).tags;
+    const baseConfig = { special_outbounds: body.special_outbounds };
     await profile.exportToSingBox(this.db, this.env, baseConfig);
 
     return profile;
