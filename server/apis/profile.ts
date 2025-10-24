@@ -1,20 +1,11 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { ProfileService } from '../services/profile.service';
+import { ProfileService, ProfileForCreate } from '../services/profile.service';
 import { zValidator, Hook } from '@hono/zod-validator';
-import { Profile } from '../business/profile';
 import { ProfileExportResponseSchema } from '../schemas/export';
 import { SpecialOutbound } from '../business/outbound';
 
 export const profileRouter = new Hono();
-
-const ProfileForCreate = z.object({
-  name: z.string().min(1),
-  tags: z.array(z.string()),
-  outbounds: z.array(z.number().int().positive()),
-  special_outbounds: z.array(SpecialOutbound.schema()),
-  rule_sets: z.array(z.number().int().positive()),
-});
 
 const IDPathParamSchema = z.object({
   id: z.string(),
