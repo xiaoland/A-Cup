@@ -68,6 +68,10 @@ pnpm run build
 
 Extract common styles, mixtures into `src/styles/`
 
+### Component Documentation
+
+For every new component, or when modifying an existing one, create a `compName.md` file in the same directory. This file should follow the template in `docs/component-doc-template.md`.
+
 ## Branching & PR workflow
 
 1. Create a feature branch from `master`.

@@ -2,10 +2,11 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ProfileEditor from '@/components/profile/profileEditor/profileEditor.vue'
+import { defaultProfile } from '@/components/profile/profileEditor/schema'
 
 const router = useRouter()
 const profileEditorRef = ref<InstanceType<typeof ProfileEditor> | null>(null)
-const form = ref({})
+const form = ref(defaultProfile())
 
 const handleSave = (profile: any) => {
   // Profile creation is handled by the ProfileEditor component

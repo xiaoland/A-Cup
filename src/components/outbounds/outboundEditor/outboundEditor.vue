@@ -1,267 +1,243 @@
 <template>
-  <v-container class="py-4">
-    <Editor
-      :model-value="form"
-      title="Outbound Editor"
-      :start-editable="true"
-      :show-delete="!!form.id"
-      @cancel="onCancel"
-      @save="onEditorSave"
-      @delete="onDelete"
-    >
-      <template #default>
-        <!-- Ensure credential structure exists for nested bindings -->
-        <span v-if="ensureCredential()" style="display:none" />
-        <v-form @submit.prevent="() => onEditorSave(form)">
-          <template v-if="form.type === 'selector'">
-            <SelectorOutboundForm :form="form" />
-          </template>
-          <template v-else-if="form.type === 'urltest'">
-            <UrltestOutboundForm :form="form" />
-          </template>
-          <template v-else>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="form.type"
-                  :items="typeOptions"
-                  item-title="title"
-                  item-value="value"
-                  label="Type"
-                  variant="outlined"
-                  required
-                />
-              </v-col>
-
-              <!-- Basic Info (default expanded) -->
-              <v-col cols="12">
-                <v-expansion-panels variant="accordion" :model-value="[0]">
-                  <v-expansion-panel>
-                    <v-expansion-panel-title>Basic Info</v-expansion-panel-title>
-                    <v-expansion-panel-text>
-                      <v-row>
-                        <v-col cols="12" md="4">
-                          <v-text-field v-model="form.name" label="Name" variant="outlined" required />
-                        </v-col>
-                        <v-col cols="12" md="4">
-                          <v-select
-                            v-model="form.region"
-                            :items="regionOptions"
-                            item-title="title"
-                            item-value="value"
-                            label="Region"
-                            variant="outlined"
-                            clearable
-                          />
-                        </v-col>
-                        <v-col cols="12" md="4">
-                          <v-text-field v-model="form.provider" label="Provider" variant="outlined" />
-                        </v-col>
-                      </v-row>
-                    </v-expansion-panel-text>
-                  </v-expansion-panel>
-                </v-expansion-panels>
-              </v-col>
-
-              <v-col cols="12" md="8">
-                <v-text-field v-model="form.server" label="Server" variant="outlined" required />
-              </v-col>
-              <v-col cols="12" md="4">
-                <v-text-field v-model.number="form.server_port" label="Port" type="number" variant="outlined" required />
-              </v-col>
-
-              <!-- Credential (default expanded) -->
-              <v-col cols="12">
-                <v-expansion-panels variant="accordion" :model-value="[0]">
-                  <v-expansion-panel>
-                    <v-expansion-panel-title>Credential</v-expansion-panel-title>
-                    <v-expansion-panel-text>
-                      <template v-if="form.type === 'shadowsocks'">
-                        <ShadowsocksOutboundForm :form="form" />
-                      </template>
-                      <template v-else-if="form.type === 'vmess'">
-                        <VmessOutboundForm :form="form" />
-                      </template>
-                      <template v-else-if="form.type === 'vless'">
-                        <VlessOutboundForm :form="form" />
-                      </template>
-                      <template v-else-if="form.type === 'hysteria2'">
-                        <Hysteria2OutboundForm :form="form" />
-                      </template>
-                      <template v-else>
-                        <div class="text-medium-emphasis">No credential fields for this type.</div>
-                      </template>
-                    </v-expansion-panel-text>
-                  </v-expansion-panel>
-                </v-expansion-panels>
-              </v-col>
-
-              <!-- Advanced section -->
-              <v-col cols="12">
-                <v-expansion-panels variant="accordion">
-                  <v-expansion-panel>
-                    <v-expansion-panel-title>Advanced</v-expansion-panel-title>
-                    <v-expansion-panel-text>
-                      <v-row>
-                        <v-col cols="12" md="6">
-                          <JSONEditor v-model="form.transport" label="Transport (JSON)" :rows="6" />
-                        </v-col>
-                        <v-col cols="12" md="6">
-                          <JSONEditor v-model="form.tls" label="TLS (JSON)" :rows="6" />
-                        </v-col>
-                        <v-col cols="12" md="6">
-                          <JSONEditor v-model="form.mux" label="Mux (JSON)" :rows="6" />
-                        </v-col>
-                        <v-col cols="12" md="6">
-                          <JSONEditor v-model="form.other" label="Other (JSON)" :rows="6" />
-                        </v-col>
-                      </v-row>
-                    </v-expansion-panel-text>
-                  </v-expansion-panel>
-                </v-expansion-panels>
-              </v-col>
-            </v-row>
-          </template>
-        </v-form>
+  <div class="outbound-editor">
+    <Card>
+      <template #title>
+        <div class="text-2xl font-bold">Outbound Editor</div>
       </template>
-    </Editor>
-  </v-container>
+      <template #content>
+        <form @submit.prevent="onSave">
+          <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="field col-span-1" v-if="!isSpecialOutbound">
+              <label :for="`name-${uniqueId}`">Name</label>
+              <InputText :id="`name-${uniqueId}`" v-model="(form as any).name" />
+              <small v-if="errors.name" class="p-error">{{ errors.name }}</small>
+            </div>
+            <div class="field col-span-1" v-if="isSpecialOutbound">
+              <label :for="`tag-${uniqueId}`">Tag</label>
+              <InputText :id="`tag-${uniqueId}`" v-model="form.tag" />
+              <small v-if="errors.tag" class="p-error">{{ errors.tag }}</small>
+            </div>
+            <div class="field col-span-1">
+              <label :for="`type-${uniqueId}`">Type</label>
+              <Select
+                :id="`type-${uniqueId}`"
+                v-model="form.type"
+                :options="typeOptions"
+                option-label="title"
+                option-value="value"
+                @change="onTypeChange"
+              />
+            </div>
+            <div class="field col-span-1" v-if="!isSpecialOutbound">
+              <label :for="`region-${uniqueId}`">Region</label>
+              <Select
+                :id="`region-${uniqueId}`"
+                v-model="(form as any).region"
+                :options="regionOptions"
+                option-label="title"
+                option-value="value"
+                placeholder="Select a region"
+                show-clear
+              />
+            </div>
+            <div class="field col-span-1" v-if="!isSpecialOutbound">
+              <label :for="`provider-${uniqueId}`">Provider</label>
+              <InputText :id="`provider-${uniqueId}`" v-model="(form as any).provider" />
+            </div>
+          </div>
+          <Accordion :multiple="true" :value="['credential']">
+            <AccordionPanel value="credential" header="Credential">
+              <div v-if="form.type === 'shadowsocks'">
+                <ShadowsocksOutboundForm :form="form as any" />
+              </div>
+              <div v-else-if="form.type === 'vmess'">
+                <VmessOutboundForm :form="form as any" />
+              </div>
+              <div v-else-if="form.type === 'vless'">
+                <VlessOutboundForm :form="form as any" />
+              </div>
+              <div v-else-if="form.type === 'hysteria2'">
+                <Hysteria2OutboundForm :form="form as any" />
+              </div>
+              <div v-else-if="form.type === 'selector'">
+                <SelectorOutboundForm :form="form as any" :available-outbound-tags="availableOutboundTags" />
+              </div>
+              <div v-else-if="form.type === 'urltest'">
+                <UrlTestOutboundForm :form="form as any" :available-outbound-tags="availableOutboundTags" />
+              </div>
+            </AccordionPanel>
+            <AccordionPanel value="advanced" header="Advanced" v-if="form.type === 'shadowsocks' || form.type === 'vmess' || form.type === 'vless' || form.type === 'hysteria2'">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field">
+                  <label>Transport (JSON)</label>
+                  <JSONEditor v-model="form.transport" :rows="6" />
+                </div>
+                <div class="field">
+                  <label>TLS (JSON)</label>
+                  <JSONEditor v-model="form.tls" :rows="6" />
+                </div>
+                <div class="field">
+                  <label>Mux (JSON)</label>
+                  <JSONEditor v-model="form.mux" :rows="6" />
+                </div>
+                <div class="field">
+                  <label>Other (JSON)</label>
+                  <JSONEditor v-model="form.other" :rows="6" />
+                </div>
+              </div>
+            </AccordionPanel>
+          </Accordion>
+        </form>
+      </template>
+    </Card>
+    <div class="flex justify-end gap-2 mt-4">
+      <Button label="Cancel" severity="secondary" @click="onCancel" />
+      <Button label="Save" @click="onSave" :loading="saving" />
+      <Button v-if="showDelete" label="Delete" severity="danger" @click="onDelete" :loading="deleting" />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
-import type { Outbound } from './types'
-import { typeOptions, regionOptions } from './types'
-import OutboundsSelector from '@/components/outbounds/common/OutboundsSelector.vue'
+import { ref, computed } from 'vue'
+import { z } from 'zod'
+import { useOutboundStore } from '@/stores/outbound'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import Select from 'primevue/select'
+import InputText from 'primevue/inputtext'
+import Accordion from 'primevue/accordion'
+import AccordionPanel from 'primevue/accordionpanel'
 import JSONEditor from '@/components/common/JSONEditor.vue'
-import Editor from '@/components/common/Editor.vue'
-import VmessOutboundForm from './vmessOutboundForm.vue'
-import VlessOutboundForm from './vlessOutboundForm.vue'
-import ShadowsocksOutboundForm from './shadowsocksOutboundForm.vue'
-import Hysteria2OutboundForm from './hysteria2OutboundForm.vue'
-import SelectorOutboundForm from './selectorOutboundForm.vue'
-import UrltestOutboundForm from './urltestOutboundForm.vue'
+import { typeOptions, regionOptions } from './types'
+import type { Outbound, SpecialOutbound } from '@/types/outbound'
+import ShadowsocksOutboundForm from '@/components/outbounds/forms/shadowsocks/shadowsocksOutboundForm.vue'
+import VmessOutboundForm from '@/components/outbounds/forms/vmess/vmessOutboundForm.vue'
+import VlessOutboundForm from '@/components/outbounds/forms/vless/vlessOutboundForm.vue'
+import Hysteria2OutboundForm from '@/components/outbounds/forms/hysteria2/hysteria2OutboundForm.vue'
+import SelectorOutboundForm from '@/components/outbounds/forms/selector/selectorOutboundForm.vue'
+import UrlTestOutboundForm from '@/components/outbounds/forms/urltest/urltestOutboundForm.vue'
+import {
+  ShadowsocksOutboundSchema,
+  VmessOutboundSchema,
+  VlessOutboundSchema,
+  Hysteria2OutboundSchema,
+  SelectorOutboundSchema,
+  UrlTestOutboundSchema,
+  SpecialOutboundSchema,
+  DirectOutboundSchema,
+} from '@/schemas/outbound'
 
-const props = defineProps<{ form: Outbound }>()
-const emit = defineEmits<{ (e: 'saved', value: Outbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
+const props = withDefaults(defineProps<{
+  form: Outbound | SpecialOutbound
+  showDelete?: boolean
+  availableOutboundTags?: string[]
+}>(), { showDelete: false })
+const emit = defineEmits<{ (e: 'saved', value: Outbound | SpecialOutbound): void; (e: 'cancel'): void; (e: 'deleted', id: number): void }>()
 
-const router = useRouter()
-const userStore = useUserStore()
-
+const outboundStore = useOutboundStore()
 const saving = ref(false)
 const deleting = ref(false)
+const form = ref(props.form)
+const errors = ref<Record<string, string>>({})
+const uniqueId = computed(() => Math.random().toString(36).substring(7))
+const isSpecialOutbound = computed(() => {
+  return ['selector', 'urltest', 'direct'].includes(form.value.type)
+})
 
-// for default options, fetch all outbounds for name lookup
-const allOutbounds = ref<any[]>([])
-const loadAllOutbounds = async () => {
-  try {
-    const res = await userStore.authorizedFetch('/api/outbounds')
-    if (res.ok) {
-      const data = await res.json()
-      if (Array.isArray(data)) allOutbounds.value = data
-    }
-  } catch (e) { console.error(e) }
-}
-onMounted(loadAllOutbounds)
-const getDefaultOptions = (ids?: number[]) =>
-  allOutbounds.value
-    .filter((o: any) => Array.isArray(ids) && ids.length > 0 && ids.includes(o.id))
-    .map((o: any) => ({ title: o.name || `#${o.id}`, value: o.id }))
-
-// Credential constants moved to individual form components
-onMounted(() => { /* nested fields will be created via v-model usages as needed */ })
-
-// Ensure nested credential object exists for bindings
-const form = props.form
-const ensureCredential = () => {
-  const m: any = form
-  if (!m || typeof m !== 'object') return true
-  if (!m.credential || typeof m.credential !== 'object') m.credential = {}
-  if (m.type === 'hysteria2') {
-    if (!m.credential.obfs || typeof m.credential.obfs !== 'object') m.credential.obfs = {}
+const getDefaultOutbound = (type: string) => {
+  const base = { name: '', tag: '', type }
+  switch (type) {
+    case 'shadowsocks':
+      return { ...base, server: '', server_port: 443, method: '2022-blake3-aes-128-gcm', password: '' }
+    case 'vmess':
+      return { ...base, server: '', server_port: 443, uuid: '', security: 'auto' }
+    case 'vless':
+      return { ...base, server: '', server_port: 443, uuid: '' }
+    case 'hysteria2':
+      return { ...base, server: '', server_port: 443, password: '' }
+    case 'selector':
+      return { ...base, outbounds: [], default: '' }
+    case 'urltest':
+      return { ...base, outbounds: [], url: '', interval: '' }
+    case 'direct':
+      return { ...base }
+    default:
+      return base
   }
-  // Ensure outbounds array exists for selector and urltest types
-  if ((m.type === 'selector' || m.type === 'urltest') && !Array.isArray(m.outbounds)) {
-    m.outbounds = []
-  }
-  return true
 }
 
-// Watch for type changes to ensure outbounds array is properly initialized
-watch(() => form.type, (newType) => {
-  if (newType === 'selector' || newType === 'urltest') {
-    if (!Array.isArray((form as any).outbounds)) {
-      (form as any).outbounds = []
-    }
-  }
-}, { immediate: true })
-
-const onCancel = () => {
-  emit('cancel')
-  router.back()
+const onTypeChange = () => {
+  form.value = getDefaultOutbound(form.value.type) as any
 }
 
-const onEditorSave = async (value: any) => {
-  // Special handling: selector/urltest emit only, no backend save
-  if (value?.type === 'selector') {
-    const obj: any = {
-      type: 'selector',
-      outbounds: value.outbounds ?? [],
-      interrupt_exist_connections: !!value.interrupt_exist_connections,
-    }
-    if (value.default) obj.default = value.default
-    emit('saved', obj as any)
-    router.push('/outbounds')
-    return
-  }
-  if (value?.type === 'urltest') {
-    const obj: any = {
-      type: 'urltest',
-      outbounds: value.outbounds ?? [],
-      url: value.url || undefined,
-      interval: value.interval || undefined,
-      tolerance: value.tolerance || undefined,
-      idle_timeout: value.idle_timeout || undefined,
-      interrupt_exist_connections: !!value.interrupt_exist_connections,
-    }
-    emit('saved', obj as any)
-    router.push('/outbounds')
-    return
-  }
+const onSave = async () => {
   saving.value = true
+  errors.value = {}
   try {
-    const body = { ...value }
-    const hasId = !!body.id
-    const url = hasId ? `/api/outbounds/${body.id}` : '/api/outbounds'
-    const method = hasId ? 'PUT' : 'POST'
-    const res = await userStore.authorizedFetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    })
-    if (!res.ok) throw new Error(`Save failed: ${res.status}`)
-    const saved = await res.json()
-    emit('saved', saved)
-    router.push('/outbounds')
-  } catch (e) {
-    console.error(e)
+    let validatedData
+    if (isSpecialOutbound.value) {
+      validatedData = SpecialOutboundSchema.parse(form.value)
+      emit('saved', validatedData)
+      return
+    } else {
+      switch (form.value.type) {
+        case 'shadowsocks':
+          validatedData = ShadowsocksOutboundSchema.parse(form.value)
+          break
+        case 'vmess':
+          validatedData = VmessOutboundSchema.parse(form.value)
+          break
+        case 'vless':
+          validatedData = VlessOutboundSchema.parse(form.value)
+          break
+        case 'hysteria2':
+          validatedData = Hysteria2OutboundSchema.parse(form.value)
+          break
+        default:
+          throw new Error('Invalid outbound type')
+      }
+      validatedData.tag = validatedData.name
+    }
+
+    let savedOutbound
+    if ((props.form as any).id) {
+      savedOutbound = await outboundStore.updateOutbound((props.form as any).id, validatedData)
+    } else {
+      savedOutbound = await outboundStore.createOutbound(validatedData)
+    }
+    if (savedOutbound) {
+      emit('saved', savedOutbound)
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      errors.value = error.issues.reduce((acc: Record<string, string>, curr) => {
+        const path = curr.path[0]
+        if (typeof path === 'string') {
+          acc[path] = curr.message
+        }
+        return acc
+      }, {})
+    } else {
+      console.error(error)
+    }
   } finally {
     saving.value = false
   }
 }
 
+const onCancel = () => {
+  emit('cancel')
+}
+
 const onDelete = async () => {
-  if (!props.form.id) return
+  if (!(props.form as any).id) return
   deleting.value = true
   try {
-    const res = await userStore.authorizedFetch(`/api/outbounds/${props.form.id}`, { method: 'DELETE' })
-    if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`)
-    emit('deleted', props.form.id as number)
-    router.push('/outbounds')
-  } catch (e) {
-    console.error(e)
+    await outboundStore.deleteOutbound((props.form as any).id)
+    emit('deleted', (props.form as any).id as number)
+  } catch (error) {
+    console.error(error)
   } finally {
     deleting.value = false
   }
@@ -269,4 +245,9 @@ const onDelete = async () => {
 </script>
 
 <style scoped>
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
 </style>

@@ -8,6 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+package-json.lock
+pnpm-lock.yaml
 .DS_Store
 dist
 dist-ssr
@@ -32,3 +34,5 @@ coverage
 # wrangler files
 .wrangler
 .dev.vars*
+
+package-lock.json

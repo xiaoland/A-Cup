@@ -1,8 +1,9 @@
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { eq } from 'drizzle-orm';
-import { Outbounds, Profiles, RuleSets } from '../db/schema';
+import { Profiles } from '../db/schema';
+import { RuleSets } from '../db/rule-set';
+import { Outbounds } from '../db/outbound';
 import { SingBoxProfileSchema } from '../schemas/export';
-import { validateSingBoxConfig } from './ajv';
 
 // Export a single outbound into Sing-Box format (duplicate of logic in apis/outbound.ts without import to avoid cycles)
 async function exportOutboundForProfile(db: DrizzleD1Database, id: number) {
@@ -59,7 +60,7 @@ async function exportRuleSetForProfile(db: DrizzleD1Database, id: number) {
   return config;
 }
 
-export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profileId: number, baseConfig?: any) {
+export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profileId: string, baseConfig?: any) {
   // Fetch profile row
   const profileList = await db.select().from(Profiles).where(eq(Profiles.id, profileId)).limit(1);
   if (profileList.length === 0) return;
@@ -94,12 +95,16 @@ export async function exportProfileToR2(db: DrizzleD1Database, env: Env, profile
   ]);
 
   config.outbounds = outbounds;
+  if (config.special_outbounds) {
+    config.outbounds.push(...config.special_outbounds);
+    delete config.special_outbounds;
+  }
   // Ensure route object exists
   config.route = config.route || {};
   config.route.rule_set = ruleSets;
 
-  // Validate with official JSON Schema via Ajv (blocking)
-  await validateSingBoxConfig(config);
+  // Validate with Zod
+  SingBoxProfileSchema.parse(config);
 
   const configJson = JSON.stringify(config, null, 2);
   await env.OSS.put(`profiles/${profileId}`, configJson, {
