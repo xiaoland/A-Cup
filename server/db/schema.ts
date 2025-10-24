@@ -7,8 +7,6 @@ export const Users = sqliteTable("users", {
   password: text().notNull(),
 });
 
-export * from "./rule-set";
-
 export const Profiles = sqliteTable("profiles", {
   id: text("id")
     .primaryKey()
