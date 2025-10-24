@@ -392,12 +392,18 @@ const onSave = async () => {
   saving.value = true
   try {
     const { id, created_by, ...rest } = profile.value
+    const { rule_set, ...route_without_rule_set } = rest.route
+    const body = {
+        ...rest,
+        rule_sets: rest.route.rule_set,
+        route: route_without_rule_set
+    }
     const url = id ? `/api/profiles/${id}` : '/api/profiles'
     const method = id ? 'PUT' : 'POST'
     const res = await userStore.authorizedFetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(rest),
+      body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error(`Save failed: ${res.status}`)
     const saved = await res.json()
