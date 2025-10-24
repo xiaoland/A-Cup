@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { Outbounds, Profiles } from '../db/schema';
+import { Profiles } from '../db/schema';
+import { Outbounds } from '../db/outbound';
 import { eq } from 'drizzle-orm';
 import { exportProfileToR2 } from '../fund/profile-export';
 import { ServiceBase } from '.';

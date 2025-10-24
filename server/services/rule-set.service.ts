@@ -1,71 +1,68 @@
-import { z } from 'zod';
-import { RuleSets, Profiles } from '../db/schema';
-import { eq } from 'drizzle-orm';
-import { DrizzleD1Database } from 'drizzle-orm/d1';
-import { exportProfileToR2 } from '../fund/profile-export';
-import { RuleSetInSingBoxSchema, type RuleSetInSingBox } from '../schemas/export';
+import { z } from "zod";
+import { Profiles } from "../db/schema";
+import { RuleSets } from "../db/rule-set";
+import { eq } from "drizzle-orm";
+import { exportProfileToR2 } from "../fund/profile-export";
+import { ServiceBase } from ".";
+import { RuleSet } from "../business/rule-set";
 
-const CreateRuleSetSchema = z.object({
-  name: z.string().min(1),
-  type: z.enum(['inline', 'remote']),
-  format: z.string().min(1),
-  content: z.string().default(''),
-  readableBy: z.array(z.number().int()).optional(),
-  writeableBy: z.array(z.number().int()).optional(),
-  download_detour: z.string().optional(),
-  update_interval: z.string().optional()
-});
+const CreateRuleSetSchema = RuleSet.schema().omit({ id: true });
 
-export class RuleSetService {
-  constructor(private db: DrizzleD1Database, private env: any) {}
-
+export class RuleSetService extends ServiceBase {
   async createRuleSet(userId: number, body: z.infer<typeof CreateRuleSetSchema>) {
     const readableBy = body.readableBy ?? [userId];
     const writeableBy = body.writeableBy ?? [userId];
 
-    const result = await this.db.insert(RuleSets).values({
-      name: body.name,
-      type: body.type,
-      format: body.format,
-      content: body.content ?? '',
-      readableBy: JSON.stringify(readableBy),
-      writeableBy: JSON.stringify(writeableBy),
-      download_detour: body.download_detour,
-      update_interval: body.update_interval,
-    }).returning();
+    const result = await this.db
+      .insert(RuleSets)
+      .values({
+        name: body.name,
+        type: body.type,
+        format: body.format,
+        content: body.content ?? "",
+        readableBy: JSON.stringify(readableBy),
+        writeableBy: JSON.stringify(writeableBy),
+        download_detour: body.download_detour,
+        update_interval: body.update_interval,
+      })
+      .returning();
 
-    return result[0];
+    return new RuleSet(result[0]);
   }
 
   async getRuleSets(userId: number) {
     const result = await this.db.select().from(RuleSets);
-    return (result as any[]).filter((rs) => {
-      const r = Array.isArray(rs.readableBy) ? rs.readableBy : JSON.parse(rs.readableBy || '[]');
-      const w = Array.isArray(rs.writeableBy) ? rs.writeableBy : JSON.parse(rs.writeableBy || '[]');
-      return [...r, ...w].includes(userId);
-    });
+    return result
+      .map((rs) => new RuleSet(rs))
+      .filter((rs) => {
+        return [...rs.readableBy, ...rs.writeableBy].includes(userId);
+      });
   }
 
   async getRuleSetById(userId: number, ruleSetId: number) {
-    const ruleSets = await this.db.select().from(RuleSets).where(eq(RuleSets.id, ruleSetId)).limit(1);
+    const ruleSets = await this.db
+      .select()
+      .from(RuleSets)
+      .where(eq(RuleSets.id, ruleSetId))
+      .limit(1);
     if (ruleSets.length === 0) return null;
 
-    const rs = ruleSets[0] as any;
-    const r = Array.isArray(rs.readableBy) ? rs.readableBy : JSON.parse(rs.readableBy || '[]');
-    const w = Array.isArray(rs.writeableBy) ? rs.writeableBy : JSON.parse(rs.writeableBy || '[]');
-    const readable = [...r, ...w].includes(userId);
+    const rs = new RuleSet(ruleSets[0]);
+    const readable = [...rs.readableBy, ...rs.writeableBy].includes(userId);
 
     return readable ? rs : null;
   }
 
-  async updateRuleSet(userId: number, ruleSetId: number, body: z.infer<typeof CreateRuleSetSchema>) {
-    const existingList = await this.db.select().from(RuleSets).where(eq(RuleSets.id, ruleSetId)).limit(1);
-    if (existingList.length === 0) return null;
+  async updateRuleSet(
+    userId: number,
+    ruleSetId: number,
+    body: z.infer<typeof CreateRuleSetSchema>
+  ) {
+    const existing = await this.getRuleSetById(userId, ruleSetId);
+    if (!existing) return null;
 
-    const existing = existingList[0] as any;
-    const writable = Array.isArray(existing.writeableBy) ? existing.writeableBy : JSON.parse(existing.writeableBy || '[]');
-    if (!writable.includes(userId)) {
-      throw new Error('Forbidden');
+    if (!existing.writeableBy.includes(userId)) {
+      throw new Error("Forbidden");
     }
 
     const updateData: any = {};
@@ -73,73 +70,48 @@ export class RuleSetService {
     if (body.type !== undefined) updateData.type = body.type;
     if (body.format !== undefined) updateData.format = body.format;
     if (body.content !== undefined) updateData.content = body.content;
-    if (body.readableBy !== undefined) updateData.readableBy = JSON.stringify(body.readableBy);
-    if (body.writeableBy !== undefined) updateData.writeableBy = JSON.stringify(body.writeableBy);
-    if (body.download_detour !== undefined) updateData.download_detour = body.download_detour;
-    if (body.update_interval !== undefined) updateData.update_interval = body.update_interval;
+    if (body.readableBy !== undefined)
+      updateData.readableBy = JSON.stringify(body.readableBy);
+    if (body.writeableBy !== undefined)
+      updateData.writeableBy = JSON.stringify(body.writeableBy);
+    if (body.download_detour !== undefined)
+      updateData.download_detour = body.download_detour;
+    if (body.update_interval !== undefined)
+      updateData.update_interval = body.update_interval;
 
-    const result = await this.db.update(RuleSets).set(updateData).where(eq(RuleSets.id, ruleSetId)).returning();
+    const result = await this.db
+      .update(RuleSets)
+      .set(updateData)
+      .where(eq(RuleSets.id, ruleSetId))
+      .returning();
 
     const allProfiles = await this.db.select().from(Profiles);
     const referencing = (allProfiles as any[]).filter((p) => {
-      const rs = Array.isArray(p.rule_sets) ? p.rule_sets : JSON.parse(p.rule_sets || '[]');
+      const rs = Array.isArray(p.rule_sets)
+        ? p.rule_sets
+        : JSON.parse(p.rule_sets || "[]");
       return rs.includes(ruleSetId);
     });
     if (this.env.OSS) {
-      await Promise.all(referencing.map((p: any) => exportProfileToR2(this.db, this.env, p.id)));
+      await Promise.all(
+        referencing.map((p: any) =>
+          exportProfileToR2(this.db, this.env, p.id)
+        )
+      );
     }
 
-    return result[0];
+    return new RuleSet(result[0]);
   }
 
   async deleteRuleSet(userId: number, ruleSetId: number) {
-    const existingList = await this.db.select().from(RuleSets).where(eq(RuleSets.id, ruleSetId)).limit(1);
-    if (existingList.length === 0) return false;
+    const existing = await this.getRuleSetById(userId, ruleSetId);
+    if (!existing) return false;
 
-    const existing = existingList[0] as any;
-    const writable = Array.isArray(existing.writeableBy) ? existing.writeableBy : JSON.parse(existing.writeableBy || '[]');
-    if (!writable.includes(userId)) {
-      throw new Error('Forbidden');
+    if (!existing.writeableBy.includes(userId)) {
+      throw new Error("Forbidden");
     }
 
     await this.db.delete(RuleSets).where(eq(RuleSets.id, ruleSetId));
     return true;
-  }
-
-  async getRuleSetTag(userId: number, ruleSetId: number) {
-    const existing = await this.db.select().from(RuleSets).where(eq(RuleSets.id, ruleSetId)).limit(1);
-    if (existing.length === 0) return null;
-
-    const row: any = existing[0];
-    const r = Array.isArray(row.readableBy) ? row.readableBy : JSON.parse(row.readableBy || '[]');
-    const w = Array.isArray(row.writeableBy) ? row.writeableBy : JSON.parse(row.writeableBy || '[]');
-    if (![...r, ...w].includes(userId)) {
-      throw new Error('Forbidden');
-    }
-
-    return { tag: row.name };
-  }
-
-  async exportRuleSet(id: number): Promise<RuleSetInSingBox | null> {
-    const ruleSets = await this.db.select().from(RuleSets).where(eq(RuleSets.id, id)).limit(1);
-    if (ruleSets.length === 0) return null;
-
-    const ruleSet = ruleSets[0];
-    const config: RuleSetInSingBox = {
-      tag: `rule_set.${(ruleSet as any).type}.${(ruleSet as any).id}`,
-      type: (ruleSet as any).type
-    };
-
-    if ((ruleSet as any).type === 'remote') {
-      if ((ruleSet as any).content) config.url = (ruleSet as any).content as string;
-    } else if ((ruleSet as any).type === 'inline') {
-      try {
-        if ((ruleSet as any).content) config.rules = JSON.parse((ruleSet as any).content as string);
-      } catch {
-        config.rules = [] as any;
-      }
-    }
-
-    return RuleSetInSingBoxSchema.parse(config);
   }
 }
