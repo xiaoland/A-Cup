@@ -1,6 +1,6 @@
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { eq } from 'drizzle-orm';
-import { Profiles } from '../db/schema';
+import { Profiles } from '../db/profile';
 import { RuleSets } from '../db/rule-set';
 import { Outbounds } from '../db/outbound';
 import { SingBoxProfileSchema } from '../schemas/export';
