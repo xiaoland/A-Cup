@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { Z } from 'zod-class';
-import { OutboundInSingBox, OutboundInSingBoxSchema } from '../schemas/export';
+import { OutboundInSingBox, OutboundInSingBoxSchema, SpecialOutboundSchema } from '../schemas/export';
 
 export class Outbound extends Z.class({
   id: z.number().int().positive(),
@@ -56,3 +56,12 @@ export class Outbound extends Z.class({
     return OutboundInSingBoxSchema.parse(config);
   }
 }
+
+export class SpecialOutbound extends Z.class({
+  tag: z.string().min(1),
+  type: z.enum(['selector', 'urltest', 'direct']),
+  outbounds: z.array(z.string()).optional(),
+  url: z.string().optional(),
+  interval: z.string().optional(),
+  default: z.string().optional(),
+}) {}

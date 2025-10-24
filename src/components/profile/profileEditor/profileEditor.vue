@@ -391,13 +391,12 @@ const onFileChange = (event: Event) => {
 const onSave = async () => {
   saving.value = true
   try {
-    const { id, created_by, rule_sets, ...rest } = profile.value
+    const { id, created_by, ...rest } = profile.value
+    const { rule_set, ...route_without_rule_set } = rest.route
     const body = {
         ...rest,
-        route: {
-            ...rest.route,
-            rule_set: rule_sets,
-        }
+        rule_sets: rest.route.rule_set,
+        route: route_without_rule_set
     }
     const url = id ? `/api/profiles/${id}` : '/api/profiles'
     const method = id ? 'PUT' : 'POST'

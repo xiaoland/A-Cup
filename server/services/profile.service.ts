@@ -1,41 +1,38 @@
 import { z } from 'zod';
-import { Profiles } from '../db/schema';
+import { Profiles } from '../db/profile';
 import { eq, and } from 'drizzle-orm';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import { SingBoxProfileRequestSchema } from '../schemas/export';
-import { exportProfileToR2 } from '../fund/profile-export';
+import { ServiceBase } from '.';
+import { Profile } from '../business/profile';
+import { SpecialOutbound } from '../business/outbound';
 
-const CreateProfileSchema = SingBoxProfileRequestSchema.extend({
+const ProfileForCreate = z.looseObject({
   name: z.string().min(1),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string()),
+  outbounds: z.array(z.number().int().positive()),
+  special_outbounds: z.array(SpecialOutbound.schema()),
+  rule_sets: z.array(z.number().int().positive()),
 });
-const UpdateProfileSchema = SingBoxProfileRequestSchema.partial();
 
-export class ProfileService {
-  constructor(private db: DrizzleD1Database, private env: any) {}
-
-  async createProfile(userId: number, body: z.infer<typeof CreateProfileSchema>) {
-    const ruleSetIds: number[] = body.route?.rule_set ?? [];
-
+export class ProfileService extends ServiceBase {
+  async createProfile(userId: number, body: z.infer<typeof ProfileForCreate>) {
     const result = await this.db.insert(Profiles).values({
       created_by: userId,
       name: body.name,
       tags: JSON.stringify(body.tags),
       outbounds: JSON.stringify(body.outbounds),
-      rule_sets: JSON.stringify(ruleSetIds),
+      rule_sets: JSON.stringify(body.rule_sets),
     }).returning();
 
-    const newProfile = result[0];
+    const profile = new Profile(result[0]);
 
     if (!this.env.OSS) {
       throw new Error('Object storage not configured');
     }
-    const baseConfig = { ...body };
-    delete (baseConfig as any).name;
-    delete (baseConfig as any).tags;
-    await exportProfileToR2(this.db, this.env, newProfile.id, baseConfig);
 
-    return newProfile;
+    const baseConfig = { special_outbounds: body.special_outbounds };
+    await profile.exportToSingBox(this.db, this.env, baseConfig);
+
+    return profile;
   }
 
   async getProfiles(userId: number) {
@@ -43,34 +40,34 @@ export class ProfileService {
       eq(Profiles.created_by, userId)
     );
 
-    return Promise.all(
-      profiles.map(async (profile) => {
-        return {
-          ...profile,
-          tags: JSON.parse(profile.tags as string),
-          outbounds: JSON.parse(profile.outbounds as string),
-          rule_sets: JSON.parse(profile.rule_sets as string),
-        };
-      })
-    );
+    return profiles.map((profile) => new Profile(profile));
   }
 
   async getProfileById(userId: number, profileId: string) {
-    const profile = await this.db.select().from(Profiles).where(
+    const result = await this.db.select().from(Profiles).where(
       and(
         eq(Profiles.id, profileId),
         eq(Profiles.created_by, userId)
       )
     ).limit(1);
 
-    if (profile.length === 0) {
+    if (result.length === 0) {
       return null;
     }
 
-    const profileData = profile[0] as any;
+    return new Profile(result[0]);
+  }
+
+  async getProfileWithSingboxConfig(userId: number, profileId: string) {
+    const profile = await this.getProfileById(userId, profileId);
+
+    if (!profile) {
+      return null;
+    }
+
     let r2Config: any = {};
     if (this.env.OSS) {
-      const r2Object = await this.env.OSS.get(`profiles/${profileData.id}`);
+      const r2Object = await this.env.OSS.get(`profiles/${profile.id}`);
       if (r2Object) {
         try {
           const data = await r2Object.json();
@@ -78,58 +75,52 @@ export class ProfileService {
             r2Config = data;
           }
         } catch (error) {
-          console.error(`Failed to parse R2 config for profile ${profileData.id}`, error);
+          console.error(`Failed to parse R2 config for profile ${profile.id}`, error);
         }
       }
     }
+
     const special_outbounds = (r2Config.outbounds || []).filter((o: any) => ['selector', 'urltest', 'direct'].includes(o.type));
     return {
       ...r2Config,
-      id: profileData.id,
-      name: profileData.name,
-      tags: JSON.parse(profileData.tags as string),
-      outbounds: JSON.parse(profileData.outbounds as string),
+      id: profile.id,
+      name: profile.name,
+      tags: profile.tags,
+      outbounds: profile.outbounds,
       special_outbounds,
       route: {
         ...(r2Config.route || {}),
-        rule_set: JSON.parse(profileData.rule_sets as string),
+        rule_set: profile.rule_sets,
       },
     };
   }
 
-  async updateProfile(userId: number, profileId: string, body: z.infer<typeof UpdateProfileSchema>) {
+  async updateProfile(userId: number, profileId: string, body: z.infer<typeof ProfileForCreate>) {
     const existingProfile = await this.getProfileById(userId, profileId);
 
     if (!existingProfile) {
       return null;
     }
 
-    const updateData: any = {};
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.tags !== undefined) updateData.tags = JSON.stringify(body.tags);
-    if (body.outbounds !== undefined) updateData.outbounds = JSON.stringify(body.outbounds);
-    if (body.route?.rule_set !== undefined) updateData.rule_sets = JSON.stringify(body.route.rule_set);
-
     const result = await this.db.update(Profiles)
-      .set(updateData)
+      .set({
+        name: body.name,
+        tags: JSON.stringify(body.tags),
+        outbounds: JSON.stringify(body.outbounds),
+        rule_sets: JSON.stringify(body.rule_sets),
+      })
       .where(eq(Profiles.id, profileId))
       .returning();
+
+    const profile = new Profile(result[0]);
 
     if (!this.env.OSS) {
       throw new Error('Object storage not configured');
     }
-    const baseConfig = { ...body };
-    delete (baseConfig as any).name;
-    delete (baseConfig as any).tags;
-    await exportProfileToR2(this.db, this.env, existingProfile.id, baseConfig);
 
-    const resultData = result[0] as any;
-    return {
-      ...resultData,
-      tags: JSON.parse(resultData.tags as string),
-      outbounds: JSON.parse(resultData.outbounds as string),
-      rule_sets: JSON.parse(resultData.rule_sets as string),
-    };
+    await profile.exportToSingBox(this.db, this.env, body);
+
+    return profile;
   }
 
   async deleteProfile(userId: number, profileId: string) {
