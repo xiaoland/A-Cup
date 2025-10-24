@@ -5,7 +5,7 @@ import { ServiceBase } from '.';
 import { Profile } from '../business/profile';
 import { SpecialOutbound } from '../business/outbound';
 
-const ProfileForCreate = z.object({
+const ProfileForCreate = z.looseObject({
   name: z.string().min(1),
   tags: z.array(z.string()),
   outbounds: z.array(z.number().int().positive()),
@@ -118,8 +118,7 @@ export class ProfileService extends ServiceBase {
       throw new Error('Object storage not configured');
     }
 
-    const baseConfig = { special_outbounds: body.special_outbounds };
-    await profile.exportToSingBox(this.db, this.env, baseConfig);
+    await profile.exportToSingBox(this.db, this.env, body);
 
     return profile;
   }
