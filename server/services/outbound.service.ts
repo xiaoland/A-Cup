@@ -29,37 +29,32 @@ export class OutboundService extends ServiceBase {
   }
 
   async getAll(userId: number) {
-    const outbounds = await this.db.select().from(Outbounds);
-    const filtered = outbounds.filter((row: any) => {
-      const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
-      const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
-      return [...readable, ...writable].includes(userId);
-    });
+    const outboundsData = await this.db.select().from(Outbounds);
+    const outbounds = outboundsData.map((row: any) => new Outbound(row));
 
-    return filtered.map((row: any) => new Outbound(row));
+    return outbounds.filter((outbound) => {
+      return [...outbound.readable_by, ...outbound.writable_by].includes(userId);
+    });
   }
 
   async get(userId: number, outboundId: number) {
     const outbounds = await this.db.select().from(Outbounds).where(eq(Outbounds.id, outboundId));
     if (outbounds.length === 0) return null;
 
-    const row: any = outbounds[0];
-    const readable = Array.isArray(row.readable_by) ? row.readable_by : JSON.parse(row.readable_by || '[]');
-    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
-    if (![...readable, ...writable].includes(userId)) {
+    const outbound = new Outbound(outbounds[0]);
+    if (![...outbound.readable_by, ...outbound.writable_by].includes(userId)) {
       throw new Error('Forbidden');
     }
 
-    return new Outbound(row);
+    return outbound;
   }
 
   async update(userId: number, outboundId: number, body: z.infer<typeof CreateOutboundBody>) {
     const existing = await this.db.select().from(Outbounds).where(eq(Outbounds.id, outboundId)).limit(1);
     if (existing.length === 0) return null;
 
-    const row: any = existing[0];
-    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
-    if (!writable.includes(userId)) {
+    const outbound = new Outbound(existing[0]);
+    if (!outbound.writable_by.includes(userId)) {
       throw new Error('Forbidden');
     }
 
@@ -78,7 +73,7 @@ export class OutboundService extends ServiceBase {
 
     const allProfiles = await this.db.select().from(Profiles);
     const referencing = (allProfiles as any[]).filter((p) => {
-      const outs = Array.isArray(p.outbounds) ? p.outbounds : JSON.parse(p.outbounds || '[]');
+      const outs = Array.isArray(p.outbounds) ? p.outbounds : JSON.parse(p.outbounds as string || '[]');
       return outs.includes(outboundId);
     });
     if (this.env.OSS) {
@@ -92,9 +87,8 @@ export class OutboundService extends ServiceBase {
     const existing = await this.db.select().from(Outbounds).where(eq(Outbounds.id, outboundId)).limit(1);
     if (existing.length === 0) return false;
 
-    const row: any = existing[0];
-    const writable = Array.isArray(row.writable_by) ? row.writable_by : JSON.parse(row.writable_by || '[]');
-    if (!writable.includes(userId)) {
+    const outbound = new Outbound(existing[0]);
+    if (!outbound.writable_by.includes(userId)) {
       throw new Error('Forbidden');
     }
 
