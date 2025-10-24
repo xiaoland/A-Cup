@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { ProfileService } from '../services/profile.service';
-import { zValidator } from '@hono/zod-validator';
+import { zValidator, Hook } from '@hono/zod-validator';
 import { Profile } from '../business/profile';
 import { ProfileExportResponseSchema } from '../schemas/export';
 
@@ -22,8 +22,17 @@ const handleApiError = (c: any, error: any, message: string) => {
   return c.json({ error: 'Internal Server Error', message: error.message }, 500);
 };
 
+const validationHook: Hook<any, any, any, any> = (result, c) => {
+  if (!result.success) {
+    return c.json({
+      error: 'Validation failed',
+      issues: result.error.issues,
+    }, 400);
+  }
+};
+
 // Create Profile
-profileRouter.post('/', zValidator('json', CreateProfileSchema), async (c) => {
+profileRouter.post('/', zValidator('json', CreateProfileSchema, validationHook), async (c) => {
   try {
     const body = c.req.valid('json');
     const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
@@ -48,7 +57,7 @@ profileRouter.get('/', async (c) => {
 });
 
 // Get Profile by ID
-profileRouter.get('/:id', zValidator('param', IDPathParamSchema), async (c) => {
+profileRouter.get('/:id', zValidator('param', IDPathParamSchema, validationHook), async (c) => {
   try {
     const { id } = c.req.valid('param');
     const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
@@ -64,7 +73,7 @@ profileRouter.get('/:id', zValidator('param', IDPathParamSchema), async (c) => {
 });
 
 // Update Profile
-profileRouter.put('/:id', zValidator('param', IDPathParamSchema), zValidator('json', UpdateProfileSchema), async (c) => {
+profileRouter.put('/:id', zValidator('param', IDPathParamSchema, validationHook), zValidator('json', UpdateProfileSchema, validationHook), async (c) => {
   try {
     const { id } = c.req.valid('param');
     const body = c.req.valid('json');
@@ -81,7 +90,7 @@ profileRouter.put('/:id', zValidator('param', IDPathParamSchema), zValidator('js
 });
 
 // Delete Profile
-profileRouter.delete('/:id', zValidator('param', IDPathParamSchema), async (c) => {
+profileRouter.delete('/:id', zValidator('param', IDPathParamSchema, validationHook), async (c) => {
   try {
     const { id } = c.req.valid('param');
     const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
@@ -97,7 +106,7 @@ profileRouter.delete('/:id', zValidator('param', IDPathParamSchema), async (c) =
 });
 
 // Export Profile
-profileRouter.get('/:id/export', zValidator('param', IDPathParamSchema), async (c) => {
+profileRouter.get('/:id/export', zValidator('param', IDPathParamSchema, validationHook), async (c) => {
   try {
     const { id } = c.req.valid('param');
     const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
