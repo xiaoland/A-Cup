@@ -391,20 +391,13 @@ const onFileChange = (event: Event) => {
 const onSave = async () => {
   saving.value = true
   try {
-    const { id, created_by, rule_sets, ...rest } = profile.value
-    const body = {
-        ...rest,
-        route: {
-            ...rest.route,
-            rule_set: rule_sets,
-        }
-    }
+    const { id, created_by, ...rest } = profile.value
     const url = id ? `/api/profiles/${id}` : '/api/profiles'
     const method = id ? 'PUT' : 'POST'
     const res = await userStore.authorizedFetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(rest),
     })
     if (!res.ok) throw new Error(`Save failed: ${res.status}`)
     const saved = await res.json()
