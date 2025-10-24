@@ -53,6 +53,9 @@ importers:
       zod:
         specifier: ^4.0.5
         version: 4.1.12
+      zod-class:
+        specifier: ^0.0.18
+        version: 0.0.18(zod@4.1.12)
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.9.4
@@ -2363,6 +2366,10 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  type-fest@4.41.0:
+    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
+    engines: {node: '>=16'}
+
   typescript@5.8.3:
     resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
     engines: {node: '>=14.17'}
@@ -2578,6 +2585,11 @@ packages:
 
   youch@4.1.0-beta.10:
     resolution: {integrity: sha512-rLfVLB4FgQneDr0dv1oddCVZmKjcJ6yX6mS4pU82Mq/Dt9a3cLZQ62pDBL4AUO+uVrCvtWz3ZFUL2HFAFJ/BXQ==}
+
+  zod-class@0.0.18:
+    resolution: {integrity: sha512-wWWa6u56ualID4zf0DGgDhdDjYI7lP3XphIFBam+sgodMZOrad8lxAFchqBGq1uuGPAel/hIjHITLc5D+TowXg==}
+    peerDependencies:
+      zod: ^3
 
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
@@ -4618,6 +4630,8 @@ snapshots:
 
   tslib@2.8.1: {}
 
+  type-fest@4.41.0: {}
+
   typescript@5.8.3: {}
 
   ufo@1.6.1: {}
@@ -4859,6 +4873,11 @@ snapshots:
       '@speed-highlight/core': 1.2.7
       cookie: 1.0.2
       youch-core: 0.3.3
+
+  zod-class@0.0.18(zod@4.1.12):
+    dependencies:
+      type-fest: 4.41.0
+      zod: 4.1.12
 
   zod@3.22.3: {}
 

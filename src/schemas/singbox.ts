@@ -12,7 +12,7 @@ const DnsRuleSchema = z.object({
   outbound: stringOrStringArray.optional(),
   disable_cache: z.boolean().optional(),
   clash_mode: z.string().optional(),
-}).passthrough()
+}).loose()
 
 const DnsSchema = z.object({
   servers: z.array(z.any()),
@@ -23,17 +23,17 @@ const DnsSchema = z.object({
   disable_expire: z.boolean().optional(),
   independent_cache: z.boolean().optional(),
   fakeip: z.any().optional(),
-}).passthrough()
+}).loose()
 
 const InboundSchema = z.object({
   type: z.string(),
   tag: z.string().optional(),
-}).passthrough()
+}).loose()
 
 const OutboundSchema = z.object({
   type: z.string(),
   tag: z.string(),
-}).passthrough()
+}).loose()
 
 const RouteRuleSchema = z.object({
   rule_set: stringOrStringArray.optional(),
@@ -42,13 +42,13 @@ const RouteRuleSchema = z.object({
   domain_keyword: stringOrStringArray.optional(),
   domain_regex: stringOrStringArray.optional(),
   outbound: z.string().optional(),
-}).passthrough()
+}).loose()
 
 const RouteSchema = z.object({
   rules: z.array(RouteRuleSchema).optional(),
   rule_set: z.array(z.any()).optional(),
   final: z.string().optional(),
-}).passthrough()
+}).loose()
 
 export const SingboxProfileSchema = z.object({
   log: z.any().optional(),
@@ -61,6 +61,6 @@ export const SingboxProfileSchema = z.object({
   route: RouteSchema.optional(),
   services: z.any().optional(),
   experimental: z.any().optional(),
-}).passthrough()
+}).loose()
 
 export type SingboxProfile = z.infer<typeof SingboxProfileSchema>
