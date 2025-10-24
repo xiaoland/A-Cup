@@ -1,6 +1,7 @@
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import { eq } from 'drizzle-orm';
-import { Outbounds, Profiles, RuleSets } from '../db/schema';
+import { Profiles, RuleSets } from '../db/schema';
+import { Outbounds } from '../db/outbound';
 import { SingBoxProfileSchema } from '../schemas/export';
 
 // Export a single outbound into Sing-Box format (duplicate of logic in apis/outbound.ts without import to avoid cycles)
