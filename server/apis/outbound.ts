@@ -37,11 +37,15 @@ outboundRouter.get('/:id', zValidator('param', IDPathParamSchema), async (c) => 
 });
 
 outboundRouter.get('/', async (c) => {
-  const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
-  const outboundService = new OutboundService(c.get('db'), c.env);
+  try {
+    const user_id = parseInt((c.get('jwtPayload')?.sub || '0').toString());
+    const outboundService = new OutboundService(c.get('db'), c.env);
 
-  const outbounds = await outboundService.getAll(user_id);
-  return c.json(outbounds);
+    const outbounds = await outboundService.getAll(user_id);
+    return c.json(outbounds);
+  } catch (error: any) {
+    return c.json({ error: 'Internal Server Error', message: error.message }, 500);
+  }
 });
 
 outboundRouter.post('/', zValidator('json', CreateOutboundBody), async (c) => {
