@@ -75,7 +75,7 @@ export const SingBoxProfileRequestSchema = z.object({
 
   services: z.array(z.any()).optional(),
   experimental: z.any().optional(),
-}).passthrough();
+}).loose();
 
 // Export configuration schema (subset for internal generation/validation)
 // Full Sing-Box configuration shape (top-level) – aligned with official JSON Schema

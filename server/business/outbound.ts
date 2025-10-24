@@ -5,16 +5,16 @@ import { OutboundInSingBox, OutboundInSingBoxSchema } from '../schemas/export';
 export class Outbound extends Z.class({
   id: z.number().int().positive(),
   name: z.string().min(1),
-  region: z.string().optional(),
-  provider: z.string().optional(),
+  region: z.string().nullable(),
+  provider: z.string().nullable(),
   type: z.string().min(1),
   server: z.string().min(1),
   server_port: z.number().int().positive(),
   credential: z.any(),
-  transport: z.any().optional().default({}),
-  tls: z.any().optional().default({}),
-  mux: z.any().optional().default({}),
-  other: z.any().optional().default({}),
+  transport: z.any().nullable().default({}),
+  tls: z.any().nullable().default({}),
+  mux: z.any().nullable().default({}),
+  other: z.any().nullable().default({}),
   readable_by: z.preprocess((v) => {
     if (typeof v === 'string') return JSON.parse(v);
     return v;
