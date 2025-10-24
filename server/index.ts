@@ -5,7 +5,6 @@ import { userRouter } from "./apis/user";
 import { ruleSetRouter } from "./apis/rule-set";
 import { profileRouter } from "./apis/profile";
 import { drizzle } from 'drizzle-orm/d1';
-import * as schema from './db/schema';
 
 const app = new Hono();
 
@@ -23,7 +22,7 @@ const api = new Hono();
 // DB middleware on the api router
 api.use('*', async (c, next) => {
   const d1 = c.env.DB;
-  const db = drizzle(d1, { schema });
+  const db = drizzle(d1);
   c.set('db', db);
   await next();
 });

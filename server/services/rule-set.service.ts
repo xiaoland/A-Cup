@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { RuleSets, Profiles } from "../db/schema";
+import { Profiles } from "../db/schema";
+import { RuleSets } from "../db/rule-set";
 import { eq } from "drizzle-orm";
 import { exportProfileToR2 } from "../fund/profile-export";
 import { ServiceBase } from ".";
