@@ -12,7 +12,7 @@
 	"main": "server/index.ts",
 	"assets": {
 		"not_found_handling": "single-page-application",
-		"directory": "./public/",
+		"directory": "./public/"
 	},
 	"observability": {
 		"enabled": true
@@ -40,7 +40,7 @@
 	"r2_buckets": [
 		{
 			"binding": "OSS",
-			"bucket_name": "a-cup",
+			"bucket_name": "a-cup"
 		}
 	],
 

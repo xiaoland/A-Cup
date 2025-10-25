@@ -60,5 +60,25 @@ INSERT INTO users (username, password, roles) VALUES ('admin', '21232f297a57a5a7
 ## Developer Manual
 
 ### Tech Stacks
-- 后端：手搓Router + DrizzleORM + Zod
-- 前端：Vue3 + TS + Vite + Vuetify
+- 后端：Hono + DrizzleORM + Zod
+- 前端：Vue3 + TypeScript + Pinia + Zod + PrimeVue
+
+## OpenAPI specs
+
+OpenAPI (OpenAPI 3) spec files live in the `openapi/` folder at the repository root. Two useful helpers are included:
+
+- `openapi/openapi.yaml` — the canonical YAML spec (example/starting point).
+- `openapi/viewer.html` — a simple static viewer (Redoc via CDN) that loads `openapi.yaml`.
+
+Helpful npm scripts (run with `pnpm`/`npm`/`npx`):
+
+- `pnpm run openapi:serve:redoc` — use `redoc-cli` to serve the spec and auto-reload during edits (requires `npx` to fetch `redoc-cli`).
+- `pnpm run openapi:serve:http` — serve the `openapi/` directory as static files on port 8080 (uses `http-server` via `npx`). Open `http://localhost:8080/viewer.html`.
+- `pnpm run openapi:validate` — validate the spec with the Swagger/OpenAPI CLI (`npx @apidevtools/swagger-cli validate openapi/openapi.yaml`).
+
+Editing tips:
+
+- Edit `openapi/openapi.yaml` in your editor (editor YAML plugins and OpenAPI/Swagger extensions give linting/autocomplete).
+- The `viewer.html` file uses Redoc from CDN for quick local preview; you can also use `redoc-cli` (installed on demand by `npx`) for a richer dev serve.
+
+If you prefer a richer web editor, consider running the official Swagger Editor locally or using Redocly's tooling. See the repository `openapi/` folder for the example spec to start from.

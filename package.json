@@ -11,7 +11,10 @@
     "type-check": "vue-tsc --build",
     "deploy": "pnpm run build && wrangler deploy && wrangler d1 migrations apply a-cup --remote",
     "cf-typegen": "wrangler types",
-    "orm-mig-gen": "drizzle-kit generate"
+    "orm-mig-gen": "drizzle-kit generate",
+    "openapi:serve:redoc": "npx redoc-cli serve openapi/openapi.yaml --watch",
+    "openapi:serve:http": "npx http-server openapi -c-1 -p 8080",
+    "openapi:validate": "npx @apidevtools/swagger-cli validate openapi/openapi.yaml"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.4",

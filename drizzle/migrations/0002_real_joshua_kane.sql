@@ -1,1 +1,0 @@
-ALTER TABLE `outbounds` DROP COLUMN `tag`;
