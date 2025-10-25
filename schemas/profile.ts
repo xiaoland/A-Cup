@@ -13,7 +13,7 @@ export type Profile = z.infer<typeof ProfileSchema>;
 
 import { RouteSchema } from './route';
 import { DnsSchema } from './dns';
-import { InboundSchema } from './singbox';
+import { InboundSchema } from './inbound';
 
 export const CreateProfileSchema = z.object({
   name: z.string(),
