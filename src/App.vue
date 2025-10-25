@@ -2,7 +2,7 @@
 </script>
 
 <template>
-  <!-- TODO -->
+  <router-view />
 </template>
 
 <style scoped>
