@@ -47,3 +47,19 @@ export const TLSClientFieldsSchema = z.object({
 });
 
 export type TLSClientFields = z.infer<typeof TLSClientFieldsSchema>;
+
+export const ListenFieldsSchema = z.object({
+  listen: z.string(),
+  listen_port: z.number().int(),
+  bind_interface: z.string().optional(),
+  routing_mark: z.number().int().optional(),
+  reuse_addr: z.boolean().optional(),
+  netns: z.string().optional(),
+  tcp_fast_open: z.boolean().optional(),
+  tcp_multi_path: z.boolean().optional(),
+  udp_fragment: z.boolean().optional(),
+  udp_timeout: z.string().optional(),
+  detour: z.string().optional(),
+});
+
+export type ListenFields = z.infer<typeof ListenFieldsSchema>;
