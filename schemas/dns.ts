@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { DialFieldsSchema, TLSClientFieldsSchema } from './shared';
 
 const DNSRuleActionRouteSchema = z.object({
-  action: z.literal('route'),
+  action: z.literal('route').optional(),
   server: z.string(),
   strategy: z
     .enum(['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only'])
@@ -52,13 +52,7 @@ export const DNSRuleSchema = z
     domain_regex: z.array(z.string()).optional(),
     source_ip_cidr: z.array(z.string()).optional(),
   })
-  .merge(DNSRuleActionSchema)
-  .preprocess((val: any) => {
-    if (val && typeof val === 'object' && !('action' in val)) {
-      val.action = 'route';
-    }
-    return val;
-  });
+  .merge(DNSRuleActionSchema);
 
 const DNSServerBaseSchema = z.object({
   tag: z.string(),

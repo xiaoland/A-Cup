@@ -1,5 +1,24 @@
 import { z } from 'zod';
-import { DnsSchema } from './dns';
+
+// DNS Server Schema
+const DNSServerSchema = z.object({
+  tag: z.string(),
+  address: z.string(),
+  detour: z.string(),
+});
+
+// DNS Rule Schema
+const DNSRuleSchema = z.object({
+  type: z.string(),
+  server: z.string(),
+  outbound: z.any(),
+});
+
+// DNS Schema
+const DNSSchema = z.object({
+  servers: z.array(DNSServerSchema),
+  rules: z.array(DNSRuleSchema),
+});
 
 // Inbound Schema
 const InboundSchema = z.object({
@@ -39,7 +58,7 @@ const SingBoxOutboundSchema = z.object({
 
 // SingBoxProfile Schema
 export const SingBoxProfileSchema = z.object({
-  dns: DnsSchema,
+  dns: DNSSchema,
   inbounds: z.array(InboundSchema),
   outbounds: z.array(SingBoxOutboundSchema),
   route: RouteSchema,
