@@ -1,14 +1,7 @@
 import { z } from 'zod';
 import { DnsSchema } from './dns';
+import { InboundSchema } from './inbound';
 import { RouteSchema } from './route';
-
-// Inbound Schema
-const InboundSchema = z.object({
-  type: z.string(),
-  tag: z.string(),
-  listen: z.string(),
-  listen_port: z.number(),
-});
 
 // SingBox Outbound Schema (Simplified for now)
 const SingBoxOutboundSchema = z.object({
