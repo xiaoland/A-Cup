@@ -1,20 +1,80 @@
 import { z } from 'zod';
 import { DnsSchema } from './dns';
 import { RouteSchema } from './route';
+import {
+  VlessCredentialSchema,
+  VmessCredentialSchema,
+  ShadowsocksCredentialSchema,
+  Hysteria2CredentialSchema,
+} from './outbound';
 
 // Inbound Schema
-const InboundSchema = z.object({
+export const InboundSchema = z.object({
   type: z.string(),
   tag: z.string(),
   listen: z.string(),
   listen_port: z.number(),
 });
 
-// SingBox Outbound Schema (Simplified for now)
-const SingBoxOutboundSchema = z.object({
-  type: z.string(),
+// SingBox Outbound Schemas
+const SingBoxVlessOutboundSchema = z.object({
+  type: z.literal('vless'),
   tag: z.string(),
+  server: z.string(),
+  server_port: z.number().int(),
+  uuid: z.string().uuid(),
+  flow: z.string().optional(),
+  network: z.enum(['tcp', 'udp']).optional(),
+  tls: z.object({}).optional(),
+  packet_encoding: z.string().optional(),
+  multiplex: z.object({}).optional(),
+  transport: z.object({}).optional(),
 });
+
+const SingBoxVmessOutboundSchema = z.object({
+  type: z.literal('vmess'),
+  tag: z.string(),
+  server: z.string(),
+  server_port: z.number().int(),
+  uuid: z.string().uuid(),
+  security: z.string(),
+  alter_id: z.number().int(),
+  tls: z.object({}).optional(),
+  multiplex: z.object({}).optional(),
+  transport: z.object({}).optional(),
+});
+
+const SingBoxShadowsocksOutboundSchema = z.object({
+  type: z.literal('shadowsocks'),
+  tag: z.string(),
+  server: z.string(),
+  server_port: z.number().int(),
+  method: z.string(),
+  password: z.string(),
+  tls: z.object({}).optional(),
+  multiplex: z.object({}).optional(),
+  transport: z.object({}).optional(),
+});
+
+const SingBoxHysteria2OutboundSchema = z.object({
+  type: z.literal('hysteria2'),
+  tag: z.string(),
+  server: z.string(),
+  server_port: z.number().int(),
+  password: z.string(),
+  obfs: z.string().optional(),
+  obfs_password: z.string().optional(),
+  tls: z.object({}).optional(),
+  multiplex: z.object({}).optional(),
+  transport: z.object({}).optional(),
+});
+
+export const SingBoxOutboundSchema = z.discriminatedUnion('type', [
+  SingBoxVlessOutboundSchema,
+  SingBoxVmessOutboundSchema,
+  SingBoxShadowsocksOutboundSchema,
+  SingBoxHysteria2OutboundSchema,
+]);
 
 // SingBoxProfile Schema
 export const SingBoxProfileSchema = z.object({

@@ -1,22 +1,22 @@
 import { z } from 'zod';
 
-const VlessCredentialSchema = z.object({
+export const VlessCredentialSchema = z.object({
   uuid: z.string().uuid(),
   flow: z.string().optional(),
 });
 
-const VmessCredentialSchema = z.object({
+export const VmessCredentialSchema = z.object({
   uuid: z.string().uuid(),
   security: z.string(),
   alter_id: z.number().int(),
 });
 
-const ShadowsocksCredentialSchema = z.object({
+export const ShadowsocksCredentialSchema = z.object({
   method: z.string(),
   password: z.string(),
 });
 
-const Hysteria2CredentialSchema = z.object({
+export const Hysteria2CredentialSchema = z.object({
   password: z.string(),
   obfs: z.string().optional(),
   obfs_password: z.string().optional(),

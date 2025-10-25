@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { userRouter } from "./apis/user";
+import { profileRouter } from "./apis/profile";
 import { drizzle } from 'drizzle-orm/d1';
 
 const app = new Hono();
@@ -25,6 +26,7 @@ api.use('*', async (c, next) => {
 
 // Register module routers
 api.route('/users', userRouter);
+api.route('/profiles', profileRouter);
 
 // Mount the api router under /api
 app.route('/api', api);
