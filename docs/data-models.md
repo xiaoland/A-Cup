@@ -35,3 +35,9 @@ This document provides a high-level overview of the data models used in the appl
 *   The `content` of a **RuleSet** will vary based on its `type`.
     *   For `remote` **RuleSets**, the `content` will be a URL pointing to the rule set.
     *   For `inline` **RuleSets**, the `content` will be the rule set itself, formatted as a string.
+
+### SingBoxProfile
+
+*   A **SingBoxProfile** is an export of a **Profile**, formatted to be used by the sing-box application.
+*   It is not stored in the database, but is instead generated on-the-fly and persisted in R2 storage.
+*   The `SingBoxProfile` contains a collection of `inbounds`, `outbounds`, `route`, and `dns` configurations.

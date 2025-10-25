@@ -115,7 +115,7 @@
             "type": "object"
           }
         },
-        "required": ["id", "readableBy", "writeableBy", "name", "region", "provider", "type", "server", "server_port", "credential"]
+        "required": ["readableBy", "writeableBy", "name", "region", "provider", "type", "server", "server_port", "credential"]
       },
       "RuleSet": {
         "type": "object",
@@ -158,7 +158,7 @@
             "type": "integer"
           }
         },
-        "required": ["id", "readableBy", "writeableBy", "tag", "type", "content", "download_detour", "update_interval"]
+        "required": ["readableBy", "writeableBy", "tag", "type", "content", "download_detour", "update_interval"]
       },
       "VlessCredential": {
         "type": "object",
@@ -215,6 +215,160 @@
           }
         },
         "required": ["password"]
+      },
+      "SingBoxProfile": {
+        "type": "object",
+        "properties": {
+          "dns": {
+            "$ref": "#/components/schemas/DNS"
+          },
+          "inbounds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Inbound"
+            }
+          },
+          "outbounds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SingBoxOutbound"
+            }
+          },
+          "route": {
+            "$ref": "#/components/schemas/Route"
+          }
+        },
+        "required": ["dns", "inbounds", "outbounds", "route"]
+      },
+      "DNS": {
+        "type": "object",
+        "properties": {
+          "servers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DNSServer"
+            }
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DNSRule"
+            }
+          }
+        },
+        "required": ["servers", "rules"]
+      },
+      "DNSServer": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "detour": {
+            "type": "string"
+          }
+        },
+        "required": ["tag", "address", "detour"]
+      },
+      "DNSRule": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "server": {
+            "type": "string"
+          },
+          "outbound": {}
+        },
+        "required": ["type", "server", "outbound"]
+      },
+      "Inbound": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "listen": {
+            "type": "string"
+          },
+          "listen_port": {
+            "type": "integer"
+          }
+        },
+        "required": ["type", "tag", "listen", "listen_port"]
+      },
+      "Route": {
+        "type": "object",
+        "properties": {
+          "rules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RouteRule"
+            }
+          },
+          "rule_set": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SingBoxRuleSet"
+            }
+          }
+        },
+        "required": ["rules", "rule_set"]
+      },
+      "RouteRule": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "outbound": {
+            "type": "string"
+          }
+        },
+        "required": ["type", "outbound"]
+      },
+      "SingBoxRuleSet": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "download_detour": {
+            "type": "string"
+          },
+          "update_interval": {
+            "type": "string"
+          }
+        },
+        "required": ["type", "tag", "format", "url", "download_detour", "update_interval"]
+      },
+      "SingBoxOutbound": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          }
+        },
+        "required": ["type", "tag"]
       }
     }
   }
