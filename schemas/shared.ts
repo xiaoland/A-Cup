@@ -13,10 +13,6 @@ export const DialFieldsSchema = z.object({
   tcp_multi_path: z.boolean().optional(),
   udp_fragment: z.boolean().optional(),
   domain_resolver: z.union([z.string(), z.object({})]).optional(),
-  network_strategy: z.string().optional(),
-  network_type: z.array(z.string()).optional(),
-  fallback_network_type: z.array(z.string()).optional(),
-  fallback_delay: z.string().optional(),
   domain_strategy: z
     .enum(['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only'])
     .optional(),
@@ -33,7 +29,7 @@ export const TLSClientFieldsSchema = z.object({
   min_version: z.string().optional(),
   max_version: z.string().optional(),
   cipher_suites: z.array(z.string()).optional(),
-  certificate: z.string().optional(),
+  certificate: z.union([z.string(), z.array(z.string())]).optional(),
   certificate_path: z.string().optional(),
   utls: z
     .object({
