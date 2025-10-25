@@ -1,0 +1,221 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Sing-Box Profile Manager API",
+    "version": "1.0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "username", "password"]
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outbounds": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "rule_sets": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        "required": ["id", "name", "tags", "createdBy", "outbounds", "rule_sets"]
+      },
+      "Outbound": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "readableBy": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "writeableBy": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["vless", "hysteria2", "vmess", "shadowsocks"]
+          },
+          "server": {
+            "type": "string"
+          },
+          "server_port": {
+            "type": "integer"
+          },
+          "credential": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/VlessCredential" },
+              { "$ref": "#/components/schemas/VmessCredential" },
+              { "$ref": "#/components/schemas/ShadowsocksCredential" },
+              { "$ref": "#/components/schemas/Hysteria2Credential" }
+            ]
+          },
+          "tls": {
+            "type": "object"
+          },
+          "mux": {
+            "type": "object"
+          },
+          "other": {
+            "type": "object"
+          }
+        },
+        "required": ["id", "readableBy", "writeableBy", "name", "region", "provider", "type", "server", "server_port", "credential"]
+      },
+      "RuleSet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "readableBy": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "writeableBy": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "tag": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["remote", "inline"]
+          },
+          "format": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string"
+          },
+          "download_detour": {
+            "type": "integer"
+          },
+          "update_interval": {
+            "type": "integer"
+          }
+        },
+        "required": ["id", "readableBy", "writeableBy", "tag", "type", "content", "download_detour", "update_interval"]
+      },
+      "VlessCredential": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "flow": {
+            "type": "string"
+          }
+        },
+        "required": ["uuid"]
+      },
+      "VmessCredential": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "security": {
+            "type": "string"
+          },
+          "alter_id": {
+            "type": "integer"
+          }
+        },
+        "required": ["uuid", "security", "alter_id"]
+      },
+      "ShadowsocksCredential": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": ["method", "password"]
+      },
+      "Hysteria2Credential": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "obfs": {
+            "type": "string"
+          },
+          "obfs_password": {
+            "type": "string"
+          }
+        },
+        "required": ["password"]
+      }
+    }
+  }
+}
