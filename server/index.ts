@@ -1,9 +1,5 @@
 import { Hono } from 'hono';
-import { jwt } from 'hono/jwt';
-import { outboundRouter } from "./apis/outbound";
 import { userRouter } from "./apis/user";
-import { ruleSetRouter } from "./apis/rule-set";
-import { profileRouter } from "./apis/profile";
 import { drizzle } from 'drizzle-orm/d1';
 
 const app = new Hono();
@@ -27,25 +23,8 @@ api.use('*', async (c, next) => {
   await next();
 });
 
-// JWT middleware on the api router
-api.use('*', async (c, next) => {
-  // if (c.req.path === '/api/users' && c.req.method === 'POST') {
-  //   return await next();
-  // }
-  // Login does not requires credential
-  if (c.req.path.startsWith('/api/users/') && c.req.method === 'PUT') {
-    return await next();
-  }
-
-  const auth = jwt({ secret: c.env.JWT_SECRET });
-  return auth(c, next);
-});
-
 // Register module routers
-api.route('/outbounds', outboundRouter);
 api.route('/users', userRouter);
-api.route('/rule_sets', ruleSetRouter);
-api.route('/profiles', profileRouter);
 
 // Mount the api router under /api
 app.route('/api', api);
