@@ -50,7 +50,7 @@ export class OutboundService {
       other: JSON.stringify(outbound.other),
     }
     const result = await this.db.insert(outbounds).values(newOutbound).returning().get();
-    return this.getOutboundById(result.id);
+    return this.getOutboundById(result.id, userId);
   }
 
   async updateOutbound(id: number, outbound: z.infer<typeof OutboundSchema>, userId: string) {
