@@ -5,6 +5,29 @@ import { drizzle } from 'drizzle-orm/d1';
 
 const app = new Hono();
 
+// Error handling middleware
+app.use('*', async (c, next) => {
+  try {
+    await next();
+  } catch (error) {
+    console.error('Caught exception:', error);
+    
+    const statusCode = error instanceof Error && 'status' in error 
+      ? (error as any).status 
+      : 500;
+    
+    const message = error instanceof Error 
+      ? error.message 
+      : 'Internal Server Error';
+    
+    return c.json({
+      error: message,
+      details: error instanceof Error ? error.stack : String(error),
+      timestamp: new Date().toISOString()
+    }, statusCode);
+  }
+});
+
 // Response time logger
 app.use('*', async (c, next) => {
   const start = Date.now();
