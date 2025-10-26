@@ -12,27 +12,27 @@ export function fromSingbox(singboxOutbound: SingboxOutbound): Outbound {
 
   const other: { [key: string]: any } = {};
   let credential: Credential | null = null;
-  let credentailSchema: any;
+  let credentialSchema: any;
 
   const outboundSchemaKeys = Object.keys(OutboundSchema.shape);
 
   switch (type) {
     case 'vless':
-      credentailSchema = VlessCredentialSchema
+      credentialSchema = VlessCredentialSchema
       break;
     case 'vmess':
-      credentailSchema = VmessCredentialSchema;
+      credentialSchema = VmessCredentialSchema;
       break;
     case 'shadowsocks':
-      credentailSchema = ShadowsocksCredentialSchema;
+      credentialSchema = ShadowsocksCredentialSchema;
       break;
     case 'hysteria2':
-      credentailSchema = Hysteria2CredentialSchema;
+      credentialSchema = Hysteria2CredentialSchema;
       break;
   }
 
   if (credentialSchema) {
-     credentail = credentailSchema.parse(retainedFields);
+     credential = credentialSchema.parse(retainedFields);
   }
 
   if (!credential) {
