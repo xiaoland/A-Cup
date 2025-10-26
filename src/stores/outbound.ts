@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { Outbound } from '../../schemas/outbound';
+import type { Outbound } from '../../schemas/outbound';
 
 export const useOutboundStore = defineStore('outbound', () => {
   const outbounds = ref<Outbound[]>([]);

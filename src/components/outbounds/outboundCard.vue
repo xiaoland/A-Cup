@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { z } from 'zod';
-import { OutboundSchema } from '../../../../schemas/outbound';
+import { OutboundSchema } from '../../../schemas/outbound';
 import Card from 'primevue/card';
 import Button from 'primevue/button';
 

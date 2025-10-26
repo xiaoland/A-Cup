@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useOutboundStore } from '../../stores/outbound';
-import OutboundCard from '../../components/outbounds/outboundCard.vue';
-import OutboundEditor from '../../components/outbounds/outboundEditor/outboundEditor.vue';
+import { useOutboundStore } from '../stores/outbound';
+import OutboundCard from '../components/outbounds/outboundCard.vue';
+import OutboundEditor from '../components/outbounds/outboundEditor/outboundEditor.vue';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
+import type { Outbound } from '../../schemas/outbound';
 
 const outboundStore = useOutboundStore();
 const showEditor = ref(false);
-const selectedOutbound = ref(null);
+const selectedOutbound = ref<Outbound | null>(null);
 
 onMounted(() => {
   outboundStore.fetchOutbounds();
 });
 
-function openEditor(outbound = null) {
-  selectedOutbound.value = outbound ? { ...outbound } : { name: '', type: 'vless', region: '', provider: '', server: '', server_port: 0, credential: { uuid: '' } };
+function openEditor(outbound: Outbound | null = null) {
+  selectedOutbound.value = outbound ? { ...outbound } : { name: '', type: 'vless', region: '', provider: '', server: '', server_port: 0, credential: { uuid: '' }, readableBy: [], writeableBy: [] };
   showEditor.value = true;
 }
 
@@ -24,7 +25,7 @@ function closeEditor() {
   selectedOutbound.value = null;
 }
 
-async function saveOutbound(outbound) {
+async function saveOutbound(outbound: Outbound) {
   if (outbound.id) {
     await outboundStore.updateOutbound(outbound);
   } else {
@@ -33,8 +34,10 @@ async function saveOutbound(outbound) {
   closeEditor();
 }
 
-async function deleteOutbound(outbound) {
-  await outboundStore.deleteOutbound(outbound.id);
+async function deleteOutbound(outbound: Outbound) {
+  if (outbound.id) {
+    await outboundStore.deleteOutbound(outbound.id);
+  }
 }
 </script>
 
