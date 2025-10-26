@@ -5,7 +5,10 @@ import { OutboundService } from '../services/outbound';
 import { jwt } from 'hono/jwt';
 
 export const outboundApi = new Hono()
-  .use('*', jwt({ secret: 'your-secret' })) // Replace with your actual secret
+  .use('*', async (c, next) => {
+    const auth = jwt({ secret: c.env.JWT_SECRET });
+    return auth(c, next);
+  })
   .get('/', async (c) => {
     const user = c.get('jwtPayload');
     const outboundService = new OutboundService(c.get('db'));
