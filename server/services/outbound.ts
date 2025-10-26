@@ -31,7 +31,7 @@ export class OutboundService {
   async getOutboundById(id: number, userId: string) {
     const outbound = await this.db.select().from(outbounds).where(eq(outbounds.id, id)).get();
     if (outbound && !JSON.parse(outbound.readableBy).includes(userId)) {
-      raise new Error('Forbidden');
+      throw new Error('Forbidden');
     }
     return outbound;
   }
