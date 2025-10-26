@@ -1,3 +1,4 @@
+
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { z } from 'zod';
@@ -33,6 +34,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(['update:modelValue', 'save', 'cancel']);
 
 const localOutbound = ref(JSON.parse(JSON.stringify(props.modelValue)));
+const isImporting = ref(false);
 
 watch(() => props.modelValue, (newValue) => {
   localOutbound.value = JSON.parse(JSON.stringify(newValue));
@@ -64,7 +66,7 @@ const isSpecialOutbound = computed(() => {
 });
 
 watch(() => localOutbound.value.type, (newType, oldType) => {
-  if (newType === oldType) return;
+  if (newType === oldType || isImporting.value) return;
 
   const commonData = {
     name: localOutbound.value.name,
@@ -109,7 +111,9 @@ function showImportDialog() {
 }
 
 function onParsed(parsedOutbound: OutboundModel) {
+  isImporting.value = true;
   localOutbound.value = { ...localOutbound.value, ...parsedOutbound };
+  isImporting.value = false;
 }
 
 function cancel() {

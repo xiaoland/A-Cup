@@ -4,54 +4,67 @@ import { OutboundSchema, VlessCredentialSchema, VmessCredentialSchema, Shadowsoc
 import { SingBoxOutboundSchema } from '../../../schemas/singbox';
 
 type SingboxOutbound = z.infer<typeof SingBoxOutboundSchema>;
-type OutboundPartial = z.infer<typeof OutboundSchema.partial>;
+type Outbound = z.infer<typeof OutboundSchema>;
 type Credential = z.infer<typeof OutboundSchema.shape.credential>;
 
-export function fromSingbox(singboxOutbound: SingboxOutbound): OutboundPartial {
-  const { tag, multiplex, tls, type, server, server_port, ...retainedFields } = singboxOutbound;
+export function fromSingbox(singboxOutbound: SingboxOutbound): Outbound {
+  const { tag, multiplex, ...retainedFields } = singboxOutbound;
 
   const other: { [key: string]: any } = {};
   let credential: Credential | null = null;
-  let credentialSchema: any;
 
   const outboundSchemaKeys = Object.keys(OutboundSchema.shape);
 
-  switch (type) {
-    case 'vless':
-      credentialSchema = VlessCredentialSchema
-      break;
-    case 'vmess':
-      credentialSchema = VmessCredentialSchema;
-      break;
-    case 'shadowsocks':
-      credentialSchema = ShadowsocksCredentialSchema;
-      break;
-    case 'hysteria2':
-      credentialSchema = Hysteria2CredentialSchema;
-      break;
-  }
-
-  if (credentialSchema) {
-     credential = credentialSchema.parse(retainedFields);
-  }
-
-  if (!credential) {
-    throw new Error('Could not create credential for outbound type: ' + type);
-  }
-
   for (const key in retainedFields) {
-    if (!outboundSchemaKeys.includes(key) && !Object.keys(credentialSchema.shape).includes(key)) {
+    if (!outboundSchemaKeys.includes(key) && key !== 'type' && key !== 'server' && key !== 'server_port') {
       other[key] = (retainedFields as any)[key];
     }
   }
 
+  switch (retainedFields.type) {
+    case 'vless':
+      credential = VlessCredentialSchema.parse({
+        uuid: retainedFields.uuid,
+        flow: retainedFields.flow,
+      });
+      break;
+    case 'vmess':
+      credential = VmessCredentialSchema.parse({
+        uuid: retainedFields.uuid,
+        security: retainedFields.security,
+        alter_id: retainedFields.alter_id,
+      });
+      break;
+    case 'shadowsocks':
+      credential = ShadowsocksCredentialSchema.parse({
+        method: retainedFields.method,
+        password: retainedFields.password,
+      });
+      break;
+    case 'hysteria2':
+      credential = Hysteria2CredentialSchema.parse({
+        password: retainedFields.password,
+        obfs: retainedFields.obfs,
+        obfs_password: retainedFields.obfs_password,
+      });
+      break;
+  }
+
+  if (!credential) {
+    throw new Error('Could not create credential for outbound type: ' + retainedFields.type);
+  }
+
   return {
     name: tag,
-    type,
-    server,
-    server_port,
+    type: retainedFields.type,
+    server: retainedFields.server,
+    server_port: retainedFields.server_port,
     mux: multiplex as any,
     other: other as any,
-    credential
+    credential,
+    readableBy: [],
+    writeableBy: [],
+    region: '',
+    provider: '',
   };
 }
