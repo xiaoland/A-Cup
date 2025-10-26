@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { userRouter } from "./apis/user";
 import { profileRouter } from "./apis/profile";
 import { drizzle } from 'drizzle-orm/d1';
@@ -12,6 +13,15 @@ app.use('*', async (c, next) => {
   } catch (error) {
     console.error('Caught exception:', error);
     
+    // Handle Hono HTTPException instances
+    if (error instanceof HTTPException) {
+      return c.json({
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }, error.status);
+    }
+    
+    // Handle other errors with status property
     const statusCode = error instanceof Error && 'status' in error 
       ? (error as any).status 
       : 500;
