@@ -7,8 +7,10 @@ import { SelectorOutboundSchema, UrlTestOutboundSchema, DirectOutboundSchema } f
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import Button from 'primevue/button';
-import Panel from 'primevue/panel';
+import Fieldset from 'primevue/fieldset';
 import InputNumber from 'primevue/inputnumber';
+import Textarea from 'primevue/textarea';
+import UsersPicker from '../../user/usersPicker.vue';
 
 import VlessForm from './vlessForm.vue';
 import VmessForm from './vmessForm.vue';
@@ -20,9 +22,12 @@ import DirectForm from './directForm.vue';
 
 type OutboundModel = z.infer<typeof OutboundSchema> | z.infer<typeof SelectorOutboundSchema> | z.infer<typeof UrlTestOutboundSchema> | z.infer<typeof DirectOutboundSchema>;
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: OutboundModel;
-}>();
+  disableSpecial?: boolean;
+}>(), {
+  disableSpecial: true,
+});
 
 const emit = defineEmits(['update:modelValue', 'save']);
 
@@ -36,15 +41,21 @@ watch(localOutbound, (newValue) => {
   emit('update:modelValue', newValue);
 }, { deep: true });
 
-const outboundTypes = [
-  { label: 'VLESS', value: 'vless' },
-  { label: 'VMess', value: 'vmess' },
-  { label: 'Shadowsocks', value: 'shadowsocks' },
-  { label: 'Hysteria2', value: 'hysteria2' },
-  { label: 'Selector', value: 'selector' },
-  { label: 'URLTest', value: 'urltest' },
-  { label: 'Direct', value: 'direct' },
-];
+const outboundTypes = computed(() => {
+  const allTypes = [
+    { label: 'VLESS', value: 'vless' },
+    { label: 'VMess', value: 'vmess' },
+    { label: 'Shadowsocks', value: 'shadowsocks' },
+    { label: 'Hysteria2', value: 'hysteria2' },
+    { label: 'Selector', value: 'selector' },
+    { label: 'URLTest', value: 'urltest' },
+    { label: 'Direct', value: 'direct' },
+  ];
+  if (props.disableSpecial) {
+    return allTypes.filter(t => !['selector', 'urltest', 'direct'].includes(t.value));
+  }
+  return allTypes;
+});
 
 const isSpecialOutbound = computed(() => {
   const specialTypes = ['selector', 'urltest', 'direct'];
@@ -93,74 +104,74 @@ function save() {
 
 <template>
   <div class="p-4">
-    <TabView>
-      <TabPanel header="Basic" value="basic">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="name">Name</label>
-            <InputText id="name" v-model="localOutbound.name" class="w-full" />
-          </div>
-          <div>
-            <label for="type">Type</label>
-            <Dropdown id="type" v-model="localOutbound.type" :options="outboundTypes" optionLabel="label" optionValue="value" class="w-full" />
-          </div>
-          <div>
-            <label for="region">Region</label>
-            <InputText id="region" v-model="localOutbound.region" class="w-full" />
-          </div>
-          <div>
-            <label for="provider">Provider</label>
-            <InputText id="provider" v-model="localOutbound.provider" class="w-full" />
-          </div>
+    <Fieldset legend="Basic Info">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="name">Name</label>
+          <InputText id="name" v-model="localOutbound.name" class="w-full" />
         </div>
-      </TabPanel>
-      <TabPanel header="Base" value="base">
-        <div v-if="!isSpecialOutbound" class="grid grid-cols-2 gap-4 mt-4">
-          <div>
-            <label for="server">Server</label>
-            <InputText id="server" v-model="localOutbound.server" class="w-full" />
-          </div>
-          <div>
-            <label for="server_port">Server Port</label>
-            <InputNumber id="server_port" v-model="localOutbound.server_port" class="w-full" />
-          </div>
+        <div>
+          <label for="type">Type</label>
+          <Dropdown id="type" v-model="localOutbound.type" :options="outboundTypes" optionLabel="label" optionValue="value" class="w-full" />
         </div>
+        <div>
+          <label for="region">Region</label>
+          <InputText id="region" v-model="localOutbound.region" class="w-full" />
+        </div>
+        <div>
+          <label for="provider">Provider</label>
+          <InputText id="provider" v-model="localOutbound.provider" class="w-full" />
+        </div>
+      </div>
+    </Fieldset>
 
-        <div class="mt-4">
-          <VlessForm v-if="localOutbound.type === 'vless'" v-model="localOutbound.credential" />
-          <VmessForm v-if="localOutbound.type === 'vmess'" v-model="localOutbound.credential" />
-          <ShadowsocksForm v-if="localOutbound.type === 'shadowsocks'" v-model="localOutbound.credential" />
-          <Hysteria2Form v-if="localOutbound.type === 'hysteria2'" v-model="localOutbound.credential" />
-          <SelectorForm v-if="localOutbound.type === 'selector'" v-model="localOutbound" />
-          <UrltestForm v-if="localOutbound.type === 'urltest'" v-model="localOutbound" />
-          <DirectForm v-if="localOutbound.type === 'direct'" v-model="localOutbound" />
+    <Fieldset legend="Base" class="mt-4">
+      <div v-if="!isSpecialOutbound" class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="server">Server</label>
+          <InputText id="server" v-model="localOutbound.server" class="w-full" />
         </div>
-      </TabPanel>
-      <TabPanel header="Advanced" value="advanced">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label for="readableBy">Readable By</label>
-            <Chips id="readableBy" v-model="localOutbound.readableBy" class="w-full" />
-          </div>
-          <div>
-            <label for="writeableBy">Writeable By</label>
-            <Chips id="writeableBy" v-model="localOutbound.writeableBy" class="w-full" />
-          </div>
-          <div>
-            <label for="tls">TLS</label>
-            <Textarea id="tls" v-model="localOutbound.tls" class="w-full" />
-          </div>
-          <div>
-            <label for="mux">Mux</label>
-            <Textarea id="mux" v-model="localOutbound.mux" class="w-full" />
-          </div>
-          <div>
-            <label for="other">Other</label>
-            <Textarea id="other" v-model="localOutbound.other" class="w-full" />
-          </div>
+        <div>
+          <label for="server_port">Server Port</label>
+          <InputNumber id="server_port" v-model="localOutbound.server_port" class="w-full" />
         </div>
-      </TabPanel>
-    </TabView>
+      </div>
+
+      <div class="mt-4">
+        <VlessForm v-if="localOutbound.type === 'vless'" v-model="localOutbound.credential" />
+        <VmessForm v-if="localOutbound.type === 'vmess'" v-model="localOutbound.credential" />
+        <ShadowsocksForm v-if="localOutbound.type === 'shadowsocks'" v-model="localOutbound.credential" />
+        <Hysteria2Form v-if="localOutbound.type === 'hysteria2'" v-model="localOutbound.credential" />
+        <SelectorForm v-if="localOutbound.type === 'selector'" v-model="localOutbound" />
+        <UrltestForm v-if="localOutbound.type === 'urltest'" v-model="localOutbound" />
+        <DirectForm v-if="localOutbound.type === 'direct'" v-model="localOutbound" />
+      </div>
+    </Fieldset>
+
+    <Fieldset legend="Advanced" :toggleable="true" :collapsed="true" class="mt-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="readableBy">Readable By</label>
+          <UsersPicker id="readableBy" v-model="localOutbound.readableBy" />
+        </div>
+        <div>
+          <label for="writeableBy">Writeable By</label>
+          <UsersPicker id="writeableBy" v-model="localOutbound.writeableBy" />
+        </div>
+        <div>
+          <label for="tls">TLS</label>
+          <Textarea id="tls" v-model="localOutbound.tls" class="w-full" />
+        </div>
+        <div>
+          <label for="mux">Mux</label>
+          <Textarea id="mux" v-model="localOutbound.mux" class="w-full" />
+        </div>
+        <div>
+          <label for="other">Other</label>
+          <Textarea id="other" v-model="localOutbound.other" class="w-full" />
+        </div>
+      </div>
+    </Fieldset>
 
     <div class="flex justify-end mt-4">
       <Button label="Save" @click="save" />

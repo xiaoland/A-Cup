@@ -41,4 +41,13 @@ userRouter.put('/:username', zValidator('json', PasswordSchema), async (c) => {
   return c.body(null, 200);
 });
 
+userRouter.get('/', async (c) => {
+  const db = c.get('db');
+  const allUsers = await db.select({
+    id: users.id,
+    username: users.username,
+  }).from(users);
+  return c.json(allUsers);
+});
+
 export { userRouter };

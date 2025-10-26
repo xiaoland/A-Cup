@@ -21,6 +21,18 @@ const routes = [
     component: () => import('@/views/outboundsView.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/outbounds/new',
+    name: 'newOutbound',
+    component: () => import('@/views/editOutbound.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/outbounds/edit/:id',
+    name: 'editOutbound',
+    component: () => import('@/views/editOutbound.vue'),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({
