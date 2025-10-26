@@ -2,6 +2,9 @@ import { z } from 'zod';
 import { DnsSchema } from './dns';
 import { InboundSchema } from './inbound';
 import { RouteSchema } from './route';
+import { SingBoxTlsSchema } from './tls';
+import { SingBoxMultiplexSchema } from './multiplex';
+import { SingBoxTransportSchema } from './transport';
 
 // SingBox Outbound Schemas
 const SingBoxVlessOutboundSchema = z.object({
@@ -12,10 +15,10 @@ const SingBoxVlessOutboundSchema = z.object({
   uuid: z.string().uuid(),
   flow: z.string().optional(),
   network: z.enum(['tcp', 'udp']).optional(),
-  tls: z.object({}).optional(),
+  tls: SingBoxTlsSchema.optional(),
   packet_encoding: z.string().optional(),
-  multiplex: z.object({}).optional(),
-  transport: z.object({}).optional(),
+  multiplex: SingBoxMultiplexSchema.optional(),
+  transport: SingBoxTransportSchema.optional(),
 });
 
 const SingBoxVmessOutboundSchema = z.object({
@@ -26,9 +29,9 @@ const SingBoxVmessOutboundSchema = z.object({
   uuid: z.string().uuid(),
   security: z.string(),
   alter_id: z.number().int(),
-  tls: z.object({}).optional(),
-  multiplex: z.object({}).optional(),
-  transport: z.object({}).optional(),
+  tls: SingBoxTlsSchema.optional(),
+  multiplex: SingBoxMultiplexSchema.optional(),
+  transport: SingBoxTransportSchema.optional(),
 });
 
 const SingBoxShadowsocksOutboundSchema = z.object({
@@ -38,9 +41,9 @@ const SingBoxShadowsocksOutboundSchema = z.object({
   server_port: z.number().int(),
   method: z.string(),
   password: z.string(),
-  tls: z.object({}).optional(),
-  multiplex: z.object({}).optional(),
-  transport: z.object({}).optional(),
+  tls: SingBoxTlsSchema.optional(),
+  multiplex: SingBoxMultiplexSchema.optional(),
+  transport: SingBoxTransportSchema.optional(),
 });
 
 const SingBoxHysteria2OutboundSchema = z.object({
@@ -51,9 +54,9 @@ const SingBoxHysteria2OutboundSchema = z.object({
   password: z.string(),
   obfs: z.string().optional(),
   obfs_password: z.string().optional(),
-  tls: z.object({}).optional(),
-  multiplex: z.object({}).optional(),
-  transport: z.object({}).optional(),
+  tls: SingBoxTlsSchema.optional(),
+  multiplex: SingBoxMultiplexSchema.optional(),
+  transport: SingBoxTransportSchema.optional(),
 });
 
 export const SingBoxOutboundSchema = z.discriminatedUnion('type', [
