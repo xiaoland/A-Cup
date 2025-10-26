@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token'));
+  const router = useRouter();
 
   function setToken(newToken: string) {
     token.value = newToken;
@@ -21,6 +23,12 @@ export const useUserStore = defineStore('user', () => {
     }
 
     const response = await fetch(url, { ...options, headers });
+
+    if (response.status === 401) {
+      clearToken();
+      router.push('/user/login');
+      throw new Error('Unauthorized');
+    }
 
     if (!response.ok) {
       throw new Error(`Request failed with status ${response.status}`);

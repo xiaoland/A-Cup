@@ -2,11 +2,6 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { OutboundSchema } from '../../schemas/outbound';
 import { OutboundService } from '../services/outbound';
-
-import { Hono } from 'hono';
-import { zValidator } from '@hono/zod-validator';
-import { OutboundSchema } from '../../schemas/outbound';
-import { OutboundService } from '../services/outbound';
 import { jwt } from 'hono/jwt';
 
 export const outboundApi = new Hono()
@@ -18,13 +13,18 @@ export const outboundApi = new Hono()
     return c.json(outbounds.map(o => ({...o, credential: JSON.parse(o.credential), readableBy: JSON.parse(o.readableBy), writeableBy: JSON.parse(o.writeableBy) })));
   })
   .get('/:id', async (c) => {
+    const user = c.get('jwtPayload');
     const outboundService = new OutboundService(c.get('db'));
     const id = parseInt(c.req.param('id'));
-    const outbound = await outboundService.getOutboundById(id);
-    if (!outbound) {
-      return c.notFound();
+    try {
+      const outbound = await outboundService.getOutboundById(id, user.id);
+      if (!outbound) {
+        return c.notFound();
+      }
+      return c.json({...outbound, credential: JSON.parse(outbound.credential), readableBy: JSON.parse(outbound.readableBy), writeableBy: JSON.parse(outbound.writeableBy) });
+    } catch (error) {
+      return c.json({ message: error.message }, 403);
     }
-    return c.json({...outbound, credential: JSON.parse(outbound.credential), readableBy: JSON.parse(o.readableBy), writeableBy: JSON.parse(o.writeableBy) });
   })
   .post('/', zValidator('json', OutboundSchema), async (c) => {
     const user = c.get('jwtPayload');
@@ -45,7 +45,10 @@ export const outboundApi = new Hono()
       }
       return c.json(updatedOutbound);
     } catch (error) {
-      return c.json({ message: error.message }, 403);
+      if (error.message === 'Forbidden') {
+        return c.json({ message: error.message }, 403);
+      }
+      return c.json({ message: error.message }, 500);
     }
   })
   .delete('/:id', async (c) => {
@@ -56,6 +59,9 @@ export const outboundApi = new Hono()
       await outboundService.deleteOutbound(id, user.id);
       return c.body(null, 204);
     } catch (error) {
-      return c.json({ message: error.message }, 403);
+      if (error.message === 'Forbidden') {
+        return c.json({ message: error.message }, 403);
+      }
+      return c.json({ message: error.message }, 500);
     }
   });

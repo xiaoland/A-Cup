@@ -28,15 +28,22 @@ export class OutboundService {
     return await this.db.select().from(outbounds).where(like(outbounds.readableBy, `%${userId}%`));
   }
 
-  async getOutboundById(id: number) {
-    return await this.db.select().from(outbounds).where(eq(outbounds.id, id)).get();
+  async getOutboundById(id: number, userId: string) {
+    const outbound = await this.db.select().from(outbounds).where(eq(outbounds.id, id)).get();
+    if (outbound && !JSON.parse(outbound.readableBy).includes(userId)) {
+      throw new Error('Forbidden');
+    }
+    return outbound;
   }
 
   async createOutbound(outbound: z.infer<typeof OutboundSchema>, userId: string) {
+    const readableBy = (outbound.readableBy && outbound.readableBy.length > 0) ? outbound.readableBy : [userId];
+    const writeableBy = (outbound.writeableBy && outbound.writeableBy.length > 0) ? outbound.writeableBy : [userId];
+
     const newOutbound = {
       ...outbound,
-      readableBy: JSON.stringify([userId]),
-      writeableBy: JSON.stringify([userId]),
+      readableBy: JSON.stringify(readableBy),
+      writeableBy: JSON.stringify(writeableBy),
       credential: JSON.stringify(outbound.credential),
       tls: JSON.stringify(outbound.tls),
       mux: JSON.stringify(outbound.mux),
@@ -47,12 +54,12 @@ export class OutboundService {
   }
 
   async updateOutbound(id: number, outbound: z.infer<typeof OutboundSchema>, userId: string) {
-    const existingOutbound = await this.getOutboundById(id);
+    const existingOutbound = await this.getOutboundById(id, userId);
     if (!existingOutbound) {
       return null;
     }
     if (!JSON.parse(existingOutbound.writeableBy).includes(userId)) {
-      throw new Error('Unauthorized');
+      throw new Error('Forbidden');
     }
 
     const updatedOutbound = {
@@ -69,12 +76,12 @@ export class OutboundService {
   }
 
   async deleteOutbound(id: number, userId: string) {
-    const existingOutbound = await this.getOutboundById(id);
+    const existingOutbound = await this.getOutboundById(id, userId);
     if (!existingOutbound) {
       return null;
     }
     if (!JSON.parse(existingOutbound.writeableBy).includes(userId)) {
-      throw new Error('Unauthorized');
+      throw new Error('Forbidden');
     }
     return await this.db.delete(outbounds).where(eq(outbounds.id, id));
   }
