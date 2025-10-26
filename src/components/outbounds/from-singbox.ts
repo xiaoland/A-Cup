@@ -36,7 +36,7 @@ export function fromSingbox(singboxOutbound: SingboxOutbound): OutboundPartial {
   }
 
   if (!credential) {
-    throw new Error('Could not create credential for outbound type: ' + retainedFields.type);
+    throw new Error('Could not create credential for outbound type: ' + type);
   }
 
   for (const key in retainedFields) {
