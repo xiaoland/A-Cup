@@ -4,10 +4,10 @@ import { OutboundSchema, VlessCredentialSchema, VmessCredentialSchema, Shadowsoc
 import { SingBoxOutboundSchema } from '../../../schemas/singbox';
 
 type SingboxOutbound = z.infer<typeof SingBoxOutboundSchema>;
-type Outbound = z.infer<typeof OutboundSchema>;
+type OutboundPartial = z.infer<typeof OutboundSchema.partial>;
 type Credential = z.infer<typeof OutboundSchema.shape.credential>;
 
-export function fromSingbox(singboxOutbound: SingboxOutbound): Outbound {
+export function fromSingbox(singboxOutbound: SingboxOutbound): OutboundPartial {
   const { tag, multiplex, tls, type, server, server_port, ...retainedFields } = singboxOutbound;
 
   const other: { [key: string]: any } = {};
