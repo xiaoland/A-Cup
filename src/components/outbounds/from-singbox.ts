@@ -8,7 +8,7 @@ type Outbound = z.infer<typeof OutboundSchema>;
 type Credential = z.infer<typeof OutboundSchema.shape.credential>;
 
 export function fromSingbox(singboxOutbound: SingboxOutbound): Outbound {
-  const { tag, multiplex, tls, type, server, server_port ...retainedFields } = singboxOutbound;
+  const { tag, multiplex, tls, type, server, server_port, ...retainedFields } = singboxOutbound;
 
   const other: { [key: string]: any } = {};
   let credential: Credential | null = null;
