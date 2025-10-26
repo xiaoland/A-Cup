@@ -1,32 +1,31 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { Outbound } from '../../schemas/outbound';
+import { useUserStore } from './user';
 
 export const useOutboundStore = defineStore('outbound', () => {
   const outbounds = ref<Outbound[]>([]);
+  const userStore = useUserStore();
 
   async function fetchOutbounds() {
-    const response = await fetch('/api/outbounds');
-    outbounds.value = await response.json();
+    outbounds.value = await userStore.authorizedRequest<Outbound[]>('/api/outbounds');
   }
 
   async function createOutbound(outbound: Outbound) {
-    const response = await fetch('/api/outbounds', {
+    const newOutbound = await userStore.authorizedRequest<Outbound>('/api/outbounds', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(outbound),
     });
-    const newOutbound = await response.json();
     outbounds.value.push(newOutbound);
   }
 
   async function updateOutbound(outbound: Outbound) {
-    const response = await fetch(`/api/outbounds/${outbound.id}`, {
+    const updatedOutbound = await userStore.authorizedRequest<Outbound>(`/api/outbounds/${outbound.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(outbound),
     });
-    const updatedOutbound = await response.json();
     const index = outbounds.value.findIndex((o) => o.id === updatedOutbound.id);
     if (index !== -1) {
       outbounds.value[index] = updatedOutbound;
@@ -34,7 +33,7 @@ export const useOutboundStore = defineStore('outbound', () => {
   }
 
   async function deleteOutbound(id: number) {
-    await fetch(`/api/outbounds/${id}`, {
+    await userStore.authorizedRequest(`/api/outbounds/${id}`, {
       method: 'DELETE',
     });
     outbounds.value = outbounds.value.filter((o) => o.id !== id);

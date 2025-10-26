@@ -93,50 +93,74 @@ function save() {
 
 <template>
   <div class="p-4">
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label for="name">Name</label>
-        <InputText id="name" v-model="localOutbound.name" class="w-full" />
-      </div>
-      <div>
-        <label for="type">Type</label>
-        <Dropdown id="type" v-model="localOutbound.type" :options="outboundTypes" optionLabel="label" optionValue="value" class="w-full" />
-      </div>
-    </div>
-
-    <div v-if="!isSpecialOutbound" class="grid grid-cols-2 gap-4 mt-4">
-      <div>
-        <label for="server">Server</label>
-        <InputText id="server" v-model="localOutbound.server" class="w-full" />
-      </div>
-      <div>
-        <label for="server_port">Server Port</label>
-        <InputNumber id="server_port" v-model="localOutbound.server_port" class="w-full" />
-      </div>
-    </div>
-
-    <div class="mt-4">
-      <VlessForm v-if="localOutbound.type === 'vless'" v-model="localOutbound.credential" />
-      <VmessForm v-if="localOutbound.type === 'vmess'" v-model="localOutbound.credential" />
-      <ShadowsocksForm v-if="localOutbound.type === 'shadowsocks'" v-model="localOutbound.credential" />
-      <Hysteria2Form v-if="localOutbound.type === 'hysteria2'" v-model="localOutbound.credential" />
-      <SelectorForm v-if="localOutbound.type === 'selector'" v-model="localOutbound" />
-      <UrltestForm v-if="localOutbound.type === 'urltest'" v-model="localOutbound" />
-      <DirectForm v-if="localOutbound.type === 'direct'" v-model="localOutbound" />
-    </div>
-
-    <Panel header="Advanced Settings" :toggleable="true" :collapsed="true" class="mt-4">
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label for="region">Region</label>
-          <InputText id="region" v-model="localOutbound.region" class="w-full" />
+    <TabView>
+      <TabPanel header="Basic" value="basic">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="name">Name</label>
+            <InputText id="name" v-model="localOutbound.name" class="w-full" />
+          </div>
+          <div>
+            <label for="type">Type</label>
+            <Dropdown id="type" v-model="localOutbound.type" :options="outboundTypes" optionLabel="label" optionValue="value" class="w-full" />
+          </div>
+          <div>
+            <label for="region">Region</label>
+            <InputText id="region" v-model="localOutbound.region" class="w-full" />
+          </div>
+          <div>
+            <label for="provider">Provider</label>
+            <InputText id="provider" v-model="localOutbound.provider" class="w-full" />
+          </div>
         </div>
-        <div>
-          <label for="provider">Provider</label>
-          <InputText id="provider" v-model="localOutbound.provider" class="w-full" />
+      </TabPanel>
+      <TabPanel header="Base" value="base">
+        <div v-if="!isSpecialOutbound" class="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            <label for="server">Server</label>
+            <InputText id="server" v-model="localOutbound.server" class="w-full" />
+          </div>
+          <div>
+            <label for="server_port">Server Port</label>
+            <InputNumber id="server_port" v-model="localOutbound.server_port" class="w-full" />
+          </div>
         </div>
-      </div>
-    </Panel>
+
+        <div class="mt-4">
+          <VlessForm v-if="localOutbound.type === 'vless'" v-model="localOutbound.credential" />
+          <VmessForm v-if="localOutbound.type === 'vmess'" v-model="localOutbound.credential" />
+          <ShadowsocksForm v-if="localOutbound.type === 'shadowsocks'" v-model="localOutbound.credential" />
+          <Hysteria2Form v-if="localOutbound.type === 'hysteria2'" v-model="localOutbound.credential" />
+          <SelectorForm v-if="localOutbound.type === 'selector'" v-model="localOutbound" />
+          <UrltestForm v-if="localOutbound.type === 'urltest'" v-model="localOutbound" />
+          <DirectForm v-if="localOutbound.type === 'direct'" v-model="localOutbound" />
+        </div>
+      </TabPanel>
+      <TabPanel header="Advanced" value="advanced">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="readableBy">Readable By</label>
+            <Chips id="readableBy" v-model="localOutbound.readableBy" class="w-full" />
+          </div>
+          <div>
+            <label for="writeableBy">Writeable By</label>
+            <Chips id="writeableBy" v-model="localOutbound.writeableBy" class="w-full" />
+          </div>
+          <div>
+            <label for="tls">TLS</label>
+            <Textarea id="tls" v-model="localOutbound.tls" class="w-full" />
+          </div>
+          <div>
+            <label for="mux">Mux</label>
+            <Textarea id="mux" v-model="localOutbound.mux" class="w-full" />
+          </div>
+          <div>
+            <label for="other">Other</label>
+            <Textarea id="other" v-model="localOutbound.other" class="w-full" />
+          </div>
+        </div>
+      </TabPanel>
+    </TabView>
 
     <div class="flex justify-end mt-4">
       <Button label="Save" @click="save" />
