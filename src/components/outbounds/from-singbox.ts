@@ -5,7 +5,11 @@ import { SingBoxOutboundSchema } from '../../../schemas/singbox';
 
 type SingboxOutbound = z.infer<typeof SingBoxOutboundSchema>;
 type Outbound = z.infer<typeof OutboundSchema>;
-type Credential = z.infer<typeof OutboundSchema.shape.credential>;
+type Credential =
+  | z.infer<typeof VlessCredentialSchema>
+  | z.infer<typeof VmessCredentialSchema>
+  | z.infer<typeof ShadowsocksCredentialSchema>
+  | z.infer<typeof Hysteria2CredentialSchema>;
 
 export function fromSingbox(singboxOutbound: SingboxOutbound): Outbound {
   const { tag, multiplex, ...retainedFields } = singboxOutbound;
@@ -13,7 +17,21 @@ export function fromSingbox(singboxOutbound: SingboxOutbound): Outbound {
   const other: { [key: string]: any } = {};
   let credential: Credential | null = null;
 
-  const outboundSchemaKeys = Object.keys(OutboundSchema.shape);
+  const outboundSchemaKeys = [
+    'id',
+    'readableBy',
+    'writeableBy',
+    'name',
+    'region',
+    'provider',
+    'server',
+    'server_port',
+    'tls',
+    'mux',
+    'other',
+    'credential',
+    'type',
+  ];
 
   for (const key in retainedFields) {
     if (!outboundSchemaKeys.includes(key) && key !== 'type' && key !== 'server' && key !== 'server_port') {
@@ -54,17 +72,20 @@ export function fromSingbox(singboxOutbound: SingboxOutbound): Outbound {
     throw new Error('Could not create credential for outbound type: ' + retainedFields.type);
   }
 
-  return {
+  const result: Outbound = {
     name: tag,
-    type: retainedFields.type,
+    type: retainedFields.type as any,
     server: retainedFields.server,
     server_port: retainedFields.server_port,
     mux: multiplex as any,
     other: other as any,
-    credential,
+    credential: credential as any,
     readableBy: [],
     writeableBy: [],
     region: '',
     provider: '',
+    tls: {},
   };
+
+  return result;
 }

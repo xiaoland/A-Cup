@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { OutboundSchema } from '../../../../schemas/outbound';
+import { BaseOutboundSchema } from '../../../../schemas/outbound';
 
-const SpecialOutboundBaseSchema = OutboundSchema.pick({
+const SpecialOutboundBaseSchema = BaseOutboundSchema.pick({
   id: true,
   readableBy: true,
   writeableBy: true,

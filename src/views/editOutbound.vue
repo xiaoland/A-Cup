@@ -15,13 +15,14 @@ const isNew = computed(() => !route.params.id);
 onMounted(async () => {
   if (isNew.value) {
     outbound.value = {
+      id: undefined,
       name: '',
       type: 'vless',
       region: '',
       provider: '',
       server: '',
       server_port: 0,
-      credential: { uuid: '' },
+      credential: { uuid: '', flow: '' },
       readableBy: [],
       writeableBy: [],
       tls: {},

@@ -22,7 +22,7 @@ export const Hysteria2CredentialSchema = z.object({
   obfs_password: z.string().optional(),
 });
 
-const BaseOutboundSchema = z.object({
+export const BaseOutboundSchema = z.object({
   id: z.number().int().optional(),
   readableBy: z.array(z.string().uuid()).default([]),
   writeableBy: z.array(z.string().uuid()).default([]),
