@@ -8,7 +8,6 @@ import {
   ShadowsocksCredentialSchema,
   Hysteria2CredentialSchema,
 } from './outbound';
-import { InboundSchema } from './inbound';
 
 // SingBox Outbound Schemas
 const SingBoxVlessOutboundSchema = z.object({

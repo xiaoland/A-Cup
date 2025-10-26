@@ -3,7 +3,8 @@ import { ref } from 'vue';
 import Dialog from 'primevue/dialog';
 import Textarea from 'primevue/textarea';
 import Button from 'primevue/button';
-import { OutboundSchema } from '../../../schemas/outbound';
+import { SingBoxOutboundSchema } from '../../../schemas/singbox';
+import { fromSingbox } from './from-singbox';
 
 const props = defineProps<{
   visible: boolean;
@@ -16,8 +17,9 @@ const error = ref<string | null>(null);
 
 function confirmImport() {
   try {
-    const parsed = OutboundSchema.parse(JSON.parse(jsonInput.value));
-    emit('parsed', parsed);
+    const parsed = SingBoxOutboundSchema.parse(JSON.parse(jsonInput.value));
+    const transformed = fromSingbox(parsed);
+    emit('parsed', transformed);
     emit('update:visible', false);
     jsonInput.value = '';
     error.value = null;
