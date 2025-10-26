@@ -12,16 +12,16 @@ const SpecialOutboundBaseSchema = OutboundSchema.pick({
 
 export const SelectorOutboundSchema = SpecialOutboundBaseSchema.extend({
   type: z.literal('selector'),
-  outbounds: z.array(z.string()),
-  default: z.string().optional(),
+  outbounds: z.array(z.string()).default([]),
+  default: z.string().default(''),
   interrupt_exist_connections: z.boolean().optional(),
 });
 
 export const UrlTestOutboundSchema = SpecialOutboundBaseSchema.extend({
   type: z.literal('urltest'),
-  outbounds: z.array(z.string()),
-  url: z.string().optional(),
-  interval: z.string().optional(),
+  outbounds: z.array(z.string()).default([]),
+  url: z.string().default('https://www.gstatic.com/generate_204'),
+  interval: z.string().default('3m'),
   tolerance: z.number().int().optional(),
   idle_timeout: z.string().optional(),
   interrupt_exist_connections: z.boolean().optional(),

@@ -34,7 +34,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(['update:modelValue', 'save', 'cancel']);
 
 const localOutbound = ref(JSON.parse(JSON.stringify(props.modelValue)));
-const isImporting = ref(false);
 
 watch(() => props.modelValue, (newValue) => {
   localOutbound.value = JSON.parse(JSON.stringify(newValue));
@@ -66,38 +65,47 @@ const isSpecialOutbound = computed(() => {
 });
 
 watch(() => localOutbound.value.type, (newType, oldType) => {
-  if (newType === oldType || isImporting.value) return;
+  if (newType === oldType) return;
 
-  const commonData = {
-    name: localOutbound.value.name,
-    region: 'region' in localOutbound.value ? localOutbound.value.region : '',
-    provider: 'provider' in localOutbound.value ? localOutbound.value.provider : '',
-    type: newType,
-  };
+  const newOutbound = { ...localOutbound.value, type: newType };
 
-  switch (newType) {
-    case 'vless':
-      localOutbound.value = { ...commonData, server: '', server_port: 0, credential: { uuid: '', flow: '' } as z.infer<typeof VlessCredentialSchema> };
-      break;
-    case 'vmess':
-      localOutbound.value = { ...commonData, server: '', server_port: 0, credential: { uuid: '', security: 'auto', alter_id: 0 } as z.infer<typeof VmessCredentialSchema> };
-      break;
-    case 'shadowsocks':
-      localOutbound.value = { ...commonData, server: '', server_port: 0, credential: { method: '', password: '' } as z.infer<typeof ShadowsocksCredentialSchema> };
-      break;
-    case 'hysteria2':
-      localOutbound.value = { ...commonData, server: '', server_port: 0, credential: { password: '' } as z.infer<typeof Hysteria2CredentialSchema> };
-      break;
-    case 'selector':
-      localOutbound.value = { ...commonData, outbounds: [], default: '' };
-      break;
-    case 'urltest':
-      localOutbound.value = { ...commonData, outbounds: [], url: 'https://www.gstatic.com/generate_204', interval: '3m' };
-      break;
-    case 'direct':
-      localOutbound.value = { ...commonData };
-      break;
+  const fullSchema = z.union([OutboundSchema, SelectorOutboundSchema, UrlTestOutboundSchema, DirectOutboundSchema]);
+  const parseResult = fullSchema.safeParse(newOutbound);
+
+  if (!parseResult.success) {
+    switch (newType) {
+      case 'vless':
+        newOutbound.credential = VlessCredentialSchema.parse({});
+        break;
+      case 'vmess':
+        newOutbound.credential = VmessCredentialSchema.parse({});
+        break;
+      case 'shadowsocks':
+        newOutbound.credential = ShadowsocksCredentialSchema.parse({});
+        break;
+      case 'hysteria2':
+        newOutbound.credential = Hysteria2CredentialSchema.parse({});
+        break;
+      case 'selector':
+        {
+          const parsed = SelectorOutboundSchema.parse({ type: 'selector' });
+          newOutbound.outbounds = parsed.outbounds;
+          newOutbound.default = parsed.default;
+        }
+        break;
+      case 'urltest':
+        {
+          const parsed = UrlTestOutboundSchema.parse({ type: 'urltest' });
+          newOutbound.outbounds = parsed.outbounds;
+          newOutbound.url = parsed.url;
+          newOutbound.interval = parsed.interval;
+        }
+        break;
+      case 'direct':
+        break;
+    }
   }
+  localOutbound.value = newOutbound;
 });
 
 function save() {
@@ -111,9 +119,7 @@ function showImportDialog() {
 }
 
 function onParsed(parsedOutbound: OutboundModel) {
-  isImporting.value = true;
   localOutbound.value = { ...localOutbound.value, ...parsedOutbound };
-  isImporting.value = false;
 }
 
 function cancel() {

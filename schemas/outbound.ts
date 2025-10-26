@@ -2,45 +2,57 @@ import { z } from 'zod';
 
 export const VlessCredentialSchema = z.object({
   uuid: z.string().uuid(),
-  flow: z.string().optional(),
+  flow: z.string().default(''),
 });
 
 export const VmessCredentialSchema = z.object({
   uuid: z.string().uuid(),
-  security: z.string(),
-  alter_id: z.number().int(),
+  security: z.string().default('auto'),
+  alter_id: z.number().int().default(0),
 });
 
 export const ShadowsocksCredentialSchema = z.object({
-  method: z.string(),
-  password: z.string(),
+  method: z.string().default(''),
+  password: z.string().default(''),
 });
 
 export const Hysteria2CredentialSchema = z.object({
-  password: z.string(),
+  password: z.string().default(''),
   obfs: z.string().optional(),
   obfs_password: z.string().optional(),
 });
 
-export const OutboundSchema = z.object({
+const BaseOutboundSchema = z.object({
   id: z.number().int().optional(),
-  readableBy: z.array(z.string().uuid()),
-  writeableBy: z.array(z.string().uuid()),
-  name: z.string(),
-  region: z.string(),
-  provider: z.string(),
-  type: z.enum(['vless', 'hysteria2', 'vmess', 'shadowsocks']),
-  server: z.string(),
-  server_port: z.number().int(),
-  credential: z.union([
-    VlessCredentialSchema,
-    VmessCredentialSchema,
-    ShadowsocksCredentialSchema,
-    Hysteria2CredentialSchema,
-  ]),
-  tls: z.object({}).optional(),
-  mux: z.object({}).optional(),
-  other: z.object({}).optional(),
+  readableBy: z.array(z.string().uuid()).default([]),
+  writeableBy: z.array(z.string().uuid()).default([]),
+  name: z.string().default(''),
+  region: z.string().default(''),
+  provider: z.string().default(''),
+  server: z.string().default(''),
+  server_port: z.number().int().default(0),
+  tls: z.object({}).default({}),
+  mux: z.object({}).default({}),
+  other: z.object({}).default({}),
 });
+
+export const OutboundSchema = z.discriminatedUnion('type', [
+  BaseOutboundSchema.extend({
+    type: z.literal('vless'),
+    credential: VlessCredentialSchema,
+  }),
+  BaseOutboundSchema.extend({
+    type: z.literal('vmess'),
+    credential: VmessCredentialSchema,
+  }),
+  BaseOutboundSchema.extend({
+    type: z.literal('shadowsocks'),
+    credential: ShadowsocksCredentialSchema,
+  }),
+  BaseOutboundSchema.extend({
+    type: z.literal('hysteria2'),
+    credential: Hysteria2CredentialSchema,
+  }),
+]);
 
 export type Outbound = z.infer<typeof OutboundSchema>;
