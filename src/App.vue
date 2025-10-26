@@ -6,4 +6,7 @@
 </template>
 
 <style scoped>
+:root {
+  font-family: system-ui;
+}
 </style>

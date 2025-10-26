@@ -2,12 +2,6 @@ import { z } from 'zod';
 import { DnsSchema } from './dns';
 import { InboundSchema } from './inbound';
 import { RouteSchema } from './route';
-import {
-  VlessCredentialSchema,
-  VmessCredentialSchema,
-  ShadowsocksCredentialSchema,
-  Hysteria2CredentialSchema,
-} from './outbound';
 
 // SingBox Outbound Schemas
 const SingBoxVlessOutboundSchema = z.object({

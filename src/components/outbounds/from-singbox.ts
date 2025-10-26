@@ -1,91 +1,67 @@
 
 import { z } from 'zod';
-import { OutboundSchema, VlessCredentialSchema, VmessCredentialSchema, ShadowsocksCredentialSchema, Hysteria2CredentialSchema } from '../../../schemas/outbound';
+import { BaseOutboundSchema, VlessCredentialSchema, VmessCredentialSchema, ShadowsocksCredentialSchema, Hysteria2CredentialSchema } from '../../../schemas/outbound';
 import { SingBoxOutboundSchema } from '../../../schemas/singbox';
 
-type SingboxOutbound = z.infer<typeof SingBoxOutboundSchema>;
-type Outbound = z.infer<typeof OutboundSchema>;
-type Credential =
-  | z.infer<typeof VlessCredentialSchema>
-  | z.infer<typeof VmessCredentialSchema>
-  | z.infer<typeof ShadowsocksCredentialSchema>
-  | z.infer<typeof Hysteria2CredentialSchema>;
+const OutboundSchema = BaseOutboundSchema.extend({
+  type: z.enum(['vless', 'hysteria2', 'vmess', 'shadowsocks']),
+  credential: z.union([
+    VlessCredentialSchema,
+    VmessCredentialSchema,
+    ShadowsocksCredentialSchema,
+    Hysteria2CredentialSchema,
+  ])
+});
 
-export function fromSingbox(singboxOutbound: SingboxOutbound): Outbound {
-  const { tag, multiplex, ...retainedFields } = singboxOutbound;
+type SingboxOutbound = z.infer<typeof SingBoxOutboundSchema>;
+type OutboundPartial = z.infer<typeof OutboundSchema.partial>;
+type Credential = z.infer<typeof OutboundSchema.shape.credential>;
+
+export function fromSingbox(singboxOutbound: SingboxOutbound): OutboundPartial {
+  const { tag, multiplex, tls, type, server, server_port, ...retainedFields } = singboxOutbound;
 
   const other: { [key: string]: any } = {};
-  let credential: Credential | null = null;
+  let credential: Credential | undefined;
+  let credentialSchema: any;
 
-  const outboundSchemaKeys = [
-    'id',
-    'readableBy',
-    'writeableBy',
-    'name',
-    'region',
-    'provider',
-    'server',
-    'server_port',
-    'tls',
-    'mux',
-    'other',
-    'credential',
-    'type',
-  ];
+  const outboundSchemaKeys = Object.keys(OutboundSchema.shape);
+
+  switch (type) {
+    case 'vless':
+      credentialSchema = VlessCredentialSchema
+      break;
+    case 'vmess':
+      credentialSchema = VmessCredentialSchema;
+      break;
+    case 'shadowsocks':
+      credentialSchema = ShadowsocksCredentialSchema;
+      break;
+    case 'hysteria2':
+      credentialSchema = Hysteria2CredentialSchema;
+      break;
+  }
+
+  if (credentialSchema) {
+     credential = credentialSchema.parse(retainedFields);
+  }
+
+  if (!credential) {
+    throw new Error('Could not create credential for outbound type: ' + type);
+  }
 
   for (const key in retainedFields) {
-    if (!outboundSchemaKeys.includes(key) && key !== 'type' && key !== 'server' && key !== 'server_port') {
+    if (!outboundSchemaKeys.includes(key) && !Object.keys(credentialSchema.shape).includes(key)) {
       other[key] = (retainedFields as any)[key];
     }
   }
 
-  switch (retainedFields.type) {
-    case 'vless':
-      credential = VlessCredentialSchema.parse({
-        uuid: retainedFields.uuid,
-        flow: retainedFields.flow,
-      });
-      break;
-    case 'vmess':
-      credential = VmessCredentialSchema.parse({
-        uuid: retainedFields.uuid,
-        security: retainedFields.security,
-        alter_id: retainedFields.alter_id,
-      });
-      break;
-    case 'shadowsocks':
-      credential = ShadowsocksCredentialSchema.parse({
-        method: retainedFields.method,
-        password: retainedFields.password,
-      });
-      break;
-    case 'hysteria2':
-      credential = Hysteria2CredentialSchema.parse({
-        password: retainedFields.password,
-        obfs: retainedFields.obfs,
-        obfs_password: retainedFields.obfs_password,
-      });
-      break;
-  }
-
-  if (!credential) {
-    throw new Error('Could not create credential for outbound type: ' + retainedFields.type);
-  }
-
-  const result: Outbound = {
+  return {
     name: tag,
-    type: retainedFields.type as any,
-    server: retainedFields.server,
-    server_port: retainedFields.server_port,
+    type,
+    server,
+    server_port,
     mux: multiplex as any,
     other: other as any,
-    credential: credential as any,
-    readableBy: [],
-    writeableBy: [],
-    region: '',
-    provider: '',
-    tls: {},
+    credential
   };
-
-  return result;
 }

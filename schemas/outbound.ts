@@ -56,3 +56,4 @@ export const OutboundSchema = z.discriminatedUnion('type', [
 ]);
 
 export type Outbound = z.infer<typeof OutboundSchema>;
+
