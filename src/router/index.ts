@@ -15,6 +15,12 @@ const routes = [
     component: { template: '<div>Home</div>' }, // Placeholder for home page
     meta: { requiresAuth: true },
   },
+  {
+    path: '/outbounds',
+    name: 'outbounds',
+    component: () => import('@/views/outboundsView.vue'),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({

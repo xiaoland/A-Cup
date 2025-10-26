@@ -24,9 +24,12 @@ api.use('*', async (c, next) => {
   await next();
 });
 
+import { outboundApi } from './apis/outbound';
+
 // Register module routers
 api.route('/users', userRouter);
 api.route('/profiles', profileRouter);
+api.route('/outbounds', outboundApi);
 
 // Mount the api router under /api
 app.route('/api', api);
