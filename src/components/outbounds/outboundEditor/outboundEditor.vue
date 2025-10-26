@@ -186,15 +186,15 @@ function cancel() {
         </div>
         <div>
           <label for="tls">TLS</label>
-          <Textarea id="tls" v-model="localOutbound.tls" class="w-full" />
+          <Textarea id="tls" modelValue="JSON.stringify(localOutbound.tls)" @update:modelValue="localOutbound.tls = JSON.parse($event)" class="w-full" />
         </div>
         <div>
           <label for="mux">Mux</label>
-          <Textarea id="mux" v-model="localOutbound.mux" class="w-full" />
+          <Textarea id="mux" modelValue="JSON.stringify(localOutbound.mux)" @update:modelValue="localOutbound.mux = JSON.parse($event)" class="w-full" />
         </div>
         <div>
           <label for="other">Other</label>
-          <Textarea id="other" v-model="localOutbound.other" class="w-full" />
+          <Textarea id="other" modelValue="JSON.stringify(localOutbound.other)" @update:modelValue="localOutbound.other = JSON.parse($event)" class="w-full" />
         </div>
       </div>
     </Fieldset>
