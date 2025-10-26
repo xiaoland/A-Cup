@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 import { DialFieldsSchema, TLSClientFieldsSchema } from './shared';
 
@@ -40,8 +41,8 @@ export const DNSRuleActionSchema = z.discriminatedUnion('action', [
   DNSRuleActionPredefinedSchema,
 ]);
 
-export const DNSRuleSchema = z
-  .object({
+export const DNSRuleSchema = z.intersection(
+  z.object({
     inbound: z.array(z.string()).optional(),
     ip_version: z.number().int().optional(),
     query_type: z.array(z.union([z.string(), z.number()])).optional(),
@@ -51,8 +52,9 @@ export const DNSRuleSchema = z
     domain_keyword: z.array(z.string()).optional(),
     domain_regex: z.array(z.string()).optional(),
     source_ip_cidr: z.array(z.string()).optional(),
-  })
-  .merge(DNSRuleActionSchema);
+  }),
+  DNSRuleActionSchema
+);
 
 const DNSServerBaseSchema = z.object({
   tag: z.string(),
