@@ -42,11 +42,15 @@ async function saveOutbound(updatedOutbound: Outbound) {
   }
   router.push('/outbounds');
 }
+
+function cancel() {
+  router.push('/outbounds');
+}
 </script>
 
 <template>
   <div class="p-4">
     <h1 class="text-2xl font-bold mb-4">{{ isNew ? 'New Outbound' : 'Edit Outbound' }}</h1>
-    <OutboundEditor v-if="outbound" :modelValue="outbound" @save="saveOutbound" />
+    <OutboundEditor v-if="outbound" :modelValue="outbound" @save="saveOutbound" @cancel="cancel" />
   </div>
 </template>

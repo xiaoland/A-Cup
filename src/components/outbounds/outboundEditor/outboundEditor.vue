@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { z } from 'zod';
 import { OutboundSchema, VlessCredentialSchema, VmessCredentialSchema, ShadowsocksCredentialSchema, Hysteria2CredentialSchema } from '../../../../schemas/outbound';
 import { SelectorOutboundSchema, UrlTestOutboundSchema, DirectOutboundSchema } from './special-outbound';
+import ImportOutbound from '../importOutbound.vue';
 
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
@@ -29,7 +30,7 @@ const props = withDefaults(defineProps<{
   disableSpecial: true,
 });
 
-const emit = defineEmits(['update:modelValue', 'save']);
+const emit = defineEmits(['update:modelValue', 'save', 'cancel']);
 
 const localOutbound = ref(JSON.parse(JSON.stringify(props.modelValue)));
 
@@ -100,10 +101,25 @@ watch(() => localOutbound.value.type, (newType, oldType) => {
 function save() {
   emit('save', localOutbound.value);
 }
+
+const isImportDialogVisible = ref(false);
+
+function showImportDialog() {
+  isImportDialogVisible.value = true;
+}
+
+function onParsed(parsedOutbound: OutboundModel) {
+  localOutbound.value = { ...localOutbound.value, ...parsedOutbound };
+}
+
+function cancel() {
+  emit('cancel');
+}
 </script>
 
 <template>
   <div class="p-4">
+    <ImportOutbound v-model:visible="isImportDialogVisible" @parsed="onParsed" />
     <Fieldset legend="Basic Info">
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -173,8 +189,12 @@ function save() {
       </div>
     </Fieldset>
 
-    <div class="flex justify-end mt-4">
-      <Button label="Save" @click="save" />
+    <div class="flex justify-between mt-4">
+      <Button label="Import" @click="showImportDialog" class="p-button-secondary" />
+      <div class="flex">
+        <Button label="Cancel" @click="cancel" class="p-button-text" />
+        <Button label="Save" @click="save" />
+      </div>
     </div>
   </div>
 </template>
