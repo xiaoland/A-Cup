@@ -48,12 +48,12 @@ export class OutboundService {
     }
     return OutboundSchema.parse({
       ...outbound,
-      tls: JSON.parse(outbound.tls || "{}"),
-      mux: JSON.parse(outbound.mux || "{}"),
-      credential: JSON.parse(outbound.credential || "{}"),
-      readableBy: JSON.parse(outbound.readableBy || "[]"),
-      writeableBy: JSON.parse(outbound.writeableBy || "[]"),
-      other: JSON.parse(outbound.other || "{}"),
+      tls: JSON.parse(outbound.tls),
+      mux: JSON.parse(outbound.mux),
+      credential: JSON.parse(outbound.credential),
+      readableBy: JSON.parse(outbound.readableBy),
+      writeableBy: JSON.parse(outbound.writeableBy),
+      other: JSON.parse(outbound.other),
     });
   }
 

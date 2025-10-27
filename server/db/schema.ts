@@ -17,18 +17,18 @@ export const profiles = sqliteTable('profiles', {
 
 export const outbounds = sqliteTable('outbounds', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  readableBy: text('readable_by').notNull(), // JSON array of strings
-  writeableBy: text('writeable_by').notNull(), // JSON array of strings
+  readableBy: text('readable_by').notNull().default("[]"), // JSON array of strings
+  writeableBy: text('writeable_by').notNull().default("[]"), // JSON array of strings
   name: text('name').notNull(),
   region: text('region').notNull(),
   provider: text('provider').notNull(),
   type: text('type').notNull(),
   server: text('server').notNull(),
   server_port: integer('server_port').notNull(),
-  credential: text('credential').notNull(), // JSON object
-  tls: text('tls'), // JSON object
-  mux: text('mux'), // JSON object
-  other: text('other'), // JSON object
+  credential: text('credential').notNull().default("{}"), // JSON object
+  tls: text('tls').notNull().default("{}"), // JSON object
+  mux: text('mux').notNull().default("{}"), // JSON object
+  other: text('other').notNull().default("{}"), // JSON object
 });
 
 export const ruleSets = sqliteTable('rule_sets', {

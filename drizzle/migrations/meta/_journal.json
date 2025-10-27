@@ -15,6 +15,13 @@
       "when": 1761413425042,
       "tag": "0001_happy_christian_walker",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1761551713359,
+      "tag": "0002_lumpy_living_mummy",
+      "breakpoints": true
     }
   ]
 }
