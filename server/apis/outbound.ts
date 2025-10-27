@@ -10,7 +10,7 @@ export const outboundApi = new Hono()
     const userId = c.get('userId');
     const outboundService = new OutboundService(c.get('db'));
     const outbounds = await outboundService.getOutbounds(userId);
-    return outbounds;
+    return c.json(outbounds);
   })
   .get('/:id', async (c) => {
     const userId = c.get('userId');
@@ -21,7 +21,7 @@ export const outboundApi = new Hono()
       if (!outbound) {
         return c.notFound();
       }
-      return outbound;
+      return c.json(outbound);
     } catch (error) {
       return c.json({ message: error.message }, 403);
     }
