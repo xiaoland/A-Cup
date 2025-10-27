@@ -4,11 +4,17 @@ import { createTestingPinia } from '@pinia/testing';
 import RuleSetEditor from './RuleSetEditor.vue';
 import PrimeVue from 'primevue/config';
 
-// Mock the UsersPicker component
-vi.mock('../../user/usersPicker.vue', () => ({
+// Mock the UsersPicker and ImportRuleSet components
+vi.mock('../user/usersPicker.vue', () => ({
   default: {
     template: '<div class="users-picker-mock"></div>',
     props: ['modelValue'],
+  },
+}));
+vi.mock('./importRuleSet.vue', () => ({
+  default: {
+    template: '<div class="import-rule-set-mock"></div>',
+    props: ['visible'],
   },
 }));
 
@@ -25,43 +31,51 @@ describe('RuleSetEditor.vue', () => {
     writeableBy: [],
   };
 
-  const a = () => mount(RuleSetEditor, {
+  const mountComponent = () => mount(RuleSetEditor, {
     props: {
       modelValue: mockRuleSet,
     },
     global: {
       plugins: [PrimeVue, createTestingPinia()],
     },
-  })
+  });
 
   it('renders the form with the correct initial values', () => {
-    const wrapper = a()
+    const wrapper = mountComponent();
     const tagInput = wrapper.find('#tag');
     expect((tagInput.element as HTMLInputElement).value).toBe('test-rule');
-
-    // Note: PrimeVue Dropdown does not easily expose its selected value in testing
-    // We can infer it's working if the model is correct
     expect(wrapper.vm.localRuleSet.type).toBe('remote');
   });
 
   it('emits a save event with the updated data when the save button is clicked', async () => {
-    const wrapper = a()
-
-    // Simulate user input
+    const wrapper = mountComponent();
     await wrapper.find('#tag').setValue('updated-rule');
-
-    // Simulate save button click
     await wrapper.find('button[aria-label="Save"]').trigger('click');
 
-    // Check emitted event
     expect(wrapper.emitted('save')).toHaveLength(1);
     const savedEvent = wrapper.emitted('save')?.[0]?.[0] as any;
     expect(savedEvent.tag).toBe('updated-rule');
   });
 
   it('emits a cancel event when the cancel button is clicked', async () => {
-    const wrapper = a()
+    const wrapper = mountComponent();
     await wrapper.find('button[aria-label="Cancel"]').trigger('click');
     expect(wrapper.emitted('cancel')).toHaveLength(1);
+  });
+
+  it('updates the local rule set when the import component emits a parsed event', async () => {
+    const wrapper = mountComponent();
+    const importedRuleSet = {
+      tag: 'imported-rule',
+      type: 'inline' as const,
+      content: '[]',
+    };
+
+    // Directly call the method that would be triggered by the event
+    wrapper.vm.onParsed(importedRuleSet);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.vm.localRuleSet.tag).toBe('imported-rule');
+    expect(wrapper.vm.localRuleSet.type).toBe('inline');
   });
 });

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import type { RuleSet } from '../../../schemas/ruleset';
+import ImportRuleSet from './importRuleSet.vue';
 
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
@@ -17,6 +18,7 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue', 'save', 'cancel']);
 
 const localRuleSet = ref(JSON.parse(JSON.stringify(props.modelValue)));
+const isImportDialogVisible = ref(false);
 
 watch(() => props.modelValue, (newValue) => {
   localRuleSet.value = JSON.parse(JSON.stringify(newValue));
@@ -38,10 +40,19 @@ function save() {
 function cancel() {
   emit('cancel');
 }
+
+function showImportDialog() {
+  isImportDialogVisible.value = true;
+}
+
+function onParsed(parsedRuleSet: Partial<RuleSet>) {
+  localRuleSet.value = { ...localRuleSet.value, ...parsedRuleSet };
+}
 </script>
 
 <template>
   <div class="p-4">
+    <ImportRuleSet v-model:visible="isImportDialogVisible" @parsed="onParsed" />
     <Fieldset legend="Basic Info">
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -84,9 +95,12 @@ function cancel() {
       </div>
     </Fieldset>
 
-    <div class="flex justify-end mt-4">
+    <div class="flex justify-between mt-4">
+      <Button label="Import" @click="showImportDialog" class="p-button-secondary" />
+      <div class="flex">
         <Button label="Cancel" @click="cancel" class="p-button-text" />
         <Button label="Save" @click="save" />
+      </div>
     </div>
   </div>
 </template>
