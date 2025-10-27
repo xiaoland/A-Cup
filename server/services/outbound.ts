@@ -25,7 +25,17 @@ export class OutboundService {
   }
 
   async getOutbounds(userId: string) {
-    return await this.db.select().from(outbounds).where(like(outbounds.readableBy, `%${userId}%`));
+    return await this.db.select().from(outbounds).where(like(outbounds.readableBy, `%${userId}%`)).map((outbound) => {
+      return OutboundSchema.parse({
+        ...outbound,
+        tls: JSON.parse(outbound.tls),
+        mux: JSON.parse(outbound.mux),
+        credential: JSON.parse(outbound.credential),
+        readableBy: JSON.parse(outbound.readableBy),
+        writeableBy: JSON.parse(outbound.writeableBy),
+        other: JSON.parse(outbound.other),
+      });
+    });
   }
 
   async getOutboundById(id: number, userId: string) {
@@ -33,7 +43,15 @@ export class OutboundService {
     if (outbound && !JSON.parse(outbound.readableBy).includes(userId)) {
       throw new Error('Forbidden');
     }
-    return outbound;
+    return OutboundSchema.parse({
+      ...outbound,
+      tls: JSON.parse(outbound.tls),
+      mux: JSON.parse(outbound.mux),
+      credential: JSON.parse(outbound.credential),
+      readableBy: JSON.parse(outbound.readableBy),
+      writeableBy: JSON.parse(outbound.writeableBy),
+      other: JSON.parse(outbound.other),
+    });
   }
 
   async createOutbound(outbound: z.infer<typeof OutboundSchema>, userId: string) {
