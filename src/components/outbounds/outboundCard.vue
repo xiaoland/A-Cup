@@ -20,18 +20,10 @@ const emit = defineEmits(['edit', 'delete']);
       <p><strong>Provider:</strong> {{ props.outbound.provider }}</p>
     </template>
     <template #footer>
-      <div class="footer-actions">
+      <div class="flex justify-end gap-2">
         <Button label="Edit" icon="pi pi-pencil" @click="emit('edit', props.outbound)" />
         <Button label="Delete" icon="pi pi-trash" severity="danger" @click="emit('delete', props.outbound)" />
       </div>
     </template>
   </Card>
 </template>
-
-<style scoped>
-.footer-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-</style>
