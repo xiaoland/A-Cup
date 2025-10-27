@@ -25,7 +25,7 @@ export class OutboundService {
   }
 
   async getOutbounds(userId: string) {
-    return await this.db.select().from(outbounds).where(like(outbounds.readableBy, `%${userId}%`)).map((outbound) => {
+    return (await this.db.select().from(outbounds).where(like(outbounds.readableBy, `%${userId}%`))).map((outbound) => {
       return {
         ...outbound,
         tls: JSON.parse(outbound.tls),
