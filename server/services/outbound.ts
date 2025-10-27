@@ -79,7 +79,7 @@ export class OutboundService {
     if (!existingOutbound) {
       return null;
     }
-    if (!JSON.parse(existingOutbound.writeableBy).includes(userId)) {
+    if (!existingOutbound.writeableBy.includes(userId)) {
       throw new Error('Forbidden');
     }
 
@@ -93,7 +93,7 @@ export class OutboundService {
       other: JSON.stringify(outbound.other),
     }
     await this.db.update(outbounds).set(updatedOutbound).where(eq(outbounds.id, id));
-    return this.getOutboundById(id);
+    return this.getOutboundById(id, userId);
   }
 
   async deleteOutbound(id: number, userId: string) {
@@ -101,7 +101,7 @@ export class OutboundService {
     if (!existingOutbound) {
       return null;
     }
-    if (!JSON.parse(existingOutbound.writeableBy).includes(userId)) {
+    if (!existingOutbound.writeableBy.includes(userId)) {
       throw new Error('Forbidden');
     }
     return await this.db.delete(outbounds).where(eq(outbounds.id, id));

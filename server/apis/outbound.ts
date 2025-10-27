@@ -16,15 +16,11 @@ export const outboundApi = new Hono()
     const userId = c.get('userId');
     const outboundService = new OutboundService(c.get('db'));
     const id = parseInt(c.req.param('id'));
-    try {
-      const outbound = await outboundService.getOutboundById(id, userId);
-      if (!outbound) {
-        return c.notFound();
-      }
-      return c.json(outbound);
-    } catch (error) {
-      return c.json({ message: error.message }, 403);
+    const outbound = await outboundService.getOutboundById(id, userId);
+    if (!outbound) {
+      return c.notFound();
     }
+    return c.json(outbound);
   })
   .post('/', zValidator('json', OutboundSchema), async (c) => {
     const userId = c.get('userId');
@@ -38,18 +34,11 @@ export const outboundApi = new Hono()
     const outboundService = new OutboundService(c.get('db'));
     const id = parseInt(c.req.param('id'));
     const outbound = c.req.valid('json');
-    try {
-      const updatedOutbound = await outboundService.updateOutbound(id, outbound, userId);
-      if (!updatedOutbound) {
-        return c.notFound();
-      }
-      return c.json(updatedOutbound);
-    } catch (error) {
-      if (error.message === 'Forbidden') {
-        return c.json({ message: error.message }, 403);
-      }
-      return c.json({ message: error.message }, 500);
+    const updatedOutbound = await outboundService.updateOutbound(id, outbound, userId);
+    if (!updatedOutbound) {
+      return c.notFound();
     }
+    return c.json(updatedOutbound);
   })
   .delete('/:id', async (c) => {
     const userId = c.get('userId');
