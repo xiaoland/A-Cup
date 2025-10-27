@@ -11,7 +11,8 @@
 - State management: Pinia
 - Router: Vue Router (v4)
 - UI components: PrimeVue (+ @primevue/themes)
-- CSS / Utility: UnoCSS (with presets & icon collection) and Sass (sass-embedded)
+- Icons: PrimeIcons
+- CSS / Utility: UnoCSS (with presets) and Sass (sass-embedded)
 - Editor: Monaco (integrated via ESM workers per `vite.config.ts` comments)
 - Build / dev server: Vite (vite + @vitejs/plugin-vue)
 
@@ -44,7 +45,6 @@
 ### Notable libraries
 - zod, zod-class (schema validation)
 - jsonwebtoken (JWT handling)
-- @unocss/preset-icons + @iconify-json/mdi icons
 
 ### Scripts (high-level)
 - `pnpm dev` — run Vite dev server
