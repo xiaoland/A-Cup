@@ -46,7 +46,7 @@ export class OutboundService {
     if (!outbound) {
       return null;
     }
-    return OutboundSchema.parse({
+    return {
       ...outbound,
       tls: JSON.parse(outbound.tls),
       mux: JSON.parse(outbound.mux),
@@ -54,7 +54,7 @@ export class OutboundService {
       readableBy: JSON.parse(outbound.readableBy),
       writeableBy: JSON.parse(outbound.writeableBy),
       other: JSON.parse(outbound.other),
-    });
+    };
   }
 
   async createOutbound(outbound: z.infer<typeof OutboundSchema>, userId: string) {
