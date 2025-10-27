@@ -13,6 +13,7 @@ import Fieldset from 'primevue/fieldset';
 import InputNumber from 'primevue/inputnumber';
 import Textarea from 'primevue/textarea';
 import UsersPicker from '../../user/usersPicker.vue';
+import JSONEditor from '../../common/JSONEditor.vue';
 
 import VlessForm from './vlessForm.vue';
 import VmessForm from './vmessForm.vue';
@@ -186,15 +187,15 @@ function cancel() {
         </div>
         <div>
           <label for="tls">TLS</label>
-          <Textarea id="tls" :modelValue="JSON.stringify(localOutbound.tls)" @update:modelValue="localOutbound.tls = JSON.parse($event)" class="w-full" />
+          <JSONEditor id="tls" v-model="localOutbound.tls" />
         </div>
         <div>
           <label for="mux">Mux</label>
-          <Textarea id="mux" :modelValue="JSON.stringify(localOutbound.mux)" @update:modelValue="localOutbound.mux = JSON.parse($event)" class="w-full" />
+          <JSONEditor id="mux" v-model="localOutbound.mux" />
         </div>
         <div>
           <label for="other">Other</label>
-          <Textarea id="other" :modelValue="JSON.stringify(localOutbound.other)" @update:modelValue="localOutbound.other = JSON.parse($event)" class="w-full" />
+          <JSONEditor id="other" v-model="localOutbound.other" />
         </div>
       </div>
     </Fieldset>
