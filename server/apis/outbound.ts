@@ -21,7 +21,7 @@ export const outboundApi = new Hono()
       if (!outbound) {
         return c.notFound();
       }
-      return c.json({...outbound, credential: JSON.parse(outbound.credential), readableBy: JSON.parse(outbound.readableBy), writeableBy: JSON.parse(outbound.writeableBy) });
+      return outbound;
     } catch (error) {
       return c.json({ message: error.message }, 403);
     }
