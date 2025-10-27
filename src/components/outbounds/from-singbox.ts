@@ -62,6 +62,7 @@ export function fromSingbox(singboxOutbound: SingboxOutbound): OutboundPartial {
     server_port,
     mux: multiplex as any,
     other: other as any,
+    tls,
     credential
   };
 }
