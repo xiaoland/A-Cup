@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { TLSClientFieldsSchema } from './shared';
+import { SingBoxMultiplexSchema } from './multiplex';
 
 export const VlessCredentialSchema = z.object({
   uuid: z.string().uuid(),
@@ -31,9 +33,9 @@ export const BaseOutboundSchema = z.object({
   provider: z.string().default(''),
   server: z.string().default(''),
   server_port: z.number().int().default(0),
-  tls: z.object({}).default({}),
-  mux: z.object({}).default({}),
-  other: z.object({}).default({}),
+  tls: TLSClientFieldsSchema.default({}),
+  mux: SingBoxMultiplexSchema.default({}),
+  other: z.looseObject({}).default({}),
 });
 
 export const OutboundSchema = z.discriminatedUnion('type', [
