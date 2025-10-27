@@ -10,7 +10,7 @@ export const outboundApi = new Hono()
     const userId = c.get('userId');
     const outboundService = new OutboundService(c.get('db'));
     const outbounds = await outboundService.getOutbounds(userId);
-    return c.json(outbounds.map(o => ({...o, credential: JSON.parse(o.credential), readableBy: JSON.parse(o.readableBy), writeableBy: JSON.parse(o.writeableBy) })));
+    return outbounds;
   })
   .get('/:id', async (c) => {
     const userId = c.get('userId');
