@@ -33,12 +33,12 @@ export const outbounds = sqliteTable('outbounds', {
 
 export const ruleSets = sqliteTable('rule_sets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  readableBy: text('readable_by').notNull(), // JSON array of strings
-  writeableBy: text('writeable_by').notNull(), // JSON array of strings
+  readableBy: text('readable_by').notNull().default("[]"), // JSON array of strings
+  writeableBy: text('writeable_by').notNull().default("[]"), // JSON array of strings
   tag: text('tag').notNull(),
   type: text('type').notNull(),
   format: text('format'),
   content: text('content').notNull(),
-  download_detour: integer('download_detour'),
-  update_interval: integer('update_interval'),
+  download_detour: integer('download_detour').notNull(),
+  update_interval: integer('update_interval').notNull(),
 });

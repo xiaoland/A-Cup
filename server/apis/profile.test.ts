@@ -37,42 +37,42 @@ const mockRuleSets = [
   },
 ];
 
-const mockProfile = { id: '123', name: 'test-profile' };
-
-// Mock query results
-const mockOutboundsResult = { then: (resolve: any) => resolve(mockOutbounds) };
-const mockRuleSetsResult = { then: (resolve: any) => resolve(mockRuleSets) };
-const mockProfileResult = { get: vi.fn().mockResolvedValue(mockProfile) };
+const mockProfile = { id: '123', name: 'test-profile', outbounds: '[1]', rule_sets: '[3]' };
 
 const mockDrizzle = {
   select: vi.fn().mockReturnThis(),
-  from: vi.fn(function (this: any, table: any) {
+  from: vi.fn(function(table) {
     if (table === outboundsTable) {
-      this.where = vi.fn().mockReturnValue(mockOutboundsResult);
-    } else if (table === ruleSetsTable) {
-      this.where = vi.fn().mockReturnValue(mockRuleSetsResult);
-    } else if (table === profiles) {
-      this.where = vi.fn().mockReturnValue(mockProfileResult);
+      return { where: vi.fn().mockResolvedValue(mockOutbounds) };
+    }
+    if (table === ruleSetsTable) {
+      return { where: vi.fn().mockResolvedValue(mockRuleSets) };
+    }
+    if (table === profiles) {
+        return { where: vi.fn().mockReturnThis() };
     }
     return this;
   }),
+  where: vi.fn().mockReturnThis(),
+  get: vi.fn().mockResolvedValue(mockProfile),
   insert: vi.fn().mockReturnThis(),
-  values: vi.fn().mockResolvedValue(undefined),
+  values: vi.fn().mockResolvedValue(true),
   update: vi.fn().mockReturnThis(),
   set: vi.fn().mockReturnThis(),
-  delete: vi.fn().mockReturnThis(),
+  delete: vi.fn(() => ({ where: vi.fn().mockResolvedValue(true) })),
 };
 
 vi.mock('drizzle-orm/d1', () => ({
   drizzle: vi.fn(() => mockDrizzle),
 }));
 
+
 describe('Profile API', () => {
   const env = {
     DB: {},
     R2: {
-      put: vi.fn(),
-      delete: vi.fn(),
+      put: vi.fn().mockResolvedValue({}),
+      delete: vi.fn().mockResolvedValue({}),
     },
     JWT_SECRET: 'test-secret',
     R2_PUBLIC_URL: 'https://r2.public.url',
@@ -82,6 +82,22 @@ describe('Profile API', () => {
 
   beforeAll(async () => {
     validToken = await sign({ sub: '1234567890', name: 'John Doe', iat: 1516239022, exp: 9999999999 }, env.JWT_SECRET);
+     // Mock for get profile
+     (mockDrizzle.from as any).mockImplementation((table: any) => {
+        if (table === profiles) {
+            return {
+                where: () => ({
+                    get: () => Promise.resolve(mockProfile)
+                })
+            }
+        }
+        if (table === outboundsTable) {
+            return { where: vi.fn().mockResolvedValue(mockOutbounds) };
+        }
+        if (table === ruleSetsTable) {
+            return { where: vi.fn().mockResolvedValue(mockRuleSets) };
+        }
+    });
   });
 
   const createProfileDto = {
@@ -92,7 +108,7 @@ describe('Profile API', () => {
       rule_set: [3],
     },
     dns: {
-      servers: [{ type: 'udp', tag: 'dns-udp', address: '8.8.8.8' }],
+      servers: [{ type: 'udp', tag: 'dns-udp', address: '8.8.8.8', detour: 'direct' }],
       rules: [],
     },
     inbounds: [{ type: 'mixed', tag: 'mixed-in', listen: '127.0.0.1', listen_port: 1080 }],
@@ -120,6 +136,11 @@ describe('Profile API', () => {
   });
 
   it('should update a profile', async () => {
+    (mockDrizzle.update as any).mockImplementation(() => ({
+        set: () => ({
+            where: () => Promise.resolve()
+        })
+    }));
     const req = new Request('http://localhost/api/profiles/123', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${validToken}` },

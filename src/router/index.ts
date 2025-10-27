@@ -33,6 +33,24 @@ const routes = [
     component: () => import('@/views/editOutbound.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/rulesets',
+    name: 'ruleSets',
+    component: () => import('@/views/ruleSets.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/rulesets/new',
+    name: 'newRuleSet',
+    component: () => import('@/views/editRuleSet.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/rulesets/edit/:id',
+    name: 'editRuleSet',
+    component: () => import('@/views/editRuleSet.vue'),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({
