@@ -67,14 +67,6 @@ function onParsed(parsedRuleSet: Partial<RuleSet>) {
           <label for="format">Format</label>
           <InputText id="format" v-model="localRuleSet.format" class="w-full" />
         </div>
-        <div>
-          <label for="download_detour">Download Detour</label>
-          <InputNumber id="download_detour" v-model="localRuleSet.download_detour" class="w-full" />
-        </div>
-        <div>
-          <label for="update_interval">Update Interval</label>
-          <InputNumber id="update_interval" v-model="localRuleSet.update_interval" class="w-full" />
-        </div>
       </div>
     </Fieldset>
 

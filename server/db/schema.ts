@@ -39,6 +39,4 @@ export const ruleSets = sqliteTable('rule_sets', {
   type: text('type').notNull(),
   format: text('format'),
   content: text('content').notNull(),
-  download_detour: integer('download_detour').notNull(),
-  update_interval: integer('update_interval').notNull(),
 });

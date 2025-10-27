@@ -27,8 +27,6 @@ describe('RuleSet Store', () => {
     type: 'remote' as const,
     format: 'source',
     content: 'http://example.com/rules.txt',
-    download_detour: 1,
-    update_interval: 3600,
     readableBy: [],
     writeableBy: [],
   };

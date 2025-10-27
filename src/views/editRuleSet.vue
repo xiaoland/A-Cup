@@ -20,8 +20,6 @@ onMounted(async () => {
       type: 'remote',
       format: '',
       content: '',
-      download_detour: 0,
-      update_interval: 0,
       readableBy: [],
       writeableBy: [],
     };

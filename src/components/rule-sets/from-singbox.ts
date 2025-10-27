@@ -28,7 +28,5 @@ export function fromSingbox(singboxRuleSet: SingBoxRuleSet): Partial<RuleSet> {
     type,
     format: format,
     content,
-    download_detour: singboxRuleSet.type === 'remote' ? parseInt(singboxRuleSet.download_detour || '0') : 0,
-    update_interval: singboxRuleSet.type === 'remote' ? parseInt(singboxRuleSet.update_interval || '0') : 0,
   };
 }

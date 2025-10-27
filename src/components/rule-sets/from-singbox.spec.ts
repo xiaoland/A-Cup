@@ -9,8 +9,6 @@ describe('fromSingbox', () => {
       tag: 'test-remote',
       format: 'source',
       url: 'http://example.com/rules.txt',
-      download_detour: 'direct',
-      update_interval: '1h',
     });
 
     const result = fromSingbox(remoteRuleSet);

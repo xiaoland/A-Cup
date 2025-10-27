@@ -39,8 +39,6 @@ describe('RuleSetService', () => {
     type: 'remote' as const,
     format: 'source',
     content: 'http://example.com',
-    download_detour: 1,
-    update_interval: 3600,
     readableBy: JSON.stringify([testUserId]),
     writeableBy: JSON.stringify([testUserId]),
   };
@@ -80,8 +78,6 @@ describe('RuleSetService', () => {
       content: 'domain-suffix,google.com,DIRECT',
       readableBy: [testUserId],
       writeableBy: [testUserId],
-      download_detour: 1,
-      update_interval: 1,
       format: 'text',
     };
     const createdRuleSet = { ...mockRuleSet, id: 2, tag: 'new-rule' };

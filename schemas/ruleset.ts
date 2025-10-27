@@ -8,8 +8,6 @@ export const RuleSetSchema = z.object({
   type: z.enum(['remote', 'inline']),
   format: z.string().nullable(),
   content: z.string(),
-  download_detour: z.number().int(),
-  update_interval: z.number().int(),
 });
 
 export type RuleSet = z.infer<typeof RuleSetSchema>;
