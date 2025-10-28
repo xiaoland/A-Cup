@@ -16,7 +16,7 @@ onMounted(async () => {
   if (isNew.value) {
     ruleSet.value = {
       id: undefined,
-      tag: '',
+      name: '',
       type: 'remote',
       format: '',
       content: '',
