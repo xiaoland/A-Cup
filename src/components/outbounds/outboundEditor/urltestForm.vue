@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { z } from 'zod';
 import { UrlTestOutboundSchema } from '../../../../schemas/singbox';
-import Chips from 'primevue/chips';
+import InputChips from 'primevue/inputchips';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 
@@ -34,7 +34,7 @@ function updateInterval(interval: string | undefined) {
         Outbounds
         <span class="text-red-500">*</span>
       </label>
-      <Chips
+      <InputChips
         id="outbounds"
         :model-value="modelValue.outbounds"
         @update:model-value="updateOutbounds"

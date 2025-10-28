@@ -4,7 +4,7 @@ import type { TLSClientFields } from '../../../schemas/shared';
 import Fieldset from 'primevue/fieldset';
 import InputText from 'primevue/inputtext';
 import ToggleSwitch from 'primevue/toggleswitch';
-import Chips from 'primevue/chips';
+import InputChips from 'primevue/inputchips';
 import Card from 'primevue/card';
 import Divider from 'primevue/divider';
 
@@ -77,7 +77,7 @@ const reality = computed({
 
           <div class="pt-2">
             <label class="text-sm font-medium text-surface-700 dark:text-surface-300 mb-3 block">ALPN Protocols</label>
-            <Chips 
+            <InputChips 
               id="alpn" 
               v-model="tlsFields.alpn" 
               class="w-full"
@@ -87,7 +87,7 @@ const reality = computed({
 
           <div class="pt-2">
             <label class="text-sm font-medium text-surface-700 dark:text-surface-300 mb-3 block">Cipher Suites</label>
-            <Chips 
+            <InputChips 
               id="cipher_suites" 
               v-model="tlsFields.cipher_suites" 
               class="w-full"

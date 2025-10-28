@@ -5,7 +5,9 @@ import HybirdOutboundEditor from '../outbounds/hybirdOutboundEditor.vue';
 import SpecialOutboundEditor from '../outbounds/specialOutboundEditor.vue';
 import Button from 'primevue/button';
 import Accordion from 'primevue/accordion';
-import AccordionTab from 'primevue/accordiontab';
+import AccordionPanel from 'primevue/accordionpanel';
+import AccordionHeader from 'primevue/accordionheader';
+import AccordionContent from 'primevue/accordioncontent';
 
 const props = defineProps<{
   modelValue: SingBoxOutbound[];
@@ -53,23 +55,32 @@ function removeSpecialOutbound(index: number) {
     </div>
 
     <Accordion :multiple="true">
-      <AccordionTab v-for="(outbound, index) in normalOutbounds" :key="index" :header="outbound?.tag || 'New Outbound'">
-        <div class="flex justify-end mb-3">
-          <Button 
-            icon="pi pi-trash" 
-            severity="danger" 
-            size="small"
-            text
-            @click="removeNormalOutbound(index)" 
-            label="Remove"
-          />
-        </div>
-        <HybirdOutboundEditor v-model="normalOutbounds[index]" />
-      </AccordionTab>
+      <AccordionPanel v-for="(outbound, index) in normalOutbounds" :key="index" :value="index.toString()">
+        <AccordionHeader>
+          {{ outbound?.tag || 'New Outbound' }}
+        </AccordionHeader>
+        <AccordionContent>
+          <div class="flex justify-end mb-3">
+            <Button 
+              icon="pi pi-trash" 
+              severity="danger" 
+              size="small"
+              text
+              @click="removeNormalOutbound(index)" 
+              label="Remove"
+            />
+          </div>
+          <HybirdOutboundEditor v-model="normalOutbounds[index]" />
+        </AccordionContent>
+      </AccordionPanel>
     </Accordion>
 
     <Accordion :multiple="true" class="mt-4">
-        <AccordionTab v-for="(outbound, index) in specialOutbounds" :key="index" :header="outbound?.tag || 'New Special Outbound'">
+        <AccordionPanel v-for="(outbound, index) in specialOutbounds" :key="index" :value="`special-${index}`">
+          <AccordionHeader>
+            {{ outbound?.tag || 'New Special Outbound' }}
+          </AccordionHeader>
+          <AccordionContent>
             <div class="flex justify-end mb-3">
               <Button 
                 icon="pi pi-trash" 
@@ -81,7 +92,8 @@ function removeSpecialOutbound(index: number) {
               />
             </div>
             <SpecialOutboundEditor v-model="specialOutbounds[index]" />
-        </AccordionTab>
+          </AccordionContent>
+        </AccordionPanel>
     </Accordion>
   </div>
 </template>

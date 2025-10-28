@@ -10,7 +10,7 @@ import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import ToggleButton from 'primevue/togglebutton';
 import Fieldset from 'primevue/fieldset';
-import Chips from 'primevue/chips';
+import InputChips from 'primevue/inputchips';
 import Select from 'primevue/select';
 
 const props = defineProps<{
@@ -169,7 +169,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                   <label :for="`rule-outbounds-${index}`" class="block mb-2 font-medium">
                     Multiple Outbounds
                   </label>
-                  <Chips 
+                  <InputChips 
                     :id="`rule-outbounds-${index}`"
                     v-model="rule.outbounds" 
                     placeholder="Add outbound tags"
@@ -185,7 +185,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                   <label :for="`rule-ruleset-${index}`" class="block mb-2 font-medium">
                     Rule Sets
                   </label>
-                  <Chips 
+                  <InputChips 
                     :id="`rule-ruleset-${index}`"
                     v-model="rule.rule_set" 
                     placeholder="Add rule set tags"
@@ -197,7 +197,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                   <label :for="`rule-domain-${index}`" class="block mb-2 font-medium">
                     Domain
                   </label>
-                  <Chips 
+                  <InputChips 
                     :id="`rule-domain-${index}`"
                     v-model="rule.domain" 
                     placeholder="Add domains"
@@ -209,7 +209,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                   <label :for="`rule-domain-suffix-${index}`" class="block mb-2 font-medium">
                     Domain Suffix
                   </label>
-                  <Chips 
+                  <InputChips 
                     :id="`rule-domain-suffix-${index}`"
                     v-model="rule.domain_suffix" 
                     placeholder="Add domain suffixes"
@@ -221,7 +221,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                   <label :for="`rule-domain-keyword-${index}`" class="block mb-2 font-medium">
                     Domain Keyword
                   </label>
-                  <Chips 
+                  <InputChips 
                     :id="`rule-domain-keyword-${index}`"
                     v-model="rule.domain_keyword" 
                     placeholder="Add domain keywords"
@@ -233,7 +233,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                   <label :for="`rule-domain-regex-${index}`" class="block mb-2 font-medium">
                     Domain Regex
                   </label>
-                  <Chips 
+                  <InputChips 
                     :id="`rule-domain-regex-${index}`"
                     v-model="rule.domain_regex" 
                     placeholder="Add regex patterns"

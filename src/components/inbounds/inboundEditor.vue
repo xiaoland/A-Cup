@@ -5,7 +5,7 @@ import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import ToggleSwitch from 'primevue/toggleswitch';
-import Chips from 'primevue/chips';
+import InputChips from 'primevue/inputchips';
 
 const props = defineProps<{
   modelValue: Inbound;
@@ -137,7 +137,7 @@ const tunAddress = computed({
 
           <div>
             <label for="address" class="block mb-2 font-medium">IP Addresses</label>
-            <Chips 
+            <InputChips 
               id="address" 
               v-model="tunAddress"
               class="w-full"

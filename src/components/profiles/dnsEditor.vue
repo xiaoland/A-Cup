@@ -4,7 +4,9 @@ import type { Dns, DNSServer, DNSRule } from '../../../schemas/dns';
 import DnsServerEditor from '@/components/dns/dnsServerEditor.vue';
 import DnsRuleEditor from '@/components/dns/dnsRuleEditor.vue';
 import Accordion from 'primevue/accordion';
-import AccordionTab from 'primevue/accordiontab';
+import AccordionPanel from 'primevue/accordionpanel';
+import AccordionHeader from 'primevue/accordionheader';
+import AccordionContent from 'primevue/accordioncontent';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
 import Fieldset from 'primevue/fieldset';
@@ -91,25 +93,27 @@ const serverTags = computed(() => dns.value.servers.map(server => ({ label: serv
     <Fieldset legend="DNS Servers" class="mt-4">
       <div v-if="dns.servers.length > 0">
         <Accordion :multiple="true" class="mb-3">
-          <AccordionTab v-for="(server, index) in dns.servers" :key="index">
-            <template #header>
+          <AccordionPanel v-for="(server, index) in dns.servers" :key="index" :value="index.toString()">
+            <AccordionHeader>
               <div class="flex items-center justify-between w-full">
                 <span class="font-medium">{{ server.tag || `Server ${index + 1}` }}</span>
                 <span class="text-sm text-gray-500 ml-2">({{ server.type }})</span>
               </div>
-            </template>
-            <div class="flex justify-end mb-3">
-              <Button 
-                icon="pi pi-trash" 
-                severity="danger" 
-                size="small"
-                text
-                @click="removeServer(index)" 
-                label="Remove"
-              />
-            </div>
-            <DnsServerEditor v-model="dns.servers[index]" />
-          </AccordionTab>
+            </AccordionHeader>
+            <AccordionContent>
+              <div class="flex justify-end mb-3">
+                <Button 
+                  icon="pi pi-trash" 
+                  severity="danger" 
+                  size="small"
+                  text
+                  @click="removeServer(index)" 
+                  label="Remove"
+                />
+              </div>
+              <DnsServerEditor v-model="dns.servers[index]" />
+            </AccordionContent>
+          </AccordionPanel>
         </Accordion>
       </div>
       <div v-else class="text-center py-4 text-gray-500">
@@ -128,25 +132,27 @@ const serverTags = computed(() => dns.value.servers.map(server => ({ label: serv
     <Fieldset legend="DNS Rules" class="mt-4">
       <div v-if="dns.rules.length > 0">
         <Accordion :multiple="true" class="mb-3">
-          <AccordionTab v-for="(rule, index) in dns.rules" :key="index">
-            <template #header>
+          <AccordionPanel v-for="(rule, index) in dns.rules" :key="index" :value="`rule-${index}`">
+            <AccordionHeader>
               <div class="flex items-center justify-between w-full">
                 <span class="font-medium">Rule {{ index + 1 }}</span>
                 <span class="text-sm text-gray-500 ml-2">({{ rule.action || 'route' }})</span>
               </div>
-            </template>
-            <div class="flex justify-end mb-3">
-              <Button 
-                icon="pi pi-trash" 
-                severity="danger" 
-                size="small"
-                text
-                @click="removeRule(index)" 
-                label="Remove"
-              />
-            </div>
-            <DnsRuleEditor v-model="dns.rules[index]" />
-          </AccordionTab>
+            </AccordionHeader>
+            <AccordionContent>
+              <div class="flex justify-end mb-3">
+                <Button 
+                  icon="pi pi-trash" 
+                  severity="danger" 
+                  size="small"
+                  text
+                  @click="removeRule(index)" 
+                  label="Remove"
+                />
+              </div>
+              <DnsRuleEditor v-model="dns.rules[index]" />
+            </AccordionContent>
+          </AccordionPanel>
         </Accordion>
       </div>
       <div v-else class="text-center py-4 text-gray-500">
