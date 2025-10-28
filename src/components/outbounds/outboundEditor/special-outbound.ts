@@ -22,7 +22,7 @@ export const UrlTestOutboundSchema = SpecialOutboundBaseSchema.extend({
   outbounds: z.array(z.string()).default([]),
   url: z.string().default('https://www.gstatic.com/generate_204'),
   interval: z.string().default('3m'),
-  tolerance: z.number().int().optional(),
+  tolerance: z.int().optional(),
   idle_timeout: z.string().optional(),
   interrupt_exist_connections: z.boolean().optional(),
 });
@@ -30,5 +30,5 @@ export const UrlTestOutboundSchema = SpecialOutboundBaseSchema.extend({
 export const DirectOutboundSchema = SpecialOutboundBaseSchema.extend({
   type: z.literal('direct'),
   override_address: z.string().optional(),
-  override_port: z.number().int().optional(),
+  override_port: z.int().optional(),
 });

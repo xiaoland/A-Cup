@@ -14,7 +14,7 @@ const WsTransportSchema = z.object({
   type: z.literal('ws'),
   path: z.string().optional(),
   headers: z.record(z.string(), z.string()).optional(),
-  max_early_data: z.number().int().optional(),
+  max_early_data: z.int().optional(),
   early_data_header_name: z.string().optional(),
 });
 

@@ -2,64 +2,41 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { CreateProfileSchema, UpdateProfileSchema } from '../../schemas/profile';
 import { profiles, outbounds as outboundsTable, ruleSets as ruleSetsTable } from '../db/schema';
-import { exportProfileToSingBox, ProfileService } from '../services/profile';
+import { exportProfileCreateToSingBox } from '../services/profile';
 import { inArray, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { authMiddleware } from '../auth';
+import { OutboundService } from '../services/outbound';
+import type { HonoEnv } from '../types';
 
-const profileRouter = new Hono();
+const profileRouter = new Hono<HonoEnv>();
 
-profileRouter.use('*', authMiddleware);
-
-profileRouter.get('/', async (c) => {
-  const userId = c.get('userId');
-  const profileService = new ProfileService(c.get('db'));
-  const profileList = await profileService.getProfiles(userId);
-  return c.json(profileList);
-});
+profileRouter.use(authMiddleware);
 
 profileRouter.post('/', zValidator('json', CreateProfileSchema), async (c) => {
-  const { name, tags, outbounds, route, dns, inbounds } = c.req.valid('json');
+  const body = c.req.valid('json');
   const db = c.get('db');
-  const user = c.get('jwtPayload');
+  const userId = c.get('userId');
+
   const profileId = uuidv4();
 
-  // 1. Insert profile into database
-  await db.insert(profiles).values({
+  // 1. Save to DB
+  const insertedProfile = await db.insert(profiles).values({
     id: profileId,
-    name,
-    tags: JSON.stringify(tags),
-    createdBy: user.sub,
-    outbounds: JSON.stringify(outbounds),
-    rule_sets: JSON.stringify(route.rule_set),
+    name: body.name,
+    tags: JSON.stringify(body.tags),
+    createdBy: userId,
+    outbounds: JSON.stringify(body.referencedOutbounds),
+    rule_sets: JSON.stringify(body.referencedRuleSets),
   });
 
-  // 2. Fetch and parse full outbound and ruleset objects
-  const outboundObjects = (await db.select().from(outboundsTable).where(inArray(outboundsTable.id, outbounds))).map(o => ({
-    ...o,
-    credential: JSON.parse(o.credential),
-    tls: o.tls ? JSON.parse(o.tls) : undefined,
-    mux: o.mux ? JSON.parse(o.mux) : undefined,
-    other: o.other ? JSON.parse(o.other) : undefined,
-  }));
-  const ruleSetObjects = (await db.select().from(ruleSetsTable).where(inArray(ruleSetsTable.id, route.rule_set))).map(r => ({
-    ...r,
-  }));
-
-  // 3. Export profile to SingBox format
-  const singBoxProfile = exportProfileToSingBox(
-    { id: profileId, name, tags, createdBy: user.sub, outbounds, rule_sets: route.rule_set },
-    outboundObjects,
-    ruleSetObjects,
-    dns,
-    inbounds,
-    route
-  );
+  // 2. Save to R2
+  const singBoxProfile = exportProfileCreateToSingBox(body);
 
   // 4. Save to R2
   await c.env.R2.put(`profiles/${profileId}`, JSON.stringify(singBoxProfile));
 
-  return c.json({ id: profileId }, 201);
+  return c.json(insertedProfile, 201);
 });
 
 profileRouter.get('/:id', async (c) => {
@@ -82,45 +59,7 @@ profileRouter.get('/:id/singbox', async (c) => {
 });
 
 profileRouter.put('/:id', zValidator('json', UpdateProfileSchema), async (c) => {
-  const { id } = c.req.param();
-  const { name, tags, outbounds, route, dns, inbounds } = c.req.valid('json');
-  const db = c.get('db');
-  const user = c.get('jwtPayload');
-
-  // 1. Update profile in database
-  await db.update(profiles).set({
-    name,
-    tags: JSON.stringify(tags),
-    outbounds: JSON.stringify(outbounds),
-    rule_sets: JSON.stringify(route.rule_set),
-  }).where(eq(profiles.id, id));
-
-  // 2. Fetch and parse full outbound and ruleset objects
-  const outboundObjects = (await db.select().from(outboundsTable).where(inArray(outboundsTable.id, outbounds))).map(o => ({
-    ...o,
-    credential: JSON.parse(o.credential),
-    tls: o.tls ? JSON.parse(o.tls) : undefined,
-    mux: o.mux ? JSON.parse(o.mux) : undefined,
-    other: o.other ? JSON.parse(o.other) : undefined,
-  }));
-  const ruleSetObjects = (await db.select().from(ruleSetsTable).where(inArray(ruleSetsTable.id, route.rule_set))).map(r => ({
-    ...r,
-  }));
-
-  // 3. Export profile to SingBox format
-  const singBoxProfile = exportProfileToSingBox(
-    { id, name, tags, createdBy: user.sub, outbounds, rule_sets: route.rule_set },
-    outboundObjects,
-    ruleSetObjects,
-    dns,
-    inbounds,
-    route
-  );
-
-  // 4. Save to R2
-  await c.env.R2.put(`profiles/${id}`, JSON.stringify(singBoxProfile));
-
-  return c.body(null, 204);
+  // TODO
 });
 
 profileRouter.delete('/:id', async (c) => {

@@ -3,14 +3,14 @@ import { TLSClientFieldsSchema } from './shared';
 import { SingBoxMultiplexSchema } from './multiplex';
 
 export const VlessCredentialSchema = z.object({
-  uuid: z.string().uuid(),
+  uuid: z.uuid(),
   flow: z.string().default(''),
 });
 
 export const VmessCredentialSchema = z.object({
-  uuid: z.string().uuid(),
+  uuid: z.uuid(),
   security: z.string().default('auto'),
-  alter_id: z.number().int().default(0),
+  alter_id: z.int().default(0),
 });
 
 export const ShadowsocksCredentialSchema = z.object({
@@ -25,14 +25,14 @@ export const Hysteria2CredentialSchema = z.object({
 });
 
 export const BaseOutboundSchema = z.object({
-  id: z.number().int().optional(),
-  readableBy: z.array(z.string().uuid()).default([]),
-  writeableBy: z.array(z.string().uuid()).default([]),
+  id: z.int().optional(),
+  readableBy: z.array(z.uuid()).default([]),
+  writeableBy: z.array(z.uuid()).default([]),
   name: z.string().default(''),
   region: z.string().default(''),
   provider: z.string().default(''),
   server: z.string().default(''),
-  server_port: z.number().int().default(0),
+  server_port: z.int().default(0),
   tls: TLSClientFieldsSchema.default({}),
   mux: SingBoxMultiplexSchema.default({}),
   other: z.looseObject({}).default({}),

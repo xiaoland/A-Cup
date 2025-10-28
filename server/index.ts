@@ -3,8 +3,9 @@ import { HTTPException } from 'hono/http-exception';
 import { userRouter } from "./apis/user";
 import { profileRouter } from "./apis/profile";
 import { drizzle } from 'drizzle-orm/d1';
+import type { HonoEnv } from './types';
 
-const app = new Hono();
+const app = new Hono<HonoEnv>();
 
 // Error handling middleware
 app.use('*', async (c, next) => {
@@ -47,7 +48,7 @@ app.use('*', async (c, next) => {
 });
 
 
-const api = new Hono();
+const api = new Hono<HonoEnv>();
 
 // DB middleware on the api router
 api.use('*', async (c, next) => {

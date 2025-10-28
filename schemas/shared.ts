@@ -5,7 +5,7 @@ export const DialFieldsSchema = z.object({
   bind_interface: z.string().optional(),
   inet4_bind_address: z.string().optional(),
   inet6_bind_address: z.string().optional(),
-  routing_mark: z.number().int().optional(),
+  routing_mark: z.int().optional(),
   reuse_addr: z.boolean().optional(),
   netns: z.string().optional(),
   connect_timeout: z.string().optional(),
@@ -50,9 +50,9 @@ export type TLSClientFields = z.infer<typeof TLSClientFieldsSchema>;
 
 export const ListenFieldsSchema = z.object({
   listen: z.string(),
-  listen_port: z.number().int(),
+  listen_port: z.int(),
   bind_interface: z.string().optional(),
-  routing_mark: z.number().int().optional(),
+  routing_mark: z.int().optional(),
   reuse_addr: z.boolean().optional(),
   netns: z.string().optional(),
   tcp_fast_open: z.boolean().optional(),

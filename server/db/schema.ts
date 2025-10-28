@@ -11,8 +11,8 @@ export const profiles = sqliteTable('profiles', {
   name: text('name').notNull(),
   tags: text('tags').notNull(), // JSON array
   createdBy: text('created_by').notNull().references(() => users.id),
-  outbounds: text('outbounds').notNull(), // JSON array of numbers
-  rule_sets: text('rule_sets').notNull(), // JSON array of numbers
+  outbounds: text('outbounds').notNull().default("[]"), // JSON array of Outbound Ids
+  rule_sets: text('rule_sets').notNull().default("[]"), // JSON array of RuleSet Ids
 });
 
 export const outbounds = sqliteTable('outbounds', {
@@ -35,7 +35,7 @@ export const ruleSets = sqliteTable('rule_sets', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   readableBy: text('readable_by').notNull().default("[]"), // JSON array of strings
   writeableBy: text('writeable_by').notNull().default("[]"), // JSON array of strings
-  tag: text('tag').notNull(),
+  name: text('tag').notNull(),
   type: text('type').notNull(),
   format: text('format'),
   content: text('content').notNull(),

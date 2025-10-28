@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const HeadlessRuleSchema = z.object({
+export const HeadlessRuleSchema = z.object({
   domain: z.array(z.string()).optional(),
   domain_suffix: z.array(z.string()).optional(),
   domain_keyword: z.array(z.string()).optional(),
@@ -26,13 +26,13 @@ export const SingBoxRuleSetSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('local'),
     tag: z.string(),
-    format: z.enum(['source', 'binary']),
+    format: z.enum(['source', 'binary']).optional(),
     path: z.string(),
   }),
   z.object({
     type: z.literal('remote'),
     tag: z.string(),
-    format: z.enum(['source', 'binary']),
+    format: z.enum(['source', 'binary']).optional(),
     url: z.string(),
     download_detour: z.string().optional(),
     update_interval: z.string().optional(),
@@ -63,7 +63,7 @@ export const RouteSchema = z.object({
   auto_detect_interface: z.boolean().optional(),
   override_android_vpn: z.boolean().optional(),
   default_interface: z.string().optional(),
-  default_mark: z.number().int().optional(),
+  default_mark: z.int().optional(),
   default_domain_resolver: z.union([z.string(), z.object({})]).optional(),
   default_network_strategy: z.string().optional(),
   default_network_type: z.array(z.string()).optional(),

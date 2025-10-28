@@ -9,14 +9,14 @@ const DNSRuleActionRouteSchema = z.object({
     .enum(['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only'])
     .optional(),
   disable_cache: z.boolean().optional(),
-  rewrite_ttl: z.number().int().optional(),
+  rewrite_ttl: z.int().optional(),
   client_subnet: z.string().optional(),
 });
 
 const DNSRuleActionRouteOptionsSchema = z.object({
   action: z.literal('route-options'),
   disable_cache: z.boolean().optional(),
-  rewrite_ttl: z.number().int().optional(),
+  rewrite_ttl: z.int().optional(),
   client_subnet: z.string().optional(),
 });
 
@@ -44,7 +44,7 @@ export const DNSRuleActionSchema = z.discriminatedUnion('action', [
 export const DNSRuleSchema = z.intersection(
   z.object({
     inbound: z.array(z.string()).optional(),
-    ip_version: z.number().int().optional(),
+    ip_version: z.int().optional(),
     query_type: z.array(z.union([z.string(), z.number()])).optional(),
     network: z.enum(['tcp', 'udp']).optional(),
     domain: z.array(z.string()).optional(),

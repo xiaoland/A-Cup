@@ -5,8 +5,9 @@ import { sign } from 'hono/jwt';
 import * as CryptoJS from 'crypto-js';
 import { users } from '../db/schema';
 import { eq } from 'drizzle-orm';
+import type { HonoEnv } from '../types';
 
-const userRouter = new Hono();
+const userRouter = new Hono<HonoEnv>();
 
 const PasswordSchema = z.object({
   password: z.string(),

@@ -1,16 +1,20 @@
 import { ruleSets } from '../db/schema';
 import { and, eq, like } from 'drizzle-orm';
 import { RuleSet, RuleSetSchema } from '../../schemas/ruleset';
+import { HeadlessRuleSchema, SingBoxRuleSet } from '../../schemas/route';
 import { z } from 'zod';
 import { DrizzleD1Database } from 'drizzle-orm/d1';
 
-export function exportRuleSetToSingBox(ruleSet: RuleSet) {
+export function exportRuleSetToSingBox(ruleSet: RuleSet): SingBoxRuleSet {
+  if (!ruleSet.id) {
+    throw new Error("Cannot export RuleSet not inserted")
+  }
   return {
-    tag: ruleSet.tag,
+    tag: ruleSet.id.toString(),
     type: ruleSet.type,
-    format: ruleSet.format,
-    content: ruleSet.content,
-  };
+    url: ruleSet.type === 'remote' ? ruleSet.content : undefined,
+    rules: ruleSet.type === 'inline' ? z.array(HeadlessRuleSchema).parse(JSON.parse(ruleSet.content)) : undefined,
+  } as SingBoxRuleSet;
 }
 
 export class RuleSetService {

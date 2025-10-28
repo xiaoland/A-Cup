@@ -1,10 +1,13 @@
 import { outbounds } from '../db/schema';
-import { and, eq, like } from 'drizzle-orm';
+import { and, eq, like, inArray } from 'drizzle-orm';
+import { OutboundSchema, Outbound } from '../../schemas/outbound';
+import { z } from 'zod';
+import { DrizzleD1Database } from 'drizzle-orm/d1';
 
-export function exportOutboundToSingBox(outbound: any) {
+export function exportOutboundToSingBox(outbound: Outbound) {
   return {
     type: outbound.type,
-    tag: outbound.name,
+    tag: outbound.id,
     server: outbound.server,
     server_port: outbound.server_port,
     ...outbound.credential,
@@ -13,9 +16,6 @@ export function exportOutboundToSingBox(outbound: any) {
     ...outbound.other,
   };
 }
-import { OutboundSchema } from '../../schemas/outbound';
-import { z } from 'zod';
-import { DrizzleD1Database } from 'drizzle-orm/d1';
 
 export class OutboundService {
   private db: DrizzleD1Database;
@@ -24,8 +24,14 @@ export class OutboundService {
     this.db = db;
   }
 
-  async getOutbounds(userId: string) {
-    return (await this.db.select().from(outbounds).where(like(outbounds.readableBy, `%${userId}%`))).map((outbound) => {
+  async getOutbounds(userId: string, ids?: number[]) {
+    const conditions = [like(outbounds.readableBy, `%${userId}%`)];
+    
+    if (ids && ids.length > 0) {
+      conditions.push(inArray(outbounds.id, ids));
+    }
+    
+    return (await this.db.select().from(outbounds).where(and(...conditions))).map((outbound) => {
       return {
         ...outbound,
         tls: JSON.parse(outbound.tls),

@@ -3,8 +3,9 @@ import { zValidator } from '@hono/zod-validator';
 import { OutboundSchema } from '../../schemas/outbound';
 import { OutboundService } from '../services/outbound';
 import { authMiddleware } from '../auth';
+import type { HonoEnv } from '../types';
 
-export const outboundApi = new Hono()
+export const outboundApi = new Hono<HonoEnv>()
   .use(authMiddleware)
   .get('/', async (c) => {
     const userId = c.get('userId');
@@ -48,9 +49,9 @@ export const outboundApi = new Hono()
       await outboundService.deleteOutbound(id, userId);
       return c.body(null, 204);
     } catch (error) {
-      if (error.message === 'Forbidden') {
+      if (error instanceof Error && error.message === 'Forbidden') {
         return c.json({ message: error.message }, 403);
       }
-      return c.json({ message: error.message }, 500);
+      return c.json({ message: error instanceof Error ? error.message : 'Unknown error' }, 500);
     }
   });
