@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import type { Profile } from '../../schemas/profile';
 import { useProfileStore } from '../stores/profile';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -9,7 +10,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const profileStore = useProfileStore();
-const profiles = ref([]);
+const profiles = ref<Profile[]>([]);
 
 onMounted(async () => {
   await profileStore.fetchProfiles();
