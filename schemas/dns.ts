@@ -56,6 +56,8 @@ export const DNSRuleSchema = z.intersection(
   DNSRuleActionSchema
 );
 
+export type DNSRule = z.infer<typeof DNSRuleSchema>;
+
 const DNSServerBaseSchema = z.object({
   tag: z.string(),
 });
@@ -82,6 +84,8 @@ export const DNSServerSchema = z.discriminatedUnion('type', [
   DNSServerTLSSchema,
   DNSServerHTTPSSchema,
 ]);
+
+export type DNSServer = z.infer<typeof DNSServerSchema>;
 
 export const DnsSchema = z.object({
   servers: z.array(DNSServerSchema),
