@@ -3,9 +3,11 @@ import app from '../index';
 import { sign } from 'hono/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import { profiles, outbounds as outboundsTable, ruleSets as ruleSetsTable } from '../db/schema';
+import { exportOutboundToSingBox, Outbound } from '../../schemas/outbound';
+import { RuleSet } from '../../schemas/ruleset';
 
 // Mock data
-const mockOutbounds = [
+const mockDbOutbounds = [
   {
     id: 1,
     readableBy: '[]',
@@ -23,16 +25,16 @@ const mockOutbounds = [
   },
 ];
 
-const mockRuleSets = [
+const mockDbRuleSets = [
   {
     id: 3,
     readableBy: '[]',
     writeableBy: '[]',
     tag: 'my-rules',
     type: 'inline',
-    format: null,
+    format: 'source',
     content: '[]',
-    download_detour: 0,
+    download_detour: 'direct',
     update_interval: 0,
   },
 ];
@@ -43,10 +45,10 @@ const mockDrizzle = {
   select: vi.fn().mockReturnThis(),
   from: vi.fn(function(table) {
     if (table === outboundsTable) {
-      return { where: vi.fn().mockResolvedValue(mockOutbounds) };
+      return { where: vi.fn().mockResolvedValue(mockDbOutbounds) };
     }
     if (table === ruleSetsTable) {
-      return { where: vi.fn().mockResolvedValue(mockRuleSets) };
+      return { where: vi.fn().mockResolvedValue(mockDbRuleSets) };
     }
     if (table === profiles) {
         return { where: vi.fn().mockReturnThis() };
@@ -56,7 +58,8 @@ const mockDrizzle = {
   where: vi.fn().mockReturnThis(),
   get: vi.fn().mockResolvedValue(mockProfile),
   insert: vi.fn().mockReturnThis(),
-  values: vi.fn().mockResolvedValue(true),
+  values: vi.fn().mockReturnThis(),
+  returning: vi.fn().mockReturnThis(),
   update: vi.fn().mockReturnThis(),
   set: vi.fn().mockReturnThis(),
   delete: vi.fn(() => ({ where: vi.fn().mockResolvedValue(true) })),
@@ -79,9 +82,32 @@ describe('Profile API', () => {
   };
 
   let validToken: string;
+  let createProfileDto: any;
 
   beforeAll(async () => {
     validToken = await sign({ sub: '1234567890', name: 'John Doe', iat: 1516239022, exp: 9999999999 }, env.JWT_SECRET);
+
+    const parsedOutbounds = mockDbOutbounds.map(o => ({ ...o, readableBy: [], writeableBy: [], credential: JSON.parse(o.credential), tls: JSON.parse(o.tls), mux: JSON.parse(o.mux), other: JSON.parse(o.other) })) as Outbound[];
+    const singboxOutbounds = parsedOutbounds.map(exportOutboundToSingBox);
+
+    const singboxRuleSets = [{ type: 'inline', tag: 'my-rules', rules: [] }];
+
+    createProfileDto = {
+      name: 'test-profile',
+      tags: ['test'],
+      referencedOutbounds: [1],
+      referencedRuleSets: [3],
+      outbounds: singboxOutbounds,
+      route: {
+        rule_set: singboxRuleSets,
+      },
+      dns: {
+        servers: [{ type: 'udp', tag: 'dns-udp', address: '8.8.8.8', detour: 'direct' }],
+        rules: [],
+      },
+      inbounds: [{ type: 'mixed', tag: 'mixed-in', listen: '127.0.0.1', listen_port: 1080 }],
+    };
+
     // Mock for get profile
     (mockDrizzle.from as any).mockImplementation((table: any) => {
       if (table === profiles) {
@@ -92,29 +118,22 @@ describe('Profile API', () => {
         };
       }
       if (table === outboundsTable) {
-        return { where: vi.fn().mockResolvedValue(mockOutbounds) };
+        return { where: vi.fn().mockResolvedValue(mockDbOutbounds) };
       }
       if (table === ruleSetsTable) {
-        return { where: vi.fn().mockResolvedValue(mockRuleSets) };
+        return { where: vi.fn().mockResolvedValue(mockDbRuleSets) };
       }
     });
   });
 
-  const createProfileDto = {
-    name: 'test-profile',
-    tags: ['test'],
-    outbounds: [1],
-    route: {
-      rule_set: [3],
-    },
-    dns: {
-      servers: [{ type: 'udp', tag: 'dns-udp', address: '8.8.8.8', detour: 'direct' }],
-      rules: [],
-    },
-    inbounds: [{ type: 'mixed', tag: 'mixed-in', listen: '127.0.0.1', listen_port: 1080 }],
-  };
-
   it('should create a new profile', async () => {
+    (mockDrizzle.insert as any).mockImplementation(() => ({
+        values: () => ({
+            returning: () => ({
+                get: () => Promise.resolve({ id: 'new-profile-id' })
+            })
+        })
+    }));
     const req = new Request('http://localhost/api/profiles', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${validToken}` },

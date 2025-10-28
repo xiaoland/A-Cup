@@ -4,19 +4,6 @@ import { OutboundSchema, Outbound } from '../../schemas/outbound';
 import { z } from 'zod';
 import { DrizzleD1Database } from 'drizzle-orm/d1';
 
-export function exportOutboundToSingBox(outbound: Outbound) {
-  return {
-    type: outbound.type,
-    tag: outbound.id,
-    server: outbound.server,
-    server_port: outbound.server_port,
-    ...outbound.credential,
-    ...outbound.tls,
-    ...outbound.mux,
-    ...outbound.other,
-  };
-}
-
 export class OutboundService {
   private db: DrizzleD1Database;
 

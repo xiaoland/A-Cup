@@ -5,11 +5,15 @@ import { RouteSchema } from './route';
 import { SingBoxTlsSchema } from './tls';
 import { SingBoxMultiplexSchema } from './multiplex';
 import { SingBoxTransportSchema } from './transport';
+import { DialFieldsSchema } from './shared';
 
 // SingBox Outbound Schemas
-const SingBoxVlessOutboundSchema = z.object({
-  type: z.literal('vless'),
+const SingBoxBaseOutboundSchema = z.object({
   tag: z.string(),
+}).merge(DialFieldsSchema);
+
+const SingBoxVlessOutboundSchema = SingBoxBaseOutboundSchema.extend({
+  type: z.literal('vless'),
   server: z.string(),
   server_port: z.int(),
   uuid: z.uuid(),
@@ -21,9 +25,8 @@ const SingBoxVlessOutboundSchema = z.object({
   transport: SingBoxTransportSchema.optional(),
 });
 
-const SingBoxVmessOutboundSchema = z.object({
+const SingBoxVmessOutboundSchema = SingBoxBaseOutboundSchema.extend({
   type: z.literal('vmess'),
-  tag: z.string(),
   server: z.string(),
   server_port: z.int(),
   uuid: z.uuid(),
@@ -34,9 +37,8 @@ const SingBoxVmessOutboundSchema = z.object({
   transport: SingBoxTransportSchema.optional(),
 });
 
-const SingBoxShadowsocksOutboundSchema = z.object({
+const SingBoxShadowsocksOutboundSchema = SingBoxBaseOutboundSchema.extend({
   type: z.literal('shadowsocks'),
-  tag: z.string(),
   server: z.string(),
   server_port: z.int(),
   method: z.string(),
@@ -46,9 +48,8 @@ const SingBoxShadowsocksOutboundSchema = z.object({
   transport: SingBoxTransportSchema.optional(),
 });
 
-const SingBoxHysteria2OutboundSchema = z.object({
+const SingBoxHysteria2OutboundSchema = SingBoxBaseOutboundSchema.extend({
   type: z.literal('hysteria2'),
-  tag: z.string(),
   server: z.string(),
   server_port: z.int(),
   password: z.string(),
@@ -59,12 +60,34 @@ const SingBoxHysteria2OutboundSchema = z.object({
   transport: SingBoxTransportSchema.optional(),
 });
 
+export const SelectorOutboundSchema = SingBoxBaseOutboundSchema.extend({
+    type: z.literal('selector'),
+    outbounds: z.array(z.string()).default([]),
+    default: z.string().optional(),
+});
+
+export const UrlTestOutboundSchema = SingBoxBaseOutboundSchema.extend({
+    type: z.literal('urltest'),
+    outbounds: z.array(z.string()).default([]),
+    url: z.string().default('https://www.gstatic.com/generate_204'),
+    interval: z.string().default('5m'),
+});
+
+export const DirectOutboundSchema = SingBoxBaseOutboundSchema.extend({
+    type: z.literal('direct'),
+});
+
 export const SingBoxOutboundSchema = z.discriminatedUnion('type', [
   SingBoxVlessOutboundSchema,
   SingBoxVmessOutboundSchema,
   SingBoxShadowsocksOutboundSchema,
   SingBoxHysteria2OutboundSchema,
+  SelectorOutboundSchema,
+  UrlTestOutboundSchema,
+  DirectOutboundSchema,
 ]);
+
+export type SingBoxOutbound = z.infer<typeof SingBoxOutboundSchema>;
 
 // SingBoxProfile Schema
 export const SingBoxProfileSchema = z.object({

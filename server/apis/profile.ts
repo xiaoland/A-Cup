@@ -7,6 +7,7 @@ import { exportProfileCreateToSingBox } from '../services/profile';
 import { v4 as uuidv4 } from 'uuid';
 import { authMiddleware } from '../auth';
 import type { HonoEnv } from '../types';
+import { eq } from 'drizzle-orm';
 
 const profileRouter = new Hono<HonoEnv>();
 
@@ -27,13 +28,13 @@ profileRouter.post('/', zValidator('json', CreateProfileSchema), async (c) => {
     createdBy: userId,
     outbounds: JSON.stringify(body.referencedOutbounds),
     rule_sets: JSON.stringify(body.referencedRuleSets),
-  });
+  }).returning().get();
 
   // 2. Save to R2
   const singBoxProfile = exportProfileCreateToSingBox(body);
 
   // 4. Save to R2
-  await c.env.R2.put(`profiles/${profileId}`, JSON.stringify(singBoxProfile));
+  await c.env.R2.put(`profiles/${profileId}.json`, JSON.stringify(singBoxProfile));
 
   return c.json(insertedProfile, 201);
 });
@@ -54,11 +55,33 @@ profileRouter.get('/:id', async (c) => {
 profileRouter.get('/:id/singbox', async (c) => {
   const { id } = c.req.param();
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  return c.json({ url: `${r2PublicUrl}/profiles/${id}` });
+  return c.json({ url: `${r2PublicUrl}/profiles/${id}.json` });
 });
 
 profileRouter.put('/:id', zValidator('json', UpdateProfileSchema), async (c) => {
-  // TODO
+  const { id } = c.req.param();
+  const body = c.req.valid('json');
+  const db = c.get('db');
+  const userId = c.get('userId');
+
+  const profileService = new ProfileService(db);
+  const existingProfile = await profileService.getProfileById(id, userId);
+
+  if (!existingProfile) {
+    return c.json({ message: 'Profile not found' }, 404);
+  }
+
+  await db.update(profiles).set({
+    name: body.name,
+    tags: JSON.stringify(body.tags),
+    outbounds: JSON.stringify(body.referencedOutbounds),
+    rule_sets: JSON.stringify(body.referencedRuleSets),
+  }).where(eq(profiles.id, id));
+
+  const singBoxProfile = exportProfileCreateToSingBox(body);
+  await c.env.R2.put(`profiles/${id}.json`, JSON.stringify(singBoxProfile));
+
+  return c.body(null, 204);
 });
 
 profileRouter.delete('/:id', async (c) => {
@@ -73,7 +96,7 @@ profileRouter.delete('/:id', async (c) => {
   }
 
   // Delete from R2
-  await c.env.R2.delete(`profiles/${id}`);
+  await c.env.R2.delete(`profiles/${id}.json`);
 
   return c.body(null, 204);
 });

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { SingBoxProfile } from '../../../schemas/singbox';
+import type { SingBoxProfile, SingBoxOutbound } from '../../../schemas/singbox';
 import type { Inbound } from '../../../schemas/inbound';
 import type { Dns } from '../../../schemas/dns';
 import type { Route } from '../../../schemas/route';
 import InboundsEditor from './inboundsEditor.vue';
+import OutboundsEditor from './outboundsEditor.vue';
 import DnsEditor from './dnsEditor.vue';
 import RouteEditor from './routeEditor.vue';
 import Button from 'primevue/button';
@@ -17,6 +18,10 @@ const emit = defineEmits(['save', 'cancel', 'update:modelValue']);
 
 const updateInbounds = (inbounds: Inbound[]) => {
   emit('update:modelValue', { ...props.modelValue, inbounds });
+};
+
+const updateOutbounds = (outbounds: SingBoxOutbound[]) => {
+  emit('update:modelValue', { ...props.modelValue, outbounds });
 };
 
 const updateDns = (dns: Dns) => {
@@ -36,8 +41,7 @@ const updateRoute = (route: Route) => {
     </Panel>
 
     <Panel header="Outbounds" :toggleable="true" class="mt-4">
-      <!-- TODO: Implement Outbounds Editor -->
-      <p>TODO: Outbounds editor placeholder</p>
+      <OutboundsEditor :modelValue="modelValue.outbounds" @update:modelValue="updateOutbounds" />
     </Panel>
 
     <Panel header="DNS" :toggleable="true" class="mt-4">
