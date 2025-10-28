@@ -47,7 +47,9 @@ describe('outboundsEditor.vue', () => {
         },
       },
     });
-    await wrapper.findAll('button').find(btn => btn.text() === 'Add Outbound')?.trigger('click');
+    const addButton = wrapper.findAll('button').find(btn => btn.text() === 'Add Outbound');
+    expect(addButton).toBeDefined();
+    await addButton!.trigger('click');
     expect(wrapper.findAllComponents(AccordionPanel).length).toBe(1);
   });
 
@@ -67,7 +69,10 @@ describe('outboundsEditor.vue', () => {
       },
     });
     const removeButtons = wrapper.findAll('button').filter(btn => btn.text() === 'Remove');
-    await removeButtons.at(1)?.trigger('click');
+    expect(removeButtons.length).toBeGreaterThanOrEqual(2);
+    const secondRemoveButton = removeButtons.at(1);
+    expect(secondRemoveButton).toBeDefined();
+    await secondRemoveButton!.trigger('click');
     const emitted = wrapper.emitted('update:modelValue');
     expect(emitted).toHaveLength(1);
     expect(emitted[0][0].length).toBe(1);
