@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { Inbound } from '../../../schemas/inbound';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import InputSwitch from 'primevue/inputswitch';
 import Chips from 'primevue/chips';
-import Fieldset from 'primevue/fieldset';
 
 const props = defineProps<{
   modelValue: Inbound;
@@ -19,8 +18,16 @@ const inbound = computed({
   set: (value) => emit('update:modelValue', value),
 });
 
-const inboundTypes = ['mixed', 'tun'];
-const tunStacks = ['system', 'gvisor', 'mixed'];
+const inboundTypes = [
+  { label: 'Mixed (HTTP/SOCKS)', value: 'mixed' },
+  { label: 'TUN', value: 'tun' }
+];
+
+const tunStacks = [
+  { label: 'System', value: 'system' },
+  { label: 'gVisor', value: 'gvisor' },
+  { label: 'Mixed', value: 'mixed' }
+];
 
 const onTypeChange = (newType: 'mixed' | 'tun') => {
   const tag = inbound.value.tag;
@@ -49,71 +56,154 @@ const tunAddress = computed({
 </script>
 
 <template>
-  <div>
-    <div class="field">
-      <label for="tag">Tag</label>
-      <InputText id="tag" v-model="inbound.tag" />
-    </div>
-    <div class="field">
-      <label for="type">Inbound Type</label>
-      <Dropdown id="type" :modelValue="inbound.type" :options="inboundTypes" @update:modelValue="onTypeChange" placeholder="Select a Type" />
+  <div class="flex flex-col gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="tag" class="block mb-2 font-medium">Tag</label>
+        <InputText 
+          id="tag" 
+          v-model="inbound.tag" 
+          class="w-full"
+        />
+      </div>
+
+      <div>
+        <label for="type" class="block mb-2 font-medium">Inbound Type</label>
+        <Select 
+          id="type" 
+          v-model="inbound.type"
+          :options="inboundTypes" 
+          optionLabel="label"
+          optionValue="value"
+          @update:modelValue="onTypeChange"
+          class="w-full"
+        />
+      </div>
     </div>
 
+    <!-- Mixed Inbound Configuration -->
     <template v-if="inbound.type === 'mixed'">
-      <div class="formgrid grid">
-        <div class="field col-12 md:col-6">
-          <label for="listen">Listen Address</label>
-          <InputText id="listen" v-model="inbound.listen" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="listen" class="block mb-2 font-medium">Listen Address</label>
+          <InputText 
+            id="listen" 
+            v-model="inbound.listen" 
+            class="w-full"
+            placeholder="0.0.0.0"
+          />
         </div>
-        <div class="field col-12 md:col-6">
-          <label for="listen_port">Listen Port</label>
-          <InputNumber id="listen_port" v-model="inbound.listen_port" />
+
+        <div>
+          <label for="listen_port" class="block mb-2 font-medium">Listen Port</label>
+          <InputNumber 
+            id="listen_port" 
+            v-model="inbound.listen_port"
+            class="w-full"
+            :use-grouping="false"
+            :min="1"
+            :max="65535"
+          />
         </div>
       </div>
-      <div class="field-checkbox">
-        <InputSwitch id="set_system_proxy" v-model="inbound.set_system_proxy" />
-        <label for="set_system_proxy">Set System Proxy</label>
+
+      <div class="flex items-center gap-3">
+        <InputSwitch 
+          id="set_system_proxy" 
+          v-model="inbound.set_system_proxy"
+        />
+        <label for="set_system_proxy" class="cursor-pointer">
+          Set System Proxy
+        </label>
       </div>
+
       <!-- TODO: Editor for users array -->
     </template>
 
+    <!-- TUN Inbound Configuration -->
     <template v-if="inbound.type === 'tun'">
-      <Fieldset legend="TUN Configuration" :toggleable="true" class="mt-3">
-        <div class="formgrid grid">
-          <div class="field col-12 md:col-6">
-            <div class="field">
-              <label for="interface_name">Interface Name</label>
-              <InputText id="interface_name" v-model="inbound.interface_name" />
-            </div>
-            <div class="field">
-              <label for="address">Address</label>
-              <Chips id="address" v-model="tunAddress" />
-            </div>
-            <div class="field">
-              <label for="mtu">MTU</label>
-              <InputNumber id="mtu" v-model="inbound.mtu" />
-            </div>
-            <div class="field">
-              <label for="stack">Stack</label>
-              <Dropdown id="stack" v-model="inbound.stack" :options="tunStacks" />
-            </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Left Column -->
+        <div class="flex flex-col gap-4">
+          <div>
+            <label for="interface_name" class="block mb-2 font-medium">Interface Name</label>
+            <InputText 
+              id="interface_name" 
+              v-model="inbound.interface_name"
+              class="w-full"
+              placeholder="tun0"
+            />
           </div>
-          <div class="field col-12 md:col-6">
-            <div class="field-checkbox">
-              <InputSwitch id="auto_route" v-model="inbound.auto_route" />
-              <label for="auto_route">Auto Route</label>
-            </div>
-            <div class="field-checkbox">
-              <InputSwitch id="strict_route" v-model="inbound.strict_route" />
-              <label for="strict_route">Strict Route</label>
-            </div>
-             <div class="field-checkbox">
-              <InputSwitch id="endpoint_independent_nat" v-model="inbound.endpoint_independent_nat" />
-              <label for="endpoint_independent_nat">Endpoint Independent NAT</label>
-            </div>
+
+          <div>
+            <label for="address" class="block mb-2 font-medium">IP Addresses</label>
+            <Chips 
+              id="address" 
+              v-model="tunAddress"
+              class="w-full"
+              placeholder="e.g., 172.19.0.1/30"
+            />
+            <small class="text-gray-500">Press Enter to add multiple addresses</small>
+          </div>
+
+          <div>
+            <label for="mtu" class="block mb-2 font-medium">MTU</label>
+            <InputNumber 
+              id="mtu" 
+              v-model="inbound.mtu"
+              class="w-full"
+              :use-grouping="false"
+              :min="1280"
+              :max="9000"
+            />
+          </div>
+
+          <div>
+            <label for="stack" class="block mb-2 font-medium">Network Stack</label>
+            <Select 
+              id="stack" 
+              v-model="inbound.stack"
+              :options="tunStacks"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+            />
           </div>
         </div>
-      </Fieldset>
+
+        <!-- Right Column - Switches -->
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <InputSwitch 
+              id="auto_route" 
+              v-model="inbound.auto_route"
+            />
+            <label for="auto_route" class="cursor-pointer">
+              Auto Route
+            </label>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <InputSwitch 
+              id="strict_route" 
+              v-model="inbound.strict_route"
+            />
+            <label for="strict_route" class="cursor-pointer">
+              Strict Route
+            </label>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <InputSwitch 
+              id="endpoint_independent_nat" 
+              v-model="inbound.endpoint_independent_nat"
+            />
+            <label for="endpoint_independent_nat" class="cursor-pointer">
+              Endpoint Independent NAT
+            </label>
+          </div>
+        </div>
+      </div>
     </template>
   </div>
 </template>

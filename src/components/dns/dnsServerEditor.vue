@@ -3,8 +3,8 @@ import { computed } from 'vue';
 import type { DNSServer } from '../../../schemas/dns';
 import DialFieldsEditor from '../common/DialFieldsEditor.vue';
 import TLSClientFieldsEditor from '../common/TLSClientFieldsEditor.vue';
-import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
+import Select from 'primevue/select';
 
 const props = defineProps<{
   modelValue: DNSServer;
@@ -17,7 +17,11 @@ const server = computed({
   set: (value) => emit('update:modelValue', value),
 });
 
-const serverTypes = ['udp', 'tls', 'https'];
+const serverTypes = [
+  { label: 'UDP', value: 'udp' },
+  { label: 'TLS', value: 'tls' },
+  { label: 'HTTPS', value: 'https' }
+];
 
 const onTypeChange = (newType: 'udp' | 'tls' | 'https') => {
   const tag = server.value.tag;
@@ -43,21 +47,39 @@ const onTypeChange = (newType: 'udp' | 'tls' | 'https') => {
 </script>
 
 <template>
-  <div>
-    <div class="formgrid grid">
-      <div class="field col-12 md:col-6">
-        <label for="tag">Tag</label>
-        <InputText id="tag" v-model="server.tag" />
+  <div class="flex flex-col gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="tag" class="block mb-2 font-medium">Tag</label>
+        <InputText 
+          id="tag" 
+          v-model="server.tag" 
+          class="w-full"
+        />
       </div>
-      <div class="field col-12 md:col-6">
-        <label for="type">Server Type</label>
-        <Dropdown id="type" :modelValue="server.type" :options="serverTypes" @update:modelValue="onTypeChange" placeholder="Select a Type" />
+
+      <div>
+        <label for="type" class="block mb-2 font-medium">Server Type</label>
+        <Select 
+          id="type" 
+          :model-value="server.type" 
+          :options="serverTypes"
+          option-label="label"
+          option-value="value"
+          @update:model-value="onTypeChange" 
+          placeholder="Select a Type" 
+          class="w-full"
+        />
       </div>
     </div>
 
-    <div class="field" v-if="server.type">
-      <label for="address">Address</label>
-      <InputText id="address" v-model="server.address" />
+    <div v-if="server.type">
+      <label for="address" class="block mb-2 font-medium">Address</label>
+      <InputText 
+        id="address" 
+        v-model="server.address" 
+        class="w-full"
+      />
     </div>
 
     <template v-if="(server.type === 'tls' || server.type === 'https') && server.tls">
