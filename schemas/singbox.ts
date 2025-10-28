@@ -60,11 +60,31 @@ const SingBoxHysteria2OutboundSchema = SingBoxBaseOutboundSchema.extend({
   transport: SingBoxTransportSchema.optional(),
 });
 
+export const SelectorOutboundSchema = SingBoxBaseOutboundSchema.extend({
+    type: z.literal('selector'),
+    outbounds: z.array(z.string()).default([]),
+    default: z.string().optional(),
+});
+
+export const UrlTestOutboundSchema = SingBoxBaseOutboundSchema.extend({
+    type: z.literal('urltest'),
+    outbounds: z.array(z.string()).default([]),
+    url: z.string().default('https://www.gstatic.com/generate_204'),
+    interval: z.string().default('5m'),
+});
+
+export const DirectOutboundSchema = SingBoxBaseOutboundSchema.extend({
+    type: z.literal('direct'),
+});
+
 export const SingBoxOutboundSchema = z.discriminatedUnion('type', [
   SingBoxVlessOutboundSchema,
   SingBoxVmessOutboundSchema,
   SingBoxShadowsocksOutboundSchema,
   SingBoxHysteria2OutboundSchema,
+  SelectorOutboundSchema,
+  UrlTestOutboundSchema,
+  DirectOutboundSchema,
 ]);
 
 export type SingBoxOutbound = z.infer<typeof SingBoxOutboundSchema>;

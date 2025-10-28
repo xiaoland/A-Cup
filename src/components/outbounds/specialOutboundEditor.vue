@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from 'vue';
 import { z } from 'zod';
-import { SelectorOutboundSchema, UrlTestOutboundSchema, DirectOutboundSchema } from './outboundEditor/special-outbound';
+import { SelectorOutboundSchema, UrlTestOutboundSchema, DirectOutboundSchema, SingBoxOutboundSchema, type SingBoxOutbound } from '../../../schemas/singbox';
 import Dropdown from 'primevue/dropdown';
 import SelectorForm from './outboundEditor/selectorForm.vue';
 import UrltestForm from './outboundEditor/urltestForm.vue';
@@ -11,12 +11,12 @@ import InputText from 'primevue/inputtext';
 type SpecialOutboundModel = z.infer<typeof SelectorOutboundSchema> | z.infer<typeof UrlTestOutboundSchema> | z.infer<typeof DirectOutboundSchema>;
 
 const props = defineProps<{
-  modelValue?: SpecialOutboundModel;
+  modelValue?: SingBoxOutbound;
 }>();
 
 const emit = defineEmits(['update:modelValue']);
 
-const localOutbound = ref<SpecialOutboundModel>();
+const localOutbound = ref<SingBoxOutbound | undefined>();
 
 watch(() => props.modelValue, (newValue) => {
     localOutbound.value = newValue;

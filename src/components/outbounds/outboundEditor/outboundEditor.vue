@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { z } from 'zod';
-import { OutboundSchema, VlessCredentialSchema, VmessCredentialSchema, ShadowsocksCredentialSchema, Hysteria2CredentialSchema } from '../../../schemas/outbound';
+import { OutboundSchema, VlessCredentialSchema, VmessCredentialSchema, ShadowsocksCredentialSchema, Hysteria2CredentialSchema } from '../../../../schemas/outbound';
 import ImportOutbound from '../importOutbound.vue';
 
 import InputText from 'primevue/inputtext';

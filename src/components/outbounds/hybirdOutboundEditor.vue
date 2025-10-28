@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from 'vue';
 import type { SingBoxOutbound } from '../../../schemas/singbox';
+import { SingBoxOutboundSchema } from '../../../schemas/singbox';
 import type { Outbound } from '../../../schemas/outbound';
 import { exportOutboundToSingBox } from '../../../schemas/outbound';
 import { VlessCredentialSchema } from '../../../schemas/outbound';
@@ -81,17 +82,17 @@ const otherFields = computed({
     if (localOutbound.value) {
         for (const key in localOutbound.value) {
             if (!dialKeys.includes(key)) {
-                other[key] = localOutbound.value[key];
+                other[key] = (localOutbound.value as any)[key];
             }
         }
     }
     return other;
   },
   set: (newOtherFields) => {
-    const newDialFields = {};
+    const newDialFields: any = {};
     if (localOutbound.value) {
-        for (const key in dialFields.value) {
-            newDialFields[key] = localOutbound.value[key];
+        for (const key of Object.keys(dialFields.value)) {
+            newDialFields[key] = (localOutbound.value as any)[key];
         }
         localOutbound.value = { ...newDialFields, ...newOtherFields };
     }
