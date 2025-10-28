@@ -13,18 +13,18 @@ export function fromSingbox(singboxRuleSet: SingBoxRuleSet): Partial<RuleSet> {
   }
 
   let content: string;
-  let format: string | undefined;
+  let format: 'source' | 'binary' | undefined;
 
   if (singboxRuleSet.type === 'inline') {
     content = JSON.stringify(singboxRuleSet.rules);
-    format = 'text'; // Or some default, since it doesn't exist on the source
+    format = 'source'; // Or some default, since it doesn't exist on the source
   } else { // remote
     content = singboxRuleSet.url;
     format = singboxRuleSet.format;
   }
 
   return {
-    name: tag,
+    tag,
     type,
     format: format,
     content,

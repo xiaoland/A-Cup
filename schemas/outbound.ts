@@ -59,3 +59,15 @@ export const OutboundSchema = z.discriminatedUnion('type', [
 
 export type Outbound = z.infer<typeof OutboundSchema>;
 
+export function exportOutboundToSingBox(outbound: Outbound) {
+  return {
+    type: outbound.type,
+    tag: String(outbound.id),
+    server: outbound.server,
+    server_port: outbound.server_port,
+    ...outbound.credential,
+    ...outbound.tls,
+    ...outbound.mux,
+    ...outbound.other,
+  };
+}

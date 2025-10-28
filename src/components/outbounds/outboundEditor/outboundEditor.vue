@@ -2,8 +2,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { z } from 'zod';
-import { OutboundSchema, VlessCredentialSchema, VmessCredentialSchema, ShadowsocksCredentialSchema, Hysteria2CredentialSchema } from '../../../../schemas/outbound';
-import { SelectorOutboundSchema, UrlTestOutboundSchema, DirectOutboundSchema } from './special-outbound';
+import { OutboundSchema, VlessCredentialSchema, VmessCredentialSchema, ShadowsocksCredentialSchema, Hysteria2CredentialSchema } from '../../../schemas/outbound';
 import ImportOutbound from '../importOutbound.vue';
 
 import InputText from 'primevue/inputtext';
@@ -19,18 +18,12 @@ import VlessForm from './vlessForm.vue';
 import VmessForm from './vmessForm.vue';
 import ShadowsocksForm from './shadowsocksForm.vue';
 import Hysteria2Form from './hysteria2Form.vue';
-import SelectorForm from './selectorForm.vue';
-import UrltestForm from './urltestForm.vue';
-import DirectForm from './directForm.vue';
 
-type OutboundModel = z.infer<typeof OutboundSchema> | z.infer<typeof SelectorOutboundSchema> | z.infer<typeof UrlTestOutboundSchema> | z.infer<typeof DirectOutboundSchema>;
+type OutboundModel = z.infer<typeof OutboundSchema>;
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   modelValue: OutboundModel;
-  disableSpecial?: boolean;
-}>(), {
-  disableSpecial: true,
-});
+}>();
 
 const emit = defineEmits(['update:modelValue', 'save', 'cancel']);
 
@@ -44,67 +37,31 @@ watch(localOutbound, (newValue) => {
   emit('update:modelValue', newValue);
 }, { deep: true });
 
-const outboundTypes = computed(() => {
-  const allTypes = [
+const outboundTypes = [
     { label: 'VLESS', value: 'vless' },
     { label: 'VMess', value: 'vmess' },
     { label: 'Shadowsocks', value: 'shadowsocks' },
     { label: 'Hysteria2', value: 'hysteria2' },
-    { label: 'Selector', value: 'selector' },
-    { label: 'URLTest', value: 'urltest' },
-    { label: 'Direct', value: 'direct' },
-  ];
-  if (props.disableSpecial) {
-    return allTypes.filter(t => !['selector', 'urltest', 'direct'].includes(t.value));
-  }
-  return allTypes;
-});
-
-const isSpecialOutbound = computed(() => {
-  const specialTypes = ['selector', 'urltest', 'direct'];
-  return specialTypes.includes(localOutbound.value.type);
-});
+];
 
 watch(() => localOutbound.value.type, (newType, oldType) => {
   if (newType === oldType) return;
 
   const newOutbound = { ...localOutbound.value, type: newType };
 
-  const fullSchema = z.union([OutboundSchema, SelectorOutboundSchema, UrlTestOutboundSchema, DirectOutboundSchema]);
-  const parseResult = fullSchema.safeParse(newOutbound);
-
-  if (!parseResult.success) {
-    switch (newType) {
-      case 'vless':
-        newOutbound.credential = VlessCredentialSchema.parse({});
-        break;
-      case 'vmess':
-        newOutbound.credential = VmessCredentialSchema.parse({});
-        break;
-      case 'shadowsocks':
-        newOutbound.credential = ShadowsocksCredentialSchema.parse({});
-        break;
-      case 'hysteria2':
-        newOutbound.credential = Hysteria2CredentialSchema.parse({});
-        break;
-      case 'selector':
-        {
-          const parsed = SelectorOutboundSchema.parse({ type: 'selector' });
-          newOutbound.outbounds = parsed.outbounds;
-          newOutbound.default = parsed.default;
-        }
-        break;
-      case 'urltest':
-        {
-          const parsed = UrlTestOutboundSchema.parse({ type: 'urltest' });
-          newOutbound.outbounds = parsed.outbounds;
-          newOutbound.url = parsed.url;
-          newOutbound.interval = parsed.interval;
-        }
-        break;
-      case 'direct':
-        break;
-    }
+  switch (newType) {
+    case 'vless':
+      newOutbound.credential = VlessCredentialSchema.parse({});
+      break;
+    case 'vmess':
+      newOutbound.credential = VmessCredentialSchema.parse({});
+      break;
+    case 'shadowsocks':
+      newOutbound.credential = ShadowsocksCredentialSchema.parse({});
+      break;
+    case 'hysteria2':
+      newOutbound.credential = Hysteria2CredentialSchema.parse({});
+      break;
   }
   localOutbound.value = newOutbound;
 });
@@ -153,7 +110,7 @@ function cancel() {
     </Fieldset>
 
     <Fieldset legend="Base" class="mt-4">
-      <div v-if="!isSpecialOutbound" class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-4">
         <div>
           <label for="server">Server</label>
           <InputText id="server" v-model="localOutbound.server" class="w-full" />
@@ -169,9 +126,6 @@ function cancel() {
         <VmessForm v-if="localOutbound.type === 'vmess'" v-model="localOutbound.credential" />
         <ShadowsocksForm v-if="localOutbound.type === 'shadowsocks'" v-model="localOutbound.credential" />
         <Hysteria2Form v-if="localOutbound.type === 'hysteria2'" v-model="localOutbound.credential" />
-        <SelectorForm v-if="localOutbound.type === 'selector'" v-model="localOutbound" />
-        <UrltestForm v-if="localOutbound.type === 'urltest'" v-model="localOutbound" />
-        <DirectForm v-if="localOutbound.type === 'direct'" v-model="localOutbound" />
       </div>
     </Fieldset>
 
