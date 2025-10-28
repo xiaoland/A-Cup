@@ -18,7 +18,7 @@ onMounted(async () => {
 });
 
 const editProfile = (id: string) => {
-  router.push(`/profile/${id}`);
+  router.push(`/profiles/${id}`);
 };
 
 const deleteProfile = async (id: string) => {
@@ -27,7 +27,7 @@ const deleteProfile = async (id: string) => {
 };
 
 const newProfile = () => {
-  router.push('/profile/new');
+  router.push('/profiles/new');
 };
 </script>
 

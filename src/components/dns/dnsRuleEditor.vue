@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { DNSRule } from '../../../schemas/dns';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import Chips from 'primevue/chips';
-import InputSwitch from 'primevue/inputswitch';
+import ToggleSwitch from 'primevue/toggleswitch';
 import Fieldset from 'primevue/fieldset';
 
 const props = defineProps<{
@@ -107,7 +107,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
         
         <div class="field col-12 md:col-6">
           <label for="network">Network Type</label>
-          <Dropdown 
+          <Select 
             id="network" 
             v-model="rule.network" 
             :options="networkTypes" 
@@ -125,7 +125,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
       <div class="formgrid grid">
         <div class="field col-12">
           <label for="action">Action Type</label>
-          <Dropdown 
+          <Select 
             id="action" 
             :modelValue="rule.action" 
             :options="actionTypes" 
@@ -151,7 +151,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
           
           <div class="field col-12 md:col-4 flex align-items-center">
             <div class="field-checkbox">
-              <InputSwitch 
+              <ToggleSwitch 
                 inputId="route-disable_cache" 
                 v-model="rule.disable_cache" 
               />
@@ -164,7 +164,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
         <template v-if="rule.action === 'route-options'">
           <div class="field col-12">
             <div class="field-checkbox">
-              <InputSwitch 
+              <ToggleSwitch 
                 inputId="ro-disable_cache" 
                 v-model="rule.disable_cache" 
               />
@@ -177,7 +177,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
         <template v-if="rule.action === 'reject'">
           <div class="field col-12 md:col-6">
             <label for="reject-method">Reject Method</label>
-            <Dropdown 
+            <Select 
               id="reject-method" 
               v-model="rule.method" 
               :options="rejectMethods" 

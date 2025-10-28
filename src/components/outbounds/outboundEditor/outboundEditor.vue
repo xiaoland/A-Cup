@@ -6,7 +6,7 @@ import { OutboundSchema, VlessCredentialSchema, VmessCredentialSchema, Shadowsoc
 import ImportOutbound from '../importOutbound.vue';
 
 import InputText from 'primevue/inputtext';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import Button from 'primevue/button';
 import Fieldset from 'primevue/fieldset';
 import InputNumber from 'primevue/inputnumber';
@@ -96,7 +96,7 @@ function cancel() {
         </div>
         <div>
           <label for="type">Type</label>
-          <Dropdown id="type" v-model="localOutbound.type" :options="outboundTypes" optionLabel="label" optionValue="value" class="w-full" />
+          <Select id="type" v-model="localOutbound.type" :options="outboundTypes" optionLabel="label" optionValue="value" class="w-full" />
         </div>
         <div>
           <label for="region">Region</label>

@@ -32,7 +32,7 @@ const onCancel = () => {
   <div>
     <h1>Edit Profile</h1>
     <ProfileEditor
-      v-model="profile"
+      :modelValue="profile"
       @save="onSave"
       @cancel="onCancel"
     />

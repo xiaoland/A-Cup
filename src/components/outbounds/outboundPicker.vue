@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useOutboundStore } from '@/stores/outbound';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import type { Outbound } from '../../../schemas/outbound';
 
 const props = defineProps<{
-  modelValue?: Outbound;
+  modelValue?: number;
   availableOutbounds?: number[];
 }>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+  'update:modelValue': [value: number | undefined];
+}>();
 
 const outboundStore = useOutboundStore();
 const allOutbounds = ref<Outbound[]>([]);
@@ -26,25 +28,23 @@ const filteredOutbounds = computed(() => {
   return allOutbounds.value;
 });
 
-const selectedOutbound = ref(props.modelValue);
-
-watch(() => props.modelValue, (newValue) => {
-  selectedOutbound.value = newValue;
-});
-
-watch(selectedOutbound, (newValue) => {
-  emit('update:modelValue', newValue);
+const selectedId = computed({
+  get: () => props.modelValue,
+  set: (id: number | undefined) => {
+    emit('update:modelValue', id);
+  }
 });
 
 </script>
 
 <template>
-  <Dropdown
-    v-model="selectedOutbound"
+  <Select
+    v-model="selectedId"
     :options="filteredOutbounds"
     optionLabel="name"
+    optionValue="id"
     placeholder="Select an Outbound"
     class="w-full"
-    show-clear
+    showClear
   />
 </template>

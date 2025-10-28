@@ -4,7 +4,7 @@ import type { RuleSet } from '../../../schemas/ruleset';
 import ImportRuleSet from './importRuleSet.vue';
 
 import InputText from 'primevue/inputtext';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import Button from 'primevue/button';
 import Fieldset from 'primevue/fieldset';
 import InputNumber from 'primevue/inputnumber';
@@ -61,7 +61,7 @@ function onParsed(parsedRuleSet: Partial<RuleSet>) {
         </div>
         <div>
           <label for="type">Type</label>
-          <Dropdown id="type" v-model="localRuleSet.type" :options="ruleSetTypes" optionLabel="label" optionValue="value" class="w-full" />
+          <Select id="type" v-model="localRuleSet.type" :options="ruleSetTypes" optionLabel="label" optionValue="value" class="w-full" />
         </div>
         <div>
           <label for="format">Format</label>

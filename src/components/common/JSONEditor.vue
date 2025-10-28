@@ -2,9 +2,12 @@
 import { ref, watch } from 'vue';
 import JsonEditor from 'vue3-ts-jsoneditor';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: object | null | undefined;
-}>();
+  height?: string;
+}>(), {
+  height: '200'
+});
 
 const emit = defineEmits(['update:modelValue']);
 
@@ -35,6 +38,6 @@ watch(localText, (newText) => {
   <JsonEditor
     v-model:text="localText"
     mode="text"
-    :height="200"
+    :height="height"
   />
 </template>

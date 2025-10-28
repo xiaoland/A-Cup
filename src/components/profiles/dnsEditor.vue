@@ -6,7 +6,7 @@ import DnsRuleEditor from '@/components/dns/dnsRuleEditor.vue';
 import Accordion from 'primevue/accordion';
 import AccordionTab from 'primevue/accordiontab';
 import Button from 'primevue/button';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import Fieldset from 'primevue/fieldset';
 
 const props = defineProps<{
@@ -61,7 +61,7 @@ const serverTags = computed(() => dns.value.servers.map(server => ({ label: serv
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label for="final" class="block mb-2 font-medium">Final Server</label>
-          <Dropdown 
+          <Select 
             id="final" 
             v-model="dns.final" 
             :options="serverTags" 
@@ -69,12 +69,12 @@ const serverTags = computed(() => dns.value.servers.map(server => ({ label: serv
             optionValue="value"
             placeholder="Select final DNS server" 
             class="w-full"
-            :showClear="true"
+            showClear
           />
         </div>
         <div>
           <label for="strategy" class="block mb-2 font-medium">Domain Strategy</label>
-          <Dropdown 
+          <Select 
             id="strategy" 
             v-model="dns.strategy" 
             :options="domainStrategies" 

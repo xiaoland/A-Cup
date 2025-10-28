@@ -3,14 +3,15 @@ import { computed } from 'vue';
 import type { Route, RouteRule, SingBoxRuleSet } from '../../../schemas/route';
 import JSONEditor from '@/components/common/JSONEditor.vue';
 import Accordion from 'primevue/accordion';
-import AccordionTab from 'primevue/accordiontab';
+import AccordionPanel from 'primevue/accordionpanel';
+import AccordionHeader from 'primevue/accordionheader';
+import AccordionContent from 'primevue/accordioncontent';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
-import InputSwitch from 'primevue/inputswitch';
-import InputNumber from 'primevue/inputnumber';
+import ToggleButton from 'primevue/togglebutton';
 import Fieldset from 'primevue/fieldset';
 import Chips from 'primevue/chips';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 
 const props = defineProps<{
   modelValue: Route;
@@ -116,7 +117,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
           </div>
           
           <div class="flex items-center gap-3">
-            <InputSwitch 
+            <ToggleButton 
               id="auto_detect_interface" 
               v-model="autoDetectInterface" 
             />
@@ -132,23 +133,21 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
     <Fieldset legend="Route Rules" class="mt-4">
       <div v-if="route.rules && route.rules.length > 0">
         <Accordion :multiple="true" class="mb-3">
-          <AccordionTab v-for="(rule, index) in route.rules" :key="index">
-            <template #header>
-              <div class="flex items-center justify-between w-full pr-4">
-                <span class="font-medium">{{ getRuleLabel(rule, index) }}</span>
+          <AccordionPanel v-for="(rule, index) in route.rules" :key="index" :value="index.toString()">
+            <AccordionHeader>
+              <span class="font-medium">{{ getRuleLabel(rule, index) }}</span>
+            </AccordionHeader>
+            <AccordionContent>
+              <div class="flex justify-end mb-3">
+                <Button 
+                  icon="pi pi-trash" 
+                  severity="danger" 
+                  size="small"
+                  text
+                  @click="removeRule(index)" 
+                  label="Remove"
+                />
               </div>
-            </template>
-            
-            <div class="flex justify-end mb-3">
-              <Button 
-                icon="pi pi-trash" 
-                severity="danger" 
-                size="small"
-                text
-                @click="removeRule(index)" 
-                label="Remove"
-              />
-            </div>
 
             <div class="grid gap-4">
               <!-- Outbound Selection -->
@@ -243,7 +242,8 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                 </div>
               </div>
             </div>
-          </AccordionTab>
+            </AccordionContent>
+          </AccordionPanel>
         </Accordion>
       </div>
       <div v-else class="text-center py-6 text-gray-500">
@@ -262,24 +262,25 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
     <Fieldset legend="Rule Sets" class="mt-4">
       <div v-if="route.rule_set && route.rule_set.length > 0">
         <Accordion :multiple="true" class="mb-3">
-          <AccordionTab v-for="(ruleSet, index) in route.rule_set" :key="index">
-            <template #header>
+          <AccordionPanel v-for="(ruleSet, index) in route.rule_set" :key="index" :value="`ruleset-${index}`">
+            <AccordionHeader>
               <div class="flex items-center justify-between w-full pr-4">
                 <span class="font-medium">{{ ruleSet.tag || `Rule Set ${index + 1}` }}</span>
                 <span class="text-sm text-gray-500 ml-2">({{ getRuleSetTypeLabel(ruleSet) }})</span>
               </div>
-            </template>
+            </AccordionHeader>
             
-            <div class="flex justify-end mb-3">
-              <Button 
-                icon="pi pi-trash" 
-                severity="danger" 
-                size="small"
-                text
-                @click="removeRuleSet(index)" 
-                label="Remove"
-              />
-            </div>
+            <AccordionContent>
+              <div class="flex justify-end mb-3">
+                <Button 
+                  icon="pi pi-trash" 
+                  severity="danger" 
+                  size="small"
+                  text
+                  @click="removeRuleSet(index)" 
+                  label="Remove"
+                />
+              </div>
 
             <div class="grid gap-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -287,7 +288,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                   <label :for="`ruleset-type-${index}`" class="block mb-2 font-medium">
                     Type
                   </label>
-                  <Dropdown 
+                  <Select 
                     :id="`ruleset-type-${index}`"
                     v-model="ruleSet.type" 
                     :options="ruleSetTypes"
@@ -329,7 +330,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                     <label :for="`ruleset-format-${index}`" class="block mb-2 font-medium">
                       Format
                     </label>
-                    <Dropdown 
+                    <Select 
                       :id="`ruleset-format-${index}`"
                       v-model="ruleSet.format" 
                       :options="formatOptions"
@@ -385,7 +386,7 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                     <label :for="`ruleset-format-${index}`" class="block mb-2 font-medium">
                       Format
                     </label>
-                    <Dropdown 
+                    <Select 
                       :id="`ruleset-format-${index}`"
                       v-model="ruleSet.format" 
                       :options="formatOptions"
@@ -408,7 +409,8 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
                 </div>
               </template>
             </div>
-          </AccordionTab>
+            </AccordionContent>
+          </AccordionPanel>
         </Accordion>
       </div>
       <div v-else class="text-center py-6 text-gray-500">

@@ -11,7 +11,7 @@ export const useProfileStore = defineStore('profile', () => {
   }
 
   async function deleteProfile(id: string) {
-    await fetch(`/api/profile/${id}`, { method: 'DELETE' });
+    await fetch(`/api/profiles/${id}`, { method: 'DELETE' });
     await fetchProfiles();
   }
 

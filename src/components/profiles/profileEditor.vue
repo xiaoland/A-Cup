@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import type { SingBoxProfile, SingBoxOutbound } from '../../../schemas/singbox';
-import type { Inbound } from '../../../schemas/inbound';
-import type { Dns } from '../../../schemas/dns';
-import type { Route } from '../../../schemas/route';
+import type { SingBoxProfile } from '../../../schemas/singbox';
 import InboundsEditor from './inboundsEditor.vue';
 import OutboundsEditor from './outboundsEditor.vue';
 import DnsEditor from './dnsEditor.vue';
@@ -16,40 +13,24 @@ const props = defineProps<{
 
 const emit = defineEmits(['save', 'cancel', 'update:modelValue']);
 
-const updateInbounds = (inbounds: Inbound[]) => {
-  emit('update:modelValue', { ...props.modelValue, inbounds });
-};
-
-const updateOutbounds = (outbounds: SingBoxOutbound[]) => {
-  emit('update:modelValue', { ...props.modelValue, outbounds });
-};
-
-const updateDns = (dns: Dns) => {
-  emit('update:modelValue', { ...props.modelValue, dns });
-};
-
-const updateRoute = (route: Route) => {
-  emit('update:modelValue', { ...props.modelValue, route });
-};
-
 </script>
 
 <template>
   <div>
     <Panel header="Inbounds" :toggleable="true">
-      <InboundsEditor :modelValue="modelValue.inbounds" @update:modelValue="updateInbounds" />
+      <InboundsEditor v-model="modelValue.inbounds"/>
     </Panel>
 
     <Panel header="Outbounds" :toggleable="true" class="mt-4">
-      <OutboundsEditor :modelValue="modelValue.outbounds" @update:modelValue="updateOutbounds" />
+      <OutboundsEditor v-model="modelValue.outbounds" />
     </Panel>
 
     <Panel header="DNS" :toggleable="true" class="mt-4">
-      <DnsEditor :modelValue="modelValue.dns" @update:modelValue="updateDns" />
+      <DnsEditor v-model="modelValue.dns" />
     </Panel>
 
     <Panel header="Route" :toggleable="true" class="mt-4">
-      <RouteEditor :modelValue="modelValue.route" @update:modelValue="updateRoute" />
+      <RouteEditor v-model="modelValue.route" />
     </Panel>
 
     <div class="flex justify-content-end mt-4">

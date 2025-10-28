@@ -6,21 +6,66 @@ import InputText from 'primevue/inputtext';
 
 type SelectorOutboundModel = z.infer<typeof SelectorOutboundSchema>;
 
-defineProps<{
+const props = defineProps<{
   modelValue: SelectorOutboundModel;
 }>();
 
+const emit = defineEmits(['update:modelValue']);
+
+function updateOutbounds(outbounds: string[]) {
+  emit('update:modelValue', { ...props.modelValue, outbounds });
+}
+
+function updateDefault(defaultValue: string | undefined) {
+  emit('update:modelValue', { ...props.modelValue, default: defaultValue });
+}
 </script>
 
 <template>
-    <div>
-        <div class="field">
-            <label for="outbounds">Outbounds</label>
-            <Chips id="outbounds" :modelValue="modelValue.outbounds" @update:modelValue="$emit('update:modelValue', { ...modelValue, outbounds: $event })" />
-        </div>
-        <div class="field">
-            <label for="default">Default</label>
-            <InputText id="default" :modelValue="modelValue.default" @update:modelValue="$emit('update:modelValue', { ...modelValue, default: $event })" />
-        </div>
+  <div class="flex flex-col gap-4">
+    <!-- Outbounds Field -->
+    <div class="flex flex-col gap-2">
+      <label for="outbounds" class="font-medium text-sm">
+        Outbounds
+        <span class="text-red-500">*</span>
+      </label>
+      <Chips
+        id="outbounds"
+        :model-value="modelValue.outbounds"
+        @update:model-value="updateOutbounds"
+        placeholder="Add outbound tags"
+        class="w-full"
+        :allow-duplicate="false"
+        separator=","
+      />
+      <small class="text-surface-600">
+        Enter outbound tags separated by commas
+      </small>
     </div>
+
+    <!-- Default Field -->
+    <div class="flex flex-col gap-2">
+      <label for="default" class="font-medium text-sm">
+        Default Outbound
+      </label>
+      <InputText
+        id="default"
+        :model-value="modelValue.default"
+        @update:model-value="updateDefault"
+        placeholder="Select default outbound tag"
+        class="w-full"
+      />
+      <small class="text-surface-600">
+        Specify which outbound to use by default
+      </small>
+    </div>
+  </div>
 </template>
+
+<style scoped>
+small {
+  display: block;
+  margin-top: 0.25rem;
+  opacity: 0.8;
+}
+</style>

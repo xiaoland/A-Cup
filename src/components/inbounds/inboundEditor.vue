@@ -4,7 +4,7 @@ import type { Inbound } from '../../../schemas/inbound';
 import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
-import InputSwitch from 'primevue/inputswitch';
+import ToggleSwitch from 'primevue/toggleswitch';
 import Chips from 'primevue/chips';
 
 const props = defineProps<{
@@ -108,7 +108,7 @@ const tunAddress = computed({
       </div>
 
       <div class="flex items-center gap-3">
-        <InputSwitch 
+        <ToggleSwitch 
           id="set_system_proxy" 
           v-model="inbound.set_system_proxy"
         />
@@ -174,7 +174,7 @@ const tunAddress = computed({
         <!-- Right Column - Switches -->
         <div class="flex flex-col gap-4">
           <div class="flex items-center gap-3">
-            <InputSwitch 
+            <ToggleSwitch 
               id="auto_route" 
               v-model="inbound.auto_route"
             />
@@ -184,7 +184,7 @@ const tunAddress = computed({
           </div>
 
           <div class="flex items-center gap-3">
-            <InputSwitch 
+            <ToggleSwitch 
               id="strict_route" 
               v-model="inbound.strict_route"
             />
@@ -194,7 +194,7 @@ const tunAddress = computed({
           </div>
 
           <div class="flex items-center gap-3">
-            <InputSwitch 
+            <ToggleSwitch 
               id="endpoint_independent_nat" 
               v-model="inbound.endpoint_independent_nat"
             />

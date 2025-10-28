@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import type { TLSClientFields } from '../../../schemas/shared';
 import Fieldset from 'primevue/fieldset';
 import InputText from 'primevue/inputtext';
-import InputSwitch from 'primevue/inputswitch';
+import ToggleSwitch from 'primevue/toggleswitch';
 import Chips from 'primevue/chips';
 import Card from 'primevue/card';
 import Divider from 'primevue/divider';
@@ -36,7 +36,7 @@ const reality = computed({
     <!-- Enable TLS Toggle -->
     <div class="mb-4">
       <div class="flex items-center gap-3">
-        <InputSwitch id="tls_enabled" v-model="tlsFields.enabled" />
+        <ToggleSwitch id="tls_enabled" v-model="tlsFields.enabled" />
         <label for="tls_enabled" class="font-semibold cursor-pointer">Enable TLS</label>
       </div>
     </div>
@@ -101,11 +101,11 @@ const reality = computed({
           <!-- Boolean Toggles -->
           <div class="flex flex-col gap-3 p-4 bg-surface-50 dark:bg-surface-900 rounded-lg">
             <div class="flex items-center gap-3">
-              <InputSwitch id="disable_sni" v-model="tlsFields.disable_sni" />
+              <ToggleSwitch id="disable_sni" v-model="tlsFields.disable_sni" />
               <label for="disable_sni" class="cursor-pointer">Disable SNI</label>
             </div>
             <div class="flex items-center gap-3">
-              <InputSwitch id="insecure" v-model="tlsFields.insecure" />
+              <ToggleSwitch id="insecure" v-model="tlsFields.insecure" />
               <label for="insecure" class="cursor-pointer">Insecure (Skip Cert Verification)</label>
             </div>
           </div>
@@ -116,12 +116,12 @@ const reality = computed({
           <!-- Boolean Toggles -->
           <div class="flex flex-col gap-3 p-4 bg-surface-50 dark:bg-surface-900 rounded-lg">
             <div class="flex items-center gap-3">
-              <InputSwitch id="disable_sni" v-model="tlsFields.disable_sni" />
-              <label for="disable_sni" class="cursor-pointer">Disable SNI</label>
+              <ToggleSwitch id="disable_sni_2" v-model="tlsFields.disable_sni" />
+              <label for="disable_sni_2" class="cursor-pointer">Disable SNI</label>
             </div>
             <div class="flex items-center gap-3">
-              <InputSwitch id="insecure" v-model="tlsFields.insecure" />
-              <label for="insecure" class="cursor-pointer">Insecure (Skip Cert Verification)</label>
+              <ToggleSwitch id="insecure_2" v-model="tlsFields.insecure" />
+              <label for="insecure_2" class="cursor-pointer">Insecure (Skip Cert Verification)</label>
             </div>
           </div>
         </div>
@@ -135,7 +135,7 @@ const reality = computed({
         <Card class="p-0">
           <template #header>
             <div class="flex items-center gap-3 p-4 border-b border-surface-200 dark:border-surface-700">
-              <InputSwitch id="utls_enabled" v-model="utls.enabled" />
+              <ToggleSwitch id="utls_enabled" v-model="utls.enabled" />
               <label for="utls_enabled" class="font-semibold cursor-pointer">uTLS</label>
             </div>
           </template>
@@ -160,7 +160,7 @@ const reality = computed({
         <Card class="p-0">
           <template #header>
             <div class="flex items-center gap-3 p-4 border-b border-surface-200 dark:border-surface-700">
-              <InputSwitch id="reality_enabled" v-model="reality.enabled" />
+              <ToggleSwitch id="reality_enabled" v-model="reality.enabled" />
               <label for="reality_enabled" class="font-semibold cursor-pointer">Reality</label>
             </div>
           </template>

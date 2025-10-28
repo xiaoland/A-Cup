@@ -13,15 +13,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue']);
 
-const specialTypes = ['selector', 'urltest', 'direct'];
-
 const normalOutbounds = ref<(SingBoxOutbound | undefined)[]>([]);
 const specialOutbounds = ref<(SingBoxOutbound | undefined)[]>([]);
-
-watch(() => props.modelValue, (newValue) => {
-  normalOutbounds.value = newValue.filter(o => !specialTypes.includes(o.type));
-  specialOutbounds.value = newValue.filter(o => specialTypes.includes(o.type));
-}, { deep: true, immediate: true });
 
 const combinedOutbounds = computed(() => {
     return [...normalOutbounds.value, ...specialOutbounds.value].filter(o => o !== undefined) as SingBoxOutbound[];
@@ -61,15 +54,33 @@ function removeSpecialOutbound(index: number) {
 
     <Accordion :multiple="true">
       <AccordionTab v-for="(outbound, index) in normalOutbounds" :key="index" :header="outbound?.tag || 'New Outbound'">
+        <div class="flex justify-end mb-3">
+          <Button 
+            icon="pi pi-trash" 
+            severity="danger" 
+            size="small"
+            text
+            @click="removeNormalOutbound(index)" 
+            label="Remove"
+          />
+        </div>
         <HybirdOutboundEditor v-model="normalOutbounds[index]" />
-        <Button label="Remove" icon="pi pi-trash" class="p-button-danger mt-2" @click="removeNormalOutbound(index)" />
       </AccordionTab>
     </Accordion>
 
     <Accordion :multiple="true" class="mt-4">
         <AccordionTab v-for="(outbound, index) in specialOutbounds" :key="index" :header="outbound?.tag || 'New Special Outbound'">
+            <div class="flex justify-end mb-3">
+              <Button 
+                icon="pi pi-trash" 
+                severity="danger" 
+                size="small"
+                text
+                @click="removeSpecialOutbound(index)" 
+                label="Remove"
+              />
+            </div>
             <SpecialOutboundEditor v-model="specialOutbounds[index]" />
-            <Button label="Remove" icon="pi pi-trash" class="p-button-danger mt-2" @click="removeSpecialOutbound(index)" />
         </AccordionTab>
     </Accordion>
   </div>

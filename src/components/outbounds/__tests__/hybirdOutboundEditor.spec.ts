@@ -5,6 +5,14 @@ import { exportOutboundToSingBox } from '../../../../schemas/outbound';
 import { v4 as uuidv4 } from 'uuid';
 import OutboundPicker from '../outboundPicker.vue';
 
+const mockOutbound = {
+  id: 1,
+  type: 'vmess',
+  server: 'remote-server',
+  server_port: 8080,
+  credential: { uuid: uuidv4(), security: 'auto', alter_id: 0 },
+};
+
 vi.mock('../../../../schemas/outbound', () => ({
   exportOutboundToSingBox: vi.fn(outbound => ({
     ...outbound,
@@ -18,9 +26,16 @@ vi.mock('../../../../schemas/outbound', () => ({
   }
 }));
 
+vi.mock('@/stores/outbound', () => ({
+  useOutboundStore: vi.fn(() => ({
+    outbounds: [mockOutbound],
+    fetchOutbounds: vi.fn(),
+  })),
+}));
+
 describe('hybirdOutboundEditor.vue', () => {
   const baseModelValue = {
-    type: 'vless',
+    type: 'vless' as const,
     tag: 'test',
     server: 'localhost',
     server_port: 443,
@@ -43,20 +58,12 @@ describe('hybirdOutboundEditor.vue', () => {
       },
     });
 
-    const selectedOutbound = {
-      id: 1,
-      type: 'vmess',
-      server: 'remote-server',
-      server_port: 8080,
-      credential: { uuid: uuidv4(), security: 'auto', alter_id: 0 },
-    };
+    await wrapper.findComponent(OutboundPicker).vm.$emit('update:modelValue', 1);
 
-    await wrapper.findComponent(OutboundPicker).vm.$emit('update:modelValue', selectedOutbound);
-
-    expect(exportOutboundToSingBox).toHaveBeenCalledWith(selectedOutbound);
+    expect(exportOutboundToSingBox).toHaveBeenCalledWith(mockOutbound);
     const emitted = wrapper.emitted('update:modelValue');
     expect(emitted).toHaveLength(1);
-    expect(emitted[0][0].type).toBe('vmess');
-    expect(emitted[0][0].server).toBe('remote-server');
+    expect((emitted![0][0] as any).type).toBe('vmess');
+    expect((emitted![0][0] as any).server).toBe('remote-server');
   });
 });

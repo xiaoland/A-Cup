@@ -1,0 +1,1 @@
+INSERT INTO users (id, username, password) VALUES ('acdae4c3-549f-4b02-a42d-93097032b3c2', 'admin', '21232f297a57a5a743894a0e4a801fc3');
