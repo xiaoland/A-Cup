@@ -29,8 +29,8 @@ const domainStrategies = ['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only'
 
 <template>
   <Fieldset legend="Dial Fields" :toggleable="true">
-    <div class="grid formgrid">
-      <div class="col-12 md:col-6">
+    <div class="formgrid grid">
+      <div class="field col-12 md:col-6">
         <div class="field">
           <label for="detour">Detour</label>
           <InputText id="detour" v-model="dialFields.detour" />
@@ -52,7 +52,7 @@ const domainStrategies = ['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only'
           <InputNumber id="routing_mark" v-model="dialFields.routing_mark" />
         </div>
       </div>
-      <div class="col-12 md:col-6">
+      <div class="field col-12 md:col-6">
         <div class="field">
           <label for="connect_timeout">Connect Timeout</label>
           <InputText id="connect_timeout" v-model="dialFields.connect_timeout" />

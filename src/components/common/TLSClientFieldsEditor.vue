@@ -17,7 +17,6 @@ const tlsFields = computed({
   set: (value) => emit('update:modelValue', value),
 });
 
-// Safely handle potentially undefined nested objects
 const utls = computed({
   get: () => tlsFields.value.utls ?? { enabled: false },
   set: (value) => tlsFields.value = { ...tlsFields.value, utls: value },
@@ -32,8 +31,8 @@ const reality = computed({
 
 <template>
   <Fieldset legend="TLS Client Fields" :toggleable="true">
-    <div class="grid formgrid">
-      <div class="col-12">
+    <div class="formgrid grid">
+      <div class="field col-12">
         <div class="field-checkbox">
           <InputSwitch id="tls_enabled" v-model="tlsFields.enabled" />
           <label for="tls_enabled">Enable TLS</label>
@@ -41,7 +40,7 @@ const reality = computed({
       </div>
 
       <template v-if="tlsFields.enabled">
-        <div class="col-12 md:col-6">
+        <div class="field col-12 md:col-6">
           <div class="field">
             <label for="server_name">Server Name (SNI)</label>
             <InputText id="server_name" v-model="tlsFields.server_name" />
@@ -63,7 +62,7 @@ const reality = computed({
             <Chips id="cipher_suites" v-model="tlsFields.cipher_suites" />
           </div>
         </div>
-        <div class="col-12 md:col-6">
+        <div class="field col-12 md:col-6">
           <div class="field-checkbox">
             <InputSwitch id="disable_sni" v-model="tlsFields.disable_sni" />
             <label for="disable_sni">Disable SNI</label>

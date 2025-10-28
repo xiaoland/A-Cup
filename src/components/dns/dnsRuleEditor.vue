@@ -22,7 +22,6 @@ const actionTypes = ['route', 'route-options', 'reject', 'predefined'];
 const networkTypes = ['tcp', 'udp'];
 
 const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'predefined') => {
-  // Preserve common fields and reset the action-specific ones
   const { domain, domain_suffix, domain_keyword, domain_regex, source_ip_cidr } = rule.value;
   const newRule: Partial<DNSRule> = {
     domain, domain_suffix, domain_keyword, domain_regex, source_ip_cidr,
@@ -34,10 +33,10 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
 </script>
 
 <template>
-  <div class="p-fluid">
+  <div>
     <Fieldset legend="Rule Conditions" :toggleable="true">
-      <div class="grid formgrid">
-        <div class="col-12 md:col-6">
+      <div class="formgrid grid">
+        <div class="field col-12 md:col-6">
           <div class="field">
             <label for="domain">Domain</label>
             <Chips id="domain" v-model="rule.domain" />
@@ -51,7 +50,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
             <Chips id="domain_keyword" v-model="rule.domain_keyword" />
           </div>
         </div>
-        <div class="col-12 md:col-6">
+        <div class="field col-12 md:col-6">
           <div class="field">
             <label for="domain_regex">Domain Regex</label>
             <Chips id="domain_regex" v-model="rule.domain_regex" />
@@ -68,7 +67,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
       </div>
     </Fieldset>
 
-    <Fieldset legend="Rule Action" :toggleable="true" class="mt-2">
+    <Fieldset legend="Rule Action" :toggleable="true" class="mt-3">
       <div class="field">
         <label for="action">Action Type</label>
         <Dropdown id="action" :modelValue="rule.action" :options="actionTypes" @update:modelValue="onActionChange" placeholder="Select an Action" />

@@ -36,13 +36,14 @@ const removeInbound = (index: number) => {
 
 <template>
   <div>
-    <h3>Inbounds</h3>
     <Accordion :activeIndex="0">
       <AccordionTab v-for="(inbound, index) in items" :key="index" :header="inbound.tag">
-        <Button icon="pi pi-trash" class="p-button-danger" @click="removeInbound(index)" />
-        <InboundEditor v-model="items[index]" />
+        <div class="flex justify-content-end">
+          <Button icon="pi pi-trash" severity="danger" @click="removeInbound(index)" />
+        </div>
+        <InboundEditor v-model="items[index]" class="mt-3" />
       </AccordionTab>
     </Accordion>
-    <Button label="Add Inbound" icon="pi pi-plus" class="p-button-success" @click="addInbound" />
+    <Button label="Add Inbound" icon="pi pi-plus" severity="success" class="mt-2" @click="addInbound" />
   </div>
 </template>

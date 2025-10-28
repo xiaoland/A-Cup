@@ -47,32 +47,36 @@ const domainStrategies = ['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only'
 </script>
 
 <template>
-  <div class="p-fluid">
-    <div class="p-field">
-      <label for="final">Final Server</label>
-      <InputText id="final" v-model="dns.final" />
-    </div>
-    <div class="p-field">
-      <label for="strategy">Strategy</label>
-      <Dropdown id="strategy" v-model="dns.strategy" :options="domainStrategies" placeholder="Select a Strategy" />
+  <div>
+    <div class="formgrid grid">
+      <div class="field col-12 md:col-6">
+        <label for="final">Final Server</label>
+        <InputText id="final" v-model="dns.final" />
+      </div>
+      <div class="field col-12 md:col-6">
+        <label for="strategy">Strategy</label>
+        <Dropdown id="strategy" v-model="dns.strategy" :options="domainStrategies" placeholder="Select a Strategy" />
+      </div>
     </div>
 
-    <h4 class="p-mt-4">Servers</h4>
-    <Accordion :activeIndex="0">
+    <Accordion :activeIndex="0" class="mt-3">
       <AccordionTab v-for="(server, index) in dns.servers" :key="index" :header="server.tag">
-        <Button icon="pi pi-trash" class="p-button-danger p-mb-2" @click="removeServer(index)" />
-        <DnsServerEditor v-model="dns.servers[index]" />
+        <div class="flex justify-content-end">
+          <Button icon="pi pi-trash" severity="danger" @click="removeServer(index)" />
+        </div>
+        <DnsServerEditor v-model="dns.servers[index]" class="mt-3" />
       </AccordionTab>
     </Accordion>
-    <Button label="Add Server" icon="pi pi-plus" class="p-button-success p-mt-2" @click="addServer" />
+    <Button label="Add Server" icon="pi pi-plus" severity="success" class="mt-2" @click="addServer" />
 
-    <h4 class="p-mt-4">Rules</h4>
-    <Accordion :activeIndex="0">
+    <Accordion :activeIndex="0" class="mt-4">
       <AccordionTab v-for="(rule, index) in dns.rules" :key="index" :header="`Rule ${index + 1}`">
-        <Button icon="pi pi-trash" class="p-button-danger p-mb-2" @click="removeRule(index)" />
-        <DnsRuleEditor v-model="dns.rules[index]" />
+        <div class="flex justify-content-end">
+          <Button icon="pi pi-trash" severity="danger" @click="removeRule(index)" />
+        </div>
+        <DnsRuleEditor v-model="dns.rules[index]" class="mt-3" />
       </AccordionTab>
     </Accordion>
-    <Button label="Add Rule" icon="pi pi-plus" class="p-button-success p-mt-2" @click="addRule" />
+    <Button label="Add Rule" icon="pi pi-plus" severity="success" class="mt-2" @click="addRule" />
   </div>
 </template>

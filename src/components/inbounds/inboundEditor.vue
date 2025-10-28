@@ -49,7 +49,7 @@ const tunAddress = computed({
 </script>
 
 <template>
-  <div class="p-fluid">
+  <div>
     <div class="field">
       <label for="tag">Tag</label>
       <InputText id="tag" v-model="inbound.tag" />
@@ -60,13 +60,15 @@ const tunAddress = computed({
     </div>
 
     <template v-if="inbound.type === 'mixed'">
-      <div class="field">
-        <label for="listen">Listen Address</label>
-        <InputText id="listen" v-model="inbound.listen" />
-      </div>
-      <div class="field">
-        <label for="listen_port">Listen Port</label>
-        <InputNumber id="listen_port" v-model="inbound.listen_port" />
+      <div class="formgrid grid">
+        <div class="field col-12 md:col-6">
+          <label for="listen">Listen Address</label>
+          <InputText id="listen" v-model="inbound.listen" />
+        </div>
+        <div class="field col-12 md:col-6">
+          <label for="listen_port">Listen Port</label>
+          <InputNumber id="listen_port" v-model="inbound.listen_port" />
+        </div>
       </div>
       <div class="field-checkbox">
         <InputSwitch id="set_system_proxy" v-model="inbound.set_system_proxy" />
@@ -76,9 +78,9 @@ const tunAddress = computed({
     </template>
 
     <template v-if="inbound.type === 'tun'">
-      <Fieldset legend="TUN Configuration" :toggleable="true">
-        <div class="grid formgrid">
-          <div class="col-12 md:col-6">
+      <Fieldset legend="TUN Configuration" :toggleable="true" class="mt-3">
+        <div class="formgrid grid">
+          <div class="field col-12 md:col-6">
             <div class="field">
               <label for="interface_name">Interface Name</label>
               <InputText id="interface_name" v-model="inbound.interface_name" />
@@ -96,7 +98,7 @@ const tunAddress = computed({
               <Dropdown id="stack" v-model="inbound.stack" :options="tunStacks" />
             </div>
           </div>
-          <div class="col-12 md:col-6">
+          <div class="field col-12 md:col-6">
             <div class="field-checkbox">
               <InputSwitch id="auto_route" v-model="inbound.auto_route" />
               <label for="auto_route">Auto Route</label>

@@ -3,7 +3,8 @@ import { computed } from 'vue';
 import type { Route } from '../../../schemas/route';
 import JSONEditor from '@/components/common/JSONEditor.vue';
 import InputText from 'primevue/inputtext';
-import Checkbox from 'primevue/checkbox';
+import InputSwitch from 'primevue/inputswitch';
+import Fieldset from 'primevue/fieldset';
 
 const props = defineProps<{
   modelValue: Route;
@@ -37,21 +38,26 @@ const onAdvancedChange = (newValue: any) => {
 
 <template>
   <div>
-    <h3>Route</h3>
-    <div class="p-field">
-      <label for="final">Final</label>
-      <InputText id="final" v-model="final" />
+    <div class="formgrid grid">
+      <div class="field col-12 md:col-6">
+        <label for="final">Final</label>
+        <InputText id="final" v-model="final" />
+      </div>
+      <div class="field col-12 md:col-6 flex align-items-center">
+        <div class="field-checkbox">
+          <InputSwitch id="auto_detect_interface" v-model="autoDetectInterface" />
+          <label for="auto_detect_interface" class="ml-2">Auto Detect Interface</label>
+        </div>
+      </div>
     </div>
-    <div class="p-field">
-      <label for="auto_detect_interface">Auto Detect Interface</label>
-      <Checkbox id="auto_detect_interface" v-model="autoDetectInterface" :binary="true" />
-    </div>
+
     <!-- TODO: Implement editor for rules array -->
     <p>TODO: Rules array editor</p>
     <!-- TODO: Implement editor for rule_set array -->
     <p>TODO: Rule Set array editor</p>
 
-    <h4>Advanced</h4>
-    <JSONEditor :modelValue="advancedFields" @update:modelValue="onAdvancedChange" />
+    <Fieldset legend="Advanced" :toggleable="true" class="mt-3">
+      <JSONEditor :modelValue="advancedFields" @update:modelValue="onAdvancedChange" />
+    </Fieldset>
   </div>
 </template>

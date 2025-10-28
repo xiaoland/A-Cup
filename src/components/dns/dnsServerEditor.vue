@@ -43,14 +43,16 @@ const onTypeChange = (newType: 'udp' | 'tls' | 'https') => {
 </script>
 
 <template>
-  <div class="p-fluid">
-    <div class="field">
-      <label for="tag">Tag</label>
-      <InputText id="tag" v-model="server.tag" />
-    </div>
-    <div class="field">
-      <label for="type">Server Type</label>
-      <Dropdown id="type" :modelValue="server.type" :options="serverTypes" @update:modelValue="onTypeChange" placeholder="Select a Type" />
+  <div>
+    <div class="formgrid grid">
+      <div class="field col-12 md:col-6">
+        <label for="tag">Tag</label>
+        <InputText id="tag" v-model="server.tag" />
+      </div>
+      <div class="field col-12 md:col-6">
+        <label for="type">Server Type</label>
+        <Dropdown id="type" :modelValue="server.type" :options="serverTypes" @update:modelValue="onTypeChange" placeholder="Select a Type" />
+      </div>
     </div>
 
     <div class="field" v-if="server.type">
@@ -59,9 +61,9 @@ const onTypeChange = (newType: 'udp' | 'tls' | 'https') => {
     </div>
 
     <template v-if="(server.type === 'tls' || server.type === 'https') && server.tls">
-      <TLSClientFieldsEditor v-model="server.tls" class="mt-2" />
+      <TLSClientFieldsEditor v-model="server.tls" class="mt-3" />
     </template>
 
-    <DialFieldsEditor v-model="server" class="mt-2" />
+    <DialFieldsEditor v-model="server" class="mt-3" />
   </div>
 </template>
