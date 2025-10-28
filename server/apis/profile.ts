@@ -1,12 +1,11 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { CreateProfileSchema, UpdateProfileSchema } from '../../schemas/profile';
-import { profiles, outbounds as outboundsTable, ruleSets as ruleSetsTable } from '../db/schema';
+import { profiles } from '../db/schema';
+import { ProfileService } from '../services/profile';
 import { exportProfileCreateToSingBox } from '../services/profile';
-import { inArray, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { authMiddleware } from '../auth';
-import { OutboundService } from '../services/outbound';
 import type { HonoEnv } from '../types';
 
 const profileRouter = new Hono<HonoEnv>();
