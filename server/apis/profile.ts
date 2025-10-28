@@ -1,17 +1,21 @@
 import { Hono } from 'hono';
-import { jwt } from 'hono/jwt';
 import { zValidator } from '@hono/zod-validator';
 import { CreateProfileSchema, UpdateProfileSchema } from '../../schemas/profile';
 import { profiles, outbounds as outboundsTable, ruleSets as ruleSetsTable } from '../db/schema';
-import { exportProfileToSingBox } from '../services/profile';
+import { exportProfileToSingBox, ProfileService } from '../services/profile';
 import { inArray, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
+import { authMiddleware } from '../auth';
 
 const profileRouter = new Hono();
 
-profileRouter.use('*', async (c, next) => {
-  const auth = jwt({ secret: c.env.JWT_SECRET });
-  return auth(c, next);
+profileRouter.use('*', authMiddleware);
+
+profileRouter.get('/', async (c) => {
+  const userId = c.get('userId');
+  const profileService = new ProfileService(c.get('db'));
+  const profileList = await profileService.getProfiles(userId);
+  return c.json(profileList);
 });
 
 profileRouter.post('/', zValidator('json', CreateProfileSchema), async (c) => {
@@ -60,9 +64,9 @@ profileRouter.post('/', zValidator('json', CreateProfileSchema), async (c) => {
 
 profileRouter.get('/:id', async (c) => {
   const { id } = c.req.param();
-  const db = c.get('db');
-
-  const profile = await db.select().from(profiles).where(eq(profiles.id, id)).get();
+  const userId = c.get('userId');
+  const profileService = new ProfileService(c.get('db'));
+  const profile = await profileService.getProfileById(id, userId);
 
   if (!profile) {
     return c.json({ message: 'Profile not found' }, 404);
@@ -121,12 +125,16 @@ profileRouter.put('/:id', zValidator('json', UpdateProfileSchema), async (c) => 
 
 profileRouter.delete('/:id', async (c) => {
   const { id } = c.req.param();
-  const db = c.get('db');
+  const userId = c.get('userId');
+  const profileService = new ProfileService(c.get('db'));
 
-  // 1. Delete profile from database
-  await db.delete(profiles).where(eq(profiles.id, id));
+  const success = await profileService.deleteProfile(id, userId);
 
-  // 2. Delete from R2
+  if (!success) {
+    return c.json({ message: 'Profile not found' }, 404);
+  }
+
+  // Delete from R2
   await c.env.R2.delete(`profiles/${id}`);
 
   return c.body(null, 204);

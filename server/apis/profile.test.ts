@@ -82,21 +82,21 @@ describe('Profile API', () => {
 
   beforeAll(async () => {
     validToken = await sign({ sub: '1234567890', name: 'John Doe', iat: 1516239022, exp: 9999999999 }, env.JWT_SECRET);
-     // Mock for get profile
-     (mockDrizzle.from as any).mockImplementation((table: any) => {
-        if (table === profiles) {
-            return {
-                where: () => ({
-                    get: () => Promise.resolve(mockProfile)
-                })
-            }
-        }
-        if (table === outboundsTable) {
-            return { where: vi.fn().mockResolvedValue(mockOutbounds) };
-        }
-        if (table === ruleSetsTable) {
-            return { where: vi.fn().mockResolvedValue(mockRuleSets) };
-        }
+    // Mock for get profile
+    (mockDrizzle.from as any).mockImplementation((table: any) => {
+      if (table === profiles) {
+        return {
+          where: () => ({
+            get: () => Promise.resolve({ ...mockProfile, createdBy: '1234567890', tags: '[]', outbounds: '[]', rule_sets: '[]' })
+          })
+        };
+      }
+      if (table === outboundsTable) {
+        return { where: vi.fn().mockResolvedValue(mockOutbounds) };
+      }
+      if (table === ruleSetsTable) {
+        return { where: vi.fn().mockResolvedValue(mockRuleSets) };
+      }
     });
   });
 

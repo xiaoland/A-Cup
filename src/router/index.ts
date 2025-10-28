@@ -51,6 +51,24 @@ const routes = [
     component: () => import('@/views/editRuleSet.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/profiles',
+    name: 'profiles',
+    component: () => import('@/views/profiles.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/profile/new',
+    name: 'newProfile',
+    component: () => import('@/views/editProfile.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/profile/:id',
+    name: 'editProfile',
+    component: () => import('@/views/editProfile.vue'),
+    meta: { requiresAuth: true },
+  },
 ];
 
 const router = createRouter({
