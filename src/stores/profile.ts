@@ -1,13 +1,20 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { Profile } from '../../schemas/profile';
+import type { Profile, CreateProfile, UpdateProfile } from '../../schemas/profile';
 
 export const useProfileStore = defineStore('profile', () => {
   const profiles = ref<Profile[]>([]);
+  const currentProfile = ref<Profile | null>(null);
 
   async function fetchProfiles() {
     const response = await fetch('/api/profiles');
     profiles.value = await response.json();
+  }
+
+  async function getProfile(id: string) {
+    const response = await fetch(`/api/profiles/${id}`);
+    currentProfile.value = await response.json();
+    return currentProfile.value;
   }
 
   async function deleteProfile(id: string) {
@@ -15,19 +22,33 @@ export const useProfileStore = defineStore('profile', () => {
     await fetchProfiles();
   }
 
-  // TODO: Implement create profile action
-  async function createProfile(profile: Profile) {
-    console.log('createProfile', profile);
+  async function createProfile(profile: CreateProfile) {
+    await fetch('/api/profiles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profile),
+    });
+    await fetchProfiles();
   }
 
-  // TODO: Implement update profile action
-  async function updateProfile(profile: Profile) {
-    console.log('updateProfile', profile);
+  async function updateProfile(id: string, profile: UpdateProfile) {
+    await fetch(`/api/profiles/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profile),
+    });
+    await fetchProfiles();
   }
 
   return {
     profiles,
+    currentProfile,
     fetchProfiles,
+    getProfile,
     deleteProfile,
     createProfile,
     updateProfile,
