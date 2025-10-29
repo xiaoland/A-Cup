@@ -41,18 +41,23 @@ export const SingBoxRuleSetSchema = z.discriminatedUnion('type', [
 
 export type SingBoxRuleSet = z.infer<typeof SingBoxRuleSetSchema>;
 
-export const RouteRuleSchema = z.object({
+export const RouteRuleAction = z.object({
+  action: z.enum(['route', 'reject', 'hijack-dns']),
+  outbound: z.string().optional(),  
+}).refine((data) => {
+  if (data.action === 'route') {
+    return data.outbound !== undefined;
+  }
+  return true;
+});
+
+export const RouteRuleSchema = RouteRuleAction.extend({
   rule_set: z.array(z.string()).optional(),
   domain: z.array(z.string()).optional(),
   domain_suffix: z.array(z.string()).optional(),
   domain_keyword: z.array(z.string()).optional(),
   domain_regex: z.array(z.string()).optional(),
-  outbound: z.string().optional(),
-  outbounds: z.array(z.string()).optional(),
-}).refine(
-  (data) => (data.outbound !== undefined && data.outbounds === undefined) || (data.outbound === undefined && data.outbounds !== undefined),
-  { message: "A rule must have either 'outbound' or 'outbounds'." }
-);
+});
 
 export type RouteRule = z.infer<typeof RouteRuleSchema>;
 
