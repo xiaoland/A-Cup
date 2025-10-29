@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import type { Route, RouteRule, SingBoxRuleSet } from '../../../schemas/route';
 import JSONEditor from '@/components/common/JSONEditor.vue';
+import SingBoxOutboundPicker from '@/components/outbounds/singBoxOutboundPicker.vue';
 import Accordion from 'primevue/accordion';
 import AccordionPanel from 'primevue/accordionpanel';
 import AccordionHeader from 'primevue/accordionheader';
@@ -26,7 +27,7 @@ const route = computed({
 
 // Basic Settings
 const final = computed({
-  get: () => props.modelValue.final || '',
+  get: () => props.modelValue.final || undefined,
   set: (value) => emit('update:modelValue', { ...props.modelValue, final: value }),
 });
 
@@ -107,11 +108,9 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label for="final" class="block mb-2 font-medium">Final Outbound</label>
-            <InputText 
+            <SingBoxOutboundPicker
               id="final" 
-              v-model="final" 
-              class="w-full" 
-              placeholder="Default outbound tag" 
+              v-model="final"
             />
             <small class="block mt-1 text-gray-500">Outbound to use when no rule matches</small>
           </div>

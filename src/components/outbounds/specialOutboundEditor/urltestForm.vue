@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { z } from 'zod';
 import { UrlTestOutboundSchema } from '../../../../schemas/singbox';
-import InputChips from 'primevue/inputchips';
+import SingBoxOutboundsPicker from '../singBoxOutboundsPicker.vue';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 
@@ -13,8 +13,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue']);
 
-function updateOutbounds(outbounds: string[]) {
-  emit('update:modelValue', { ...props.modelValue, outbounds });
+function updateOutbounds(outbounds: string[] | undefined) {
+  emit('update:modelValue', { ...props.modelValue, outbounds: outbounds || [] });
 }
 
 function updateUrl(url: string | undefined) {
@@ -34,17 +34,13 @@ function updateInterval(interval: string | undefined) {
         Outbounds
         <span class="text-red-500">*</span>
       </label>
-      <InputChips
+      <SingBoxOutboundsPicker
         id="outbounds"
         :model-value="modelValue.outbounds"
         @update:model-value="updateOutbounds"
-        placeholder="Add outbound tags"
-        class="w-full"
-        :allow-duplicate="false"
-        separator=","
       />
       <small class="text-surface-600">
-        Enter outbound tags to test
+        Select outbound tags to test from the profile
       </small>
     </div>
 

@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import type { SingBoxProfile } from '../../../schemas/singbox';
+import type { SingBoxProfile, SingBoxOutbound } from '../../../schemas/singbox';
 import InboundsEditor from './inboundsEditor.vue';
 import OutboundsEditor from './outboundsEditor.vue';
 import DnsEditor from './dnsEditor.vue';
 import RouteEditor from './routeEditor.vue';
 import Button from 'primevue/button';
 import Panel from 'primevue/panel';
+import { provide, computed } from 'vue';
 
 const props = defineProps<{
   modelValue: SingBoxProfile;
 }>();
 
 const emit = defineEmits(['save', 'cancel', 'update:modelValue']);
+
+// Provide profileOutbounds to child components
+const profileOutbounds = computed<SingBoxOutbound[]>(() => props.modelValue.outbounds || []);
+provide('profileOutbounds', profileOutbounds);
 
 </script>
 

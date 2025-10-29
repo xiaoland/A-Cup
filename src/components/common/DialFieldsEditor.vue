@@ -5,6 +5,7 @@ import Fieldset from 'primevue/fieldset';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Select from 'primevue/select';
+import SingBoxOutboundPicker from '../outbounds/singBoxOutboundPicker.vue';
 
 const props = defineProps<{
   modelValue: DialFields;
@@ -40,10 +41,9 @@ const domainStrategies = [
       <div class="flex flex-col gap-4">
         <div>
           <label for="detour" class="block mb-2 font-medium">Detour</label>
-          <InputText 
+          <SingBoxOutboundPicker
             id="detour" 
-            v-model="dialFields.detour" 
-            class="w-full"
+            v-model="dialFields.detour"
           />
         </div>
 

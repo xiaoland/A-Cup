@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { z } from 'zod';
 import { SelectorOutboundSchema } from '../../../../schemas/singbox';
-import InputChips from 'primevue/inputchips';
-import InputText from 'primevue/inputtext';
+import SingBoxOutboundsPicker from '../singBoxOutboundsPicker.vue';
+import SingBoxOutboundPicker from '../singBoxOutboundPicker.vue';
 
 type SelectorOutboundModel = z.infer<typeof SelectorOutboundSchema>;
 
@@ -12,8 +12,8 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue']);
 
-function updateOutbounds(outbounds: string[]) {
-  emit('update:modelValue', { ...props.modelValue, outbounds });
+function updateOutbounds(outbounds: string[] | undefined) {
+  emit('update:modelValue', { ...props.modelValue, outbounds: outbounds || [] });
 }
 
 function updateDefault(defaultValue: string | undefined) {
@@ -29,17 +29,13 @@ function updateDefault(defaultValue: string | undefined) {
         Outbounds
         <span class="text-red-500">*</span>
       </label>
-      <InputChips
+      <SingBoxOutboundsPicker
         id="outbounds"
         :model-value="modelValue.outbounds"
         @update:model-value="updateOutbounds"
-        placeholder="Add outbound tags"
-        class="w-full"
-        :allow-duplicate="false"
-        separator=","
       />
       <small class="text-surface-600">
-        Enter outbound tags separated by commas
+        Select outbound tags from the profile
       </small>
     </div>
 
@@ -48,12 +44,10 @@ function updateDefault(defaultValue: string | undefined) {
       <label for="default" class="font-medium text-sm">
         Default Outbound
       </label>
-      <InputText
+      <SingBoxOutboundPicker
         id="default"
         :model-value="modelValue.default"
         @update:model-value="updateDefault"
-        placeholder="Select default outbound tag"
-        class="w-full"
       />
       <small class="text-surface-600">
         Specify which outbound to use by default
