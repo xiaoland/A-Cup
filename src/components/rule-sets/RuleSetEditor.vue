@@ -7,7 +7,6 @@ import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
 import Button from 'primevue/button';
 import Fieldset from 'primevue/fieldset';
-import InputNumber from 'primevue/inputnumber';
 import Textarea from 'primevue/textarea';
 import UsersPicker from '../user/usersPicker.vue';
 
@@ -56,8 +55,8 @@ function onParsed(parsedRuleSet: Partial<RuleSet>) {
     <Fieldset legend="Basic Info">
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label for="tag">Tag</label>
-          <InputText id="tag" v-model="localRuleSet.tag" class="w-full" />
+          <label for="name">Name</label>
+          <InputText id="name" v-model="localRuleSet.name" class="w-full" />
         </div>
         <div>
           <label for="type">Type</label>

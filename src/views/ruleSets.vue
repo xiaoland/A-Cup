@@ -52,7 +52,7 @@ async function deleteSelectedRuleSets() {
 
     <DataTable :value="ruleSetStore.ruleSets" v-model:selection="selectedRuleSets" dataKey="id">
       <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-      <Column field="tag" header="Tag"></Column>
+      <Column field="name" header="Name"></Column>
       <Column field="type" header="Type"></Column>
       <Column header="Actions">
         <template #body="slotProps">

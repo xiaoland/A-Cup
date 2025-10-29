@@ -41,7 +41,7 @@ const selectedId = computed({
   <Select
     v-model="selectedId"
     :options="filteredRuleSets"
-    optionLabel="tag"
+    optionLabel="name"
     optionValue="id"
     placeholder="Select a RuleSet"
     class="w-full"

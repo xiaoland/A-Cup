@@ -4,6 +4,7 @@ import type { SingBoxRuleSet } from '../../../schemas/route';
 import type { RuleSet } from '../../../schemas/ruleset';
 import { exportRuleSetToSingBox } from '../../../schemas/ruleset';
 import RuleSetPicker from './ruleSetPicker.vue';
+import singBoxOutboundPicker from '../outbounds/singBoxOutboundPicker.vue';
 import InputText from 'primevue/inputtext';
 import { useRuleSetStore } from '@/stores/ruleset';
 
@@ -78,7 +79,7 @@ const selectedRuleSet = computed(() => {
     <div v-if="selectedRuleSet && selectedRuleSet.type === 'remote'" class="grid grid-cols-2 gap-4 mt-4">
       <div>
         <label for="download_detour">Download Detour</label>
-        <InputText id="download_detour" v-model="downloadDetour" class="w-full" />
+        <singBoxOutboundPicker id="download_detour" v-model="downloadDetour" />
       </div>
       <div>
         <label for="update_interval">Update Interval</label>
