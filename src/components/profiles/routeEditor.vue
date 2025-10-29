@@ -8,12 +8,10 @@ import AccordionPanel from 'primevue/accordionpanel';
 import AccordionHeader from 'primevue/accordionheader';
 import AccordionContent from 'primevue/accordioncontent';
 import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
 import ToggleButton from 'primevue/togglebutton';
 import Fieldset from 'primevue/fieldset';
-import InputChips from 'primevue/inputchips';
-import Select from 'primevue/select';
 import HybirdRuleSetEditor from '../rule-sets/hybirdRuleSetEditor.vue';
+import RouteRuleEditor from '../route/routeRuleEditor.vue';
 
 const props = defineProps<{
   modelValue: Route;
@@ -39,7 +37,7 @@ const autoDetectInterface = computed({
 
 // Rules Management
 const addRule = () => {
-  const newRule: RouteRule = { outbound: '' };
+  const newRule: RouteRule = { action: 'route', outbound: '' };
   route.value.rules = [...(route.value.rules || []), newRule];
 };
 
@@ -79,9 +77,13 @@ const onAdvancedChange = (newValue: any) => {
 };
 
 const getRuleLabel = (rule: RouteRule, index: number): string => {
-  if (rule.outbound) return `Rule ${index + 1}: → ${rule.outbound}`;
-  if (rule.outbounds) return `Rule ${index + 1}: → [${rule.outbounds.join(', ')}]`;
-  return `Rule ${index + 1}`;
+  if (rule.action === 'route' && rule.outbound) {
+    return `Rule ${index + 1}: → ${rule.outbound}`;
+  }
+  if (rule.action === 'hijack-dns' && rule.server) {
+    return `Rule ${index + 1}: dns → ${rule.server}`;
+  }
+  return `Rule ${index + 1}: ${rule.action}`;
 };
 </script>
 
@@ -133,100 +135,7 @@ const getRuleLabel = (rule: RouteRule, index: number): string => {
                   label="Remove"
                 />
               </div>
-
-            <div class="grid gap-4">
-              <!-- Outbound Selection -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label :for="`rule-outbound-${index}`" class="block mb-2 font-medium">
-                    Single Outbound
-                  </label>
-                  <InputText 
-                    :id="`rule-outbound-${index}`"
-                    v-model="rule.outbound" 
-                    class="w-full" 
-                    placeholder="Outbound tag"
-                    :disabled="!!rule.outbounds"
-                  />
-                </div>
-                
-                <div>
-                  <label :for="`rule-outbounds-${index}`" class="block mb-2 font-medium">
-                    Multiple Outbounds
-                  </label>
-                  <InputChips 
-                    :id="`rule-outbounds-${index}`"
-                    v-model="rule.outbounds" 
-                    placeholder="Add outbound tags"
-                    class="w-full"
-                    :disabled="!!rule.outbound"
-                  />
-                </div>
-              </div>
-
-              <!-- Rule Conditions -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label :for="`rule-ruleset-${index}`" class="block mb-2 font-medium">
-                    Rule Sets
-                  </label>
-                  <InputChips 
-                    :id="`rule-ruleset-${index}`"
-                    v-model="rule.rule_set" 
-                    placeholder="Add rule set tags"
-                    class="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label :for="`rule-domain-${index}`" class="block mb-2 font-medium">
-                    Domain
-                  </label>
-                  <InputChips 
-                    :id="`rule-domain-${index}`"
-                    v-model="rule.domain" 
-                    placeholder="Add domains"
-                    class="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label :for="`rule-domain-suffix-${index}`" class="block mb-2 font-medium">
-                    Domain Suffix
-                  </label>
-                  <InputChips 
-                    :id="`rule-domain-suffix-${index}`"
-                    v-model="rule.domain_suffix" 
-                    placeholder="Add domain suffixes"
-                    class="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label :for="`rule-domain-keyword-${index}`" class="block mb-2 font-medium">
-                    Domain Keyword
-                  </label>
-                  <InputChips 
-                    :id="`rule-domain-keyword-${index}`"
-                    v-model="rule.domain_keyword" 
-                    placeholder="Add domain keywords"
-                    class="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label :for="`rule-domain-regex-${index}`" class="block mb-2 font-medium">
-                    Domain Regex
-                  </label>
-                  <InputChips 
-                    :id="`rule-domain-regex-${index}`"
-                    v-model="rule.domain_regex" 
-                    placeholder="Add regex patterns"
-                    class="w-full"
-                  />
-                </div>
-              </div>
-            </div>
+              <RouteRuleEditor v-model="route.rules[index]" />
             </AccordionContent>
           </AccordionPanel>
         </Accordion>

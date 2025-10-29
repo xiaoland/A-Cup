@@ -41,23 +41,41 @@ export const SingBoxRuleSetSchema = z.discriminatedUnion('type', [
 
 export type SingBoxRuleSet = z.infer<typeof SingBoxRuleSetSchema>;
 
-export const RouteRuleAction = z.object({
-  action: z.enum(['route', 'reject', 'hijack-dns']),
-  outbound: z.string().optional(),  
-}).refine((data) => {
-  if (data.action === 'route') {
-    return data.outbound !== undefined;
-  }
-  return true;
-});
+export const RouteRuleAction = z
+  .object({
+    action: z.enum(['route', 'reject', 'hijack-dns']),
+    outbound: z.string().optional(),
+    server: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.action === 'route') {
+        return data.outbound !== undefined;
+      }
+      return true;
+    },
+    { message: 'Outbound is required for route action' },
+  )
+  .refine(
+    (data) => {
+      if (data.action === 'hijack-dns') {
+        return data.server !== undefined;
+      }
+      return true;
+    },
+    { message: 'Server is required for hijack-dns action' },
+  );
 
-export const RouteRuleSchema = RouteRuleAction.extend({
-  rule_set: z.array(z.string()).optional(),
-  domain: z.array(z.string()).optional(),
-  domain_suffix: z.array(z.string()).optional(),
-  domain_keyword: z.array(z.string()).optional(),
-  domain_regex: z.array(z.string()).optional(),
-});
+export const RouteRuleSchema = z.intersection(
+  RouteRuleAction,
+  z.object({
+    rule_set: z.array(z.string()).optional(),
+    domain: z.array(z.string()).optional(),
+    domain_suffix: z.array(z.string()).optional(),
+    domain_keyword: z.array(z.string()).optional(),
+    domain_regex: z.array(z.string()).optional(),
+  }),
+);
 
 export type RouteRule = z.infer<typeof RouteRuleSchema>;
 
