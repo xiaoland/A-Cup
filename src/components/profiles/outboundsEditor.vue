@@ -32,7 +32,9 @@ function addNormalOutbound() {
 }
 
 function addSpecialOutbound() {
-  specialOutbounds.value.push({} as SingBoxOutbound);
+  specialOutbounds.value.push({
+    tag: `special-outbound.${specialOutbounds.value.length+1}`
+  } as SingBoxOutbound);
 }
 
 function removeNormalOutbound(index: number) {
