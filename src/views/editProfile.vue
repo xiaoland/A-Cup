@@ -18,8 +18,6 @@ const profile = ref<SingBoxProfile>({
 });
 
 const onSave = () => {
-  console.log('Profile saved:', profile.value);
-  // TODO: Implement save logic
   router.push('/profiles');
 };
 

@@ -59,7 +59,7 @@ function removeSpecialOutbound(index: number) {
     <Accordion :multiple="true">
       <AccordionPanel v-for="(outbound, index) in normalOutbounds" :key="index" :value="index.toString()">
         <AccordionHeader>
-          {{ outbound?.tag || 'New Outbound' }}
+          {{ (outbound?.tag + outbound?.type) || 'New Outbound' }}
         </AccordionHeader>
         <AccordionContent>
           <div class="flex justify-end mb-3">
