@@ -37,6 +37,7 @@ function updateInterval(interval: string | undefined) {
       <SingBoxOutboundsPicker
         id="outbounds"
         :model-value="modelValue.outbounds"
+        :ignores="modelValue.tag ? [modelValue.tag] : []"
         @update:model-value="updateOutbounds"
       />
       <small class="text-surface-600">

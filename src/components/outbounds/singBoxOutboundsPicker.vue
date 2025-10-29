@@ -6,6 +6,7 @@ import type { ComputedRef } from 'vue';
 
 const props = defineProps<{
   modelValue?: string[];
+  ignores?: string[];
 }>();
 
 const emit = defineEmits<{
@@ -19,7 +20,15 @@ const outboundOptions = computed(() => {
   if (!profileOutbounds?.value) {
     return [];
   }
-  return profileOutbounds.value;
+  
+  let outbounds = profileOutbounds.value;
+  
+  // Filter out ignored tags
+  if (props.ignores && props.ignores.length > 0) {
+    outbounds = outbounds.filter(outbound => !props.ignores!.includes(outbound.tag));
+  }
+  
+  return outbounds;
 });
 
 const selectedTags = computed({

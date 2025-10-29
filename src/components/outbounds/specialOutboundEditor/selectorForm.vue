@@ -32,6 +32,7 @@ function updateDefault(defaultValue: string | undefined) {
       <SingBoxOutboundsPicker
         id="outbounds"
         :model-value="modelValue.outbounds"
+        :ignores="modelValue.tag ? [modelValue.tag] : []"
         @update:model-value="updateOutbounds"
       />
       <small class="text-surface-600">
@@ -47,6 +48,7 @@ function updateDefault(defaultValue: string | undefined) {
       <SingBoxOutboundPicker
         id="default"
         :model-value="modelValue.default"
+        :ignores="modelValue.tag ? [modelValue.tag] : []"
         @update:model-value="updateDefault"
       />
       <small class="text-surface-600">
