@@ -12,6 +12,7 @@ import ToggleButton from 'primevue/togglebutton';
 import Fieldset from 'primevue/fieldset';
 import InputChips from 'primevue/inputchips';
 import Select from 'primevue/select';
+import HybirdRuleSetEditor from '../rule-sets/hybirdRuleSetEditor.vue';
 
 const props = defineProps<{
   modelValue: Route;
@@ -49,10 +50,10 @@ const removeRule = (index: number) => {
 
 // Rule Sets Management
 const addRuleSet = () => {
-  const newRuleSet: SingBoxRuleSet = { 
-    type: 'remote', 
+  const newRuleSet: SingBoxRuleSet = {
+    type: 'inline',
     tag: `rule-set-${(route.value.rule_set?.length || 0) + 1}`,
-    url: ''
+    rules: [],
   };
   route.value.rule_set = [...(route.value.rule_set || []), newRuleSet];
 };
@@ -62,17 +63,6 @@ const removeRuleSet = (index: number) => {
   newRuleSets.splice(index, 1);
   route.value.rule_set = newRuleSets;
 };
-
-const ruleSetTypes = [
-  { label: 'Remote', value: 'remote' },
-  { label: 'Local', value: 'local' },
-  { label: 'Inline', value: 'inline' },
-];
-
-const formatOptions = [
-  { label: 'Source', value: 'source' },
-  { label: 'Binary', value: 'binary' },
-];
 
 // Advanced Fields
 const advancedFields = computed(() => {
@@ -91,10 +81,6 @@ const getRuleLabel = (rule: RouteRule, index: number): string => {
   if (rule.outbound) return `Rule ${index + 1}: → ${rule.outbound}`;
   if (rule.outbounds) return `Rule ${index + 1}: → [${rule.outbounds.join(', ')}]`;
   return `Rule ${index + 1}`;
-};
-
-const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
-  return ruleSet.type.charAt(0).toUpperCase() + ruleSet.type.slice(1);
 };
 </script>
 
@@ -266,149 +252,20 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
             <AccordionHeader>
               <div class="flex items-center justify-between w-full pr-4">
                 <span class="font-medium">{{ ruleSet.tag || `Rule Set ${index + 1}` }}</span>
-                <span class="text-sm text-gray-500 ml-2">({{ getRuleSetTypeLabel(ruleSet) }})</span>
               </div>
             </AccordionHeader>
-            
             <AccordionContent>
               <div class="flex justify-end mb-3">
-                <Button 
-                  icon="pi pi-trash" 
-                  severity="danger" 
+                <Button
+                  icon="pi pi-trash"
+                  severity="danger"
                   size="small"
                   text
-                  @click="removeRuleSet(index)" 
+                  @click="removeRuleSet(index)"
                   label="Remove"
                 />
               </div>
-
-            <div class="grid gap-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label :for="`ruleset-type-${index}`" class="block mb-2 font-medium">
-                    Type
-                  </label>
-                  <Select 
-                    :id="`ruleset-type-${index}`"
-                    v-model="ruleSet.type" 
-                    :options="ruleSetTypes"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label :for="`ruleset-tag-${index}`" class="block mb-2 font-medium">
-                    Tag
-                  </label>
-                  <InputText 
-                    :id="`ruleset-tag-${index}`"
-                    v-model="ruleSet.tag" 
-                    class="w-full" 
-                    placeholder="Rule set identifier"
-                  />
-                </div>
-              </div>
-
-              <!-- Remote Type Fields -->
-              <template v-if="ruleSet.type === 'remote'">
-                <div>
-                  <label :for="`ruleset-url-${index}`" class="block mb-2 font-medium">
-                    URL
-                  </label>
-                  <InputText 
-                    :id="`ruleset-url-${index}`"
-                    v-model="ruleSet.url" 
-                    class="w-full" 
-                    placeholder="https://example.com/ruleset.json"
-                  />
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label :for="`ruleset-format-${index}`" class="block mb-2 font-medium">
-                      Format
-                    </label>
-                    <Select 
-                      :id="`ruleset-format-${index}`"
-                      v-model="ruleSet.format" 
-                      :options="formatOptions"
-                      optionLabel="label"
-                      optionValue="value"
-                      placeholder="Select format"
-                      class="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label :for="`ruleset-download-detour-${index}`" class="block mb-2 font-medium">
-                      Download Detour
-                    </label>
-                    <InputText 
-                      :id="`ruleset-download-detour-${index}`"
-                      v-model="ruleSet.download_detour" 
-                      class="w-full" 
-                      placeholder="Outbound tag"
-                    />
-                  </div>
-
-                  <div>
-                    <label :for="`ruleset-update-interval-${index}`" class="block mb-2 font-medium">
-                      Update Interval
-                    </label>
-                    <InputText 
-                      :id="`ruleset-update-interval-${index}`"
-                      v-model="ruleSet.update_interval" 
-                      class="w-full" 
-                      placeholder="1h, 24h, etc."
-                    />
-                  </div>
-                </div>
-              </template>
-
-              <!-- Local Type Fields -->
-              <template v-if="ruleSet.type === 'local'">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label :for="`ruleset-path-${index}`" class="block mb-2 font-medium">
-                      Path
-                    </label>
-                    <InputText 
-                      :id="`ruleset-path-${index}`"
-                      v-model="ruleSet.path" 
-                      class="w-full" 
-                      placeholder="/path/to/ruleset.json"
-                    />
-                  </div>
-
-                  <div>
-                    <label :for="`ruleset-format-${index}`" class="block mb-2 font-medium">
-                      Format
-                    </label>
-                    <Select 
-                      :id="`ruleset-format-${index}`"
-                      v-model="ruleSet.format" 
-                      :options="formatOptions"
-                      optionLabel="label"
-                      optionValue="value"
-                      placeholder="Select format"
-                      class="w-full"
-                    />
-                  </div>
-                </div>
-              </template>
-
-              <!-- Inline Type Fields -->
-              <template v-if="ruleSet.type === 'inline'">
-                <div>
-                  <label class="block mb-2 font-medium">Inline Rules</label>
-                  <p class="text-sm text-gray-500 mb-2">
-                    Use the Advanced section below to configure inline rules (JSON editor)
-                  </p>
-                </div>
-              </template>
-            </div>
+              <HybirdRuleSetEditor v-model="route.rule_set[index]" />
             </AccordionContent>
           </AccordionPanel>
         </Accordion>
@@ -416,11 +273,11 @@ const getRuleSetTypeLabel = (ruleSet: SingBoxRuleSet): string => {
       <div v-else class="text-center py-6 text-gray-500">
         No rule sets configured. Add one to define reusable routing rules.
       </div>
-      <Button 
-        label="Add Rule Set" 
-        icon="pi pi-plus" 
-        severity="success" 
-        @click="addRuleSet" 
+      <Button
+        label="Add Rule Set"
+        icon="pi pi-plus"
+        severity="success"
+        @click="addRuleSet"
         outlined
       />
     </Fieldset>
