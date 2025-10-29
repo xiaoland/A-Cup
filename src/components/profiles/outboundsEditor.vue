@@ -2,7 +2,7 @@
 import { ref, watch, computed } from 'vue';
 import type { SingBoxOutbound } from '../../../schemas/singbox';
 import HybirdOutboundEditor from '../outbounds/hybirdOutboundEditor.vue';
-import SpecialOutboundEditor from '../outbounds/specialOutboundEditor.vue';
+import SpecialOutboundEditor from '../outbounds/specialOutboundEditor/specialOutboundEditor.vue';
 import Button from 'primevue/button';
 import Accordion from 'primevue/accordion';
 import AccordionPanel from 'primevue/accordionpanel';

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue';
 import { z } from 'zod';
-import { SelectorOutboundSchema, UrlTestOutboundSchema, DirectOutboundSchema, SingBoxOutboundSchema, type SingBoxOutbound } from '../../../schemas/singbox';
+import { SelectorOutboundSchema, UrlTestOutboundSchema, DirectOutboundSchema, SingBoxOutboundSchema, type SingBoxOutbound } from '../../../../schemas/singbox';
 import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
 import Fieldset from 'primevue/fieldset';
-import SelectorForm from './outboundEditor/selectorForm.vue';
-import UrltestForm from './outboundEditor/urltestForm.vue';
-import DirectForm from './outboundEditor/directForm.vue';
+import SelectorForm from './selectorForm.vue';
+import UrltestForm from './urltestForm.vue';
+import DirectForm from './directForm.vue';
 
 type SpecialOutboundModel = z.infer<typeof SelectorOutboundSchema> | z.infer<typeof UrlTestOutboundSchema> | z.infer<typeof DirectOutboundSchema>;
 
