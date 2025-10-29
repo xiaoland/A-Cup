@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import type { DNSRule } from '../../../schemas/dns';
 import Select from 'primevue/select';
 import InputText from 'primevue/inputtext';
-import Chips from 'primevue/chips';
+import InputChips from 'primevue/inputchips';
 import ToggleSwitch from 'primevue/toggleswitch';
 import Fieldset from 'primevue/fieldset';
 
@@ -57,7 +57,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
       <div class="formgrid grid">
         <div class="field col-12 md:col-6">
           <label for="domain">Domain</label>
-          <Chips 
+          <InputChips 
             id="domain" 
             v-model="rule.domain" 
             placeholder="Add domain"
@@ -67,7 +67,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
         
         <div class="field col-12 md:col-6">
           <label for="domain_suffix">Domain Suffix</label>
-          <Chips 
+          <InputChips 
             id="domain_suffix" 
             v-model="rule.domain_suffix" 
             placeholder="Add domain suffix"
@@ -77,7 +77,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
         
         <div class="field col-12 md:col-6">
           <label for="domain_keyword">Domain Keyword</label>
-          <Chips 
+          <InputChips 
             id="domain_keyword" 
             v-model="rule.domain_keyword" 
             placeholder="Add domain keyword"
@@ -87,7 +87,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
         
         <div class="field col-12 md:col-6">
           <label for="domain_regex">Domain Regex</label>
-          <Chips 
+          <InputChips 
             id="domain_regex" 
             v-model="rule.domain_regex" 
             placeholder="Add domain regex pattern"
@@ -97,7 +97,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
         
         <div class="field col-12 md:col-6">
           <label for="source_ip_cidr">Source IP CIDR</label>
-          <Chips 
+          <InputChips 
             id="source_ip_cidr" 
             v-model="rule.source_ip_cidr" 
             placeholder="Add IP CIDR (e.g., 192.168.0.0/24)"
@@ -193,7 +193,7 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
         <template v-if="rule.action === 'predefined'">
           <div class="field col-12">
             <label for="pre-answer">Answer (IP addresses)</label>
-            <Chips 
+            <InputChips 
               id="pre-answer" 
               v-model="rule.answer" 
               placeholder="Add IP addresses"
