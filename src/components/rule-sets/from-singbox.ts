@@ -24,7 +24,7 @@ export function fromSingbox(singboxRuleSet: SingBoxRuleSet): Partial<RuleSet> {
   }
 
   return {
-    tag,
+    name: tag,
     type,
     format: format,
     content,

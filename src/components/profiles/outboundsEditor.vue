@@ -64,7 +64,7 @@ function removeSpecialOutbound(index: number) {
             label="Remove"
           />
         </div>
-        <HybirdOutboundEditor v-model="normalOutbounds[index]" />
+        <HybirdOutboundEditor v-if="normalOutbounds[index]" v-model="normalOutbounds[index]!" />
       </AccordionTab>
     </Accordion>
 
@@ -80,7 +80,7 @@ function removeSpecialOutbound(index: number) {
                 label="Remove"
               />
             </div>
-            <SpecialOutboundEditor v-model="specialOutbounds[index]" />
+            <SpecialOutboundEditor v-if="specialOutbounds[index]" v-model="specialOutbounds[index]!" />
         </AccordionTab>
     </Accordion>
   </div>
