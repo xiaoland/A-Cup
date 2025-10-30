@@ -20,7 +20,7 @@ const props = defineProps<{
   isNewProfile?: boolean;
 }>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'save', 'cancel']);
 
 const router = useRouter();
 const profileStore = useProfileStore();
@@ -39,10 +39,12 @@ const onSave = async () => {
   } else if (props.profileId) {
     await profileStore.updateProfile(props.profileId, props.modelValue);
   }
+  emit('save');
   router.push('/profiles');
 };
 
 const onCancel = () => {
+  emit('cancel');
   router.push('/profiles');
 };
 

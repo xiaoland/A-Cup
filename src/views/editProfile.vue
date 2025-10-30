@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useProfileStore } from '@/stores/profile';
 import ProfileEditor from '@/components/profiles/profileEditor.vue';
@@ -26,6 +26,7 @@ const profile = ref<CreateProfile>({
 
 const isNewProfile = ref(false);
 const profileId = ref<string | undefined>(undefined);
+const DRAFT_PROFILE_KEY = 'draft_profile';
 
 onMounted(async () => {
   const id = route.params.id as string;
@@ -49,9 +50,26 @@ onMounted(async () => {
     profileId.value = id;
   } else {
     isNewProfile.value = true;
+    const savedDraft = localStorage.getItem(DRAFT_PROFILE_KEY);
+    if (savedDraft) {
+      profile.value = JSON.parse(savedDraft);
+    }
   }
 });
 
+watch(
+  profile,
+  (newProfile) => {
+    if (isNewProfile.value) {
+      localStorage.setItem(DRAFT_PROFILE_KEY, JSON.stringify(newProfile));
+    }
+  },
+  { deep: true }
+);
+
+const clearDraft = () => {
+  localStorage.removeItem(DRAFT_PROFILE_KEY);
+};
 </script>
 
 <template>
@@ -61,6 +79,8 @@ onMounted(async () => {
       v-model="profile"
       :profile-id="profileId"
       :is-new-profile="isNewProfile"
+      @save="clearDraft"
+      @cancel="clearDraft"
     />
   </div>
 </template>
