@@ -6,6 +6,7 @@ import InputText from 'primevue/inputtext';
 import InputChips from 'primevue/inputchips';
 import ToggleSwitch from 'primevue/toggleswitch';
 import Fieldset from 'primevue/fieldset';
+import RuleConditionsEditor from '@/components/common/RuleConditionsEditor.vue';
 
 const props = defineProps<{
   modelValue: DNSRule;
@@ -49,76 +50,23 @@ const onActionChange = (newAction: 'route' | 'route-options' | 'reject' | 'prede
   rule.value = newRule as DNSRule;
 };
 
+// Computed property for conditions
+const conditions = computed({
+  get: () => {
+    const { domain, domain_suffix, domain_keyword, domain_regex, source_ip_cidr, network } = rule.value;
+    return { domain, domain_suffix, domain_keyword, domain_regex, source_ip_cidr, network };
+  },
+  set: (value) => {
+    rule.value = { ...rule.value, ...value };
+  },
+});
+
 </script>
 
 <template>
   <div class="dns-rule-editor">
     <Fieldset legend="Rule Conditions" :toggleable="true">
-      <div class="formgrid grid">
-        <div class="field col-12 md:col-6">
-          <label for="domain">Domain</label>
-          <InputChips 
-            id="domain" 
-            v-model="rule.domain" 
-            placeholder="Add domain"
-            class="w-full"
-          />
-        </div>
-        
-        <div class="field col-12 md:col-6">
-          <label for="domain_suffix">Domain Suffix</label>
-          <InputChips 
-            id="domain_suffix" 
-            v-model="rule.domain_suffix" 
-            placeholder="Add domain suffix"
-            class="w-full"
-          />
-        </div>
-        
-        <div class="field col-12 md:col-6">
-          <label for="domain_keyword">Domain Keyword</label>
-          <InputChips 
-            id="domain_keyword" 
-            v-model="rule.domain_keyword" 
-            placeholder="Add domain keyword"
-            class="w-full"
-          />
-        </div>
-        
-        <div class="field col-12 md:col-6">
-          <label for="domain_regex">Domain Regex</label>
-          <InputChips 
-            id="domain_regex" 
-            v-model="rule.domain_regex" 
-            placeholder="Add domain regex pattern"
-            class="w-full"
-          />
-        </div>
-        
-        <div class="field col-12 md:col-6">
-          <label for="source_ip_cidr">Source IP CIDR</label>
-          <InputChips 
-            id="source_ip_cidr" 
-            v-model="rule.source_ip_cidr" 
-            placeholder="Add IP CIDR (e.g., 192.168.0.0/24)"
-            class="w-full"
-          />
-        </div>
-        
-        <div class="field col-12 md:col-6">
-          <label for="network">Network Type</label>
-          <Select 
-            id="network" 
-            v-model="rule.network" 
-            :options="networkTypes" 
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Select Network Type (optional)"
-            class="w-full"
-            showClear
-          />
-        </div>
-      </div>
+      <RuleConditionsEditor v-model="conditions" />
     </Fieldset>
 
     <Fieldset legend="Rule Action" :toggleable="true" class="mt-3">
