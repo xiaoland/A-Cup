@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { useProfileStore } from '@/stores/profile';
 import ProfileEditor from '@/components/profiles/profileEditor.vue';
 import type { CreateProfile } from '../../schemas/profile';
+import router from '@/router';
 
 const route = useRoute();
 const profileStore = useProfileStore();
@@ -90,6 +91,14 @@ const onClearDraft = () => {
     inbounds: [],
   };
 };
+
+const onSave = () => {
+  router.push('/profiles');
+};
+
+const onCancel = () => {
+  router.push('/profiles');
+}
 </script>
 
 <template>
@@ -99,8 +108,8 @@ const onClearDraft = () => {
       v-model="profile"
       :profile-id="profileId"
       :is-new-profile="isNewProfile"
-      @save="clearDraft"
-      @cancel="clearDraft"
+      @save="onSave"
+      @cancel="onCancel"
       @clear-draft="onClearDraft"
     />
   </div>

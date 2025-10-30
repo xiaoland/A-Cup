@@ -39,6 +39,13 @@ profileRouter.post('/', zValidator('json', CreateProfileSchema), async (c) => {
   return c.json(insertedProfile, 201);
 });
 
+profileRouter.get('/', async (c) => {
+  const userId = c.get('userId');
+  const profileService = new ProfileService(c.get('db'));
+  const profiles = await profileService.getProfiles(userId);
+  return c.json(profiles);
+});
+
 profileRouter.get('/:id', async (c) => {
   const { id } = c.req.param();
   const userId = c.get('userId');

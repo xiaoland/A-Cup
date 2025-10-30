@@ -43,17 +43,20 @@ const onUpdateReferencedRuleSets = (value: number[]) => {
 
 const onSave = async () => {
   if (props.isNewProfile) {
-    await profileStore.createProfile(props.modelValue);
+    profileStore.createProfile(props.modelValue).then(() => {
+      emit('clearDraft');
+      emit('save');
+    });
   } else if (props.profileId) {
-    await profileStore.updateProfile(props.profileId, props.modelValue);
+    await profileStore.updateProfile(props.profileId, props.modelValue).then(() => {
+      emit('clearDraft');
+      emit('save');
+    });
   }
-  emit('save');
-  router.push('/profiles');
 };
 
 const onCancel = () => {
   emit('cancel');
-  router.push('/profiles');
 };
 
 const onClearDraft = () => {

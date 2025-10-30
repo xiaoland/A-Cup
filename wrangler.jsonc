@@ -39,7 +39,7 @@
 	],
 	"r2_buckets": [
 		{
-			"binding": "OSS",
+			"binding": "R2",
 			"bucket_name": "a-cup"
 		}
 	],
