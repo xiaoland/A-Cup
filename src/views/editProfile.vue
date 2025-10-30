@@ -4,24 +4,22 @@ import { useRoute } from "vue-router";
 import { useProfileStore } from "@/stores/profile";
 import ProfileEditor from "@/components/profiles/profileEditor.vue";
 import type { CreateProfile } from "../../schemas/profile";
+import { RouteSchema } from "../../schemas/route";
+import { DnsSchema } from "../../schemas/dns";
 import router from "@/router";
 
 const route = useRoute();
 const profileStore = useProfileStore();
 
+// Initialize profile with schema defaults
 const profile = ref<CreateProfile>({
     name: "",
     tags: [],
     referencedOutbounds: [],
     referencedRuleSets: [],
     outbounds: [],
-    route: {
-        rules: [],
-    },
-    dns: {
-        servers: [],
-        rules: [],
-    },
+    route: RouteSchema.parse({}),
+    dns: DnsSchema.parse({ servers: [], rules: [] }),
     inbounds: [],
 });
 
@@ -63,20 +61,15 @@ const clearDraft = () => {
 
 const onClearDraft = () => {
     localStorage.removeItem(DRAFT_PROFILE_KEY);
-    // Reset profile to initial state
+    // Reset profile to initial state using schema defaults
     profile.value = {
         name: "",
         tags: [],
         referencedOutbounds: [],
         referencedRuleSets: [],
         outbounds: [],
-        route: {
-            rules: [],
-        },
-        dns: {
-            servers: [],
-            rules: [],
-        },
+        route: RouteSchema.parse({}),
+        dns: DnsSchema.parse({ servers: [], rules: [] }),
         inbounds: [],
     };
 };
