@@ -13,6 +13,7 @@ import Button from "primevue/button";
 import Panel from "primevue/panel";
 import InputText from "primevue/inputtext";
 import Chips from "primevue/chips";
+import JSONEditor from "@/components/common/JSONEditor.vue";
 import { provide, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useProfileStore } from "@/stores/profile";
@@ -114,7 +115,11 @@ const onClearDraft = () => {
             :collapsed="true"
             class="mb-4"
         >
-            <pre>{{ JSON.stringify(modelValue, null, 2) }}</pre>
+            <JSONEditor
+                height="400"
+                :modelValue="modelValue"
+                @update:modelValue="emit('update:modelValue', $event)"
+            />
         </Panel>
 
         <Panel header="Inbounds" :toggleable="true">

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import type { Profile } from '../../schemas/profile';
-import { useProfileStore } from '../stores/profile';
-import { useUserStore } from '../stores/user';
-import { useToast } from 'primevue/usetoast';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button';
-import Chip from 'primevue/chip';
-import Toast from 'primevue/toast';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from "vue";
+import type { Profile } from "../../schemas/profile";
+import { useProfileStore } from "../stores/profile";
+import { useUserStore } from "../stores/user";
+import { useToast } from "primevue/usetoast";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import Button from "primevue/button";
+import Chip from "primevue/chip";
+import Toast from "primevue/toast";
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 const profileStore = useProfileStore();
@@ -18,66 +18,85 @@ const toast = useToast();
 const profiles = ref<Profile[]>([]);
 
 onMounted(async () => {
-  await profileStore.fetchProfiles();
-  profiles.value = profileStore.profiles;
+    await profileStore.fetchProfiles();
+    profiles.value = profileStore.profiles;
 });
 
 const editProfile = (id: string) => {
-  router.push(`/profiles/${id}`);
+    router.push(`/profiles/${id}`);
 };
 
 const deleteProfile = async (id: string) => {
-  await profileStore.deleteProfile(id);
-  profiles.value = profileStore.profiles;
+    await profileStore.deleteProfile(id);
+    profiles.value = profileStore.profiles;
 };
 
 const newProfile = () => {
-  router.push('/profiles/new');
+    router.push("/profiles/new");
 };
 
 const copyUrl = async (id: string) => {
-  try {
-    const response = await userStore.authorizedRequest<{ url: string }>(`/api/profiles/${id}/singbox`);
-    await navigator.clipboard.writeText(response.url);
-    toast.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'URL copied to clipboard',
-      life: 3000
-    });
-  } catch (err) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to copy URL',
-      life: 3000
-    });
-  }
+    try {
+        const response = await userStore.authorizedRequest<{ url: string }>(
+            `/api/profiles/${id}/singbox`,
+        );
+        await navigator.clipboard.writeText(response.url);
+        toast.add({
+            severity: "success",
+            summary: "Success",
+            detail: "URL copied to clipboard",
+            life: 3000,
+        });
+    } catch (err) {
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to copy URL",
+            life: 3000,
+        });
+    }
 };
 </script>
 <template>
-  <div class="card">
-    <Toast />
-    <DataTable :value="profiles" responsiveLayout="scroll">
-      <template #header>
-        <div class="flex justify-between">
-          <h2 class="text-2xl">Profiles</h2>
-          <Button label="New Profile" icon="pi pi-plus" @click="newProfile" />
+    <div class="p-4">
+        <Toast />
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-bold">Profiles</h1>
+            <Button label="New Profile" icon="pi pi-plus" @click="newProfile" />
         </div>
-      </template>
-      <Column field="name" header="Name"></Column>
-      <Column header="Tags">
-        <template #body="slotProps">
-          <Chip v-for="tag in slotProps.data.tags" :key="tag" :label="tag" class="mr-2" />
-        </template>
-      </Column>
-      <Column header="Actions">
-        <template #body="slotProps">
-          <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editProfile(slotProps.data.id)" />
-          <Button icon="pi pi-copy" class="p-button-rounded p-button-info mr-2" @click="copyUrl(slotProps.data.id)" v-tooltip.top="'Copy SingBox URL'" />
-          <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="deleteProfile(slotProps.data.id)" />
-        </template>
-      </Column>
-    </DataTable>
-  </div>
+
+        <DataTable :value="profiles" responsiveLayout="scroll">
+            <Column field="name" header="Name"></Column>
+            <Column header="Tags">
+                <template #body="slotProps">
+                    <Chip
+                        v-for="tag in slotProps.data.tags"
+                        :key="tag"
+                        :label="tag"
+                        class="mr-2"
+                    />
+                </template>
+            </Column>
+            <Column header="Actions">
+                <template #body="slotProps">
+                    <Button
+                        icon="pi pi-pencil"
+                        class="p-button-rounded p-button-success mr-2"
+                        @click="editProfile(slotProps.data.id)"
+                    />
+                    <Button
+                        icon="pi pi-copy"
+                        class="p-button-rounded p-button-info mr-2"
+                        @click="copyUrl(slotProps.data.id)"
+                        v-tooltip.top="'Copy SingBox URL'"
+                    />
+                    <Button
+                        icon="pi pi-trash"
+                        class="p-button-rounded p-button-danger"
+                        @click="deleteProfile(slotProps.data.id)"
+                    />
+                </template>
+            </Column>
+        </DataTable>
+    </div>
 </template>

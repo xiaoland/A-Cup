@@ -84,8 +84,10 @@ const onCancel = () => {
 </script>
 
 <template>
-    <div>
-        <h1>{{ isNewProfile ? "Create Profile" : "Edit Profile" }}</h1>
+    <div class="p-4">
+        <h1 class="text-2xl font-bold mb-4">
+            {{ isNewProfile ? "Create Profile" : "Edit Profile" }}
+        </h1>
         <ProfileEditor
             v-model="profile"
             :profile-id="profileId"
