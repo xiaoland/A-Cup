@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useProfileStore } from '@/stores/profile';
 import ProfileEditor from '@/components/profiles/profileEditor.vue';
-import type { CreateProfile, UpdateProfile } from '../../schemas/profile';
+import type { CreateProfile } from '../../schemas/profile';
 
-const router = useRouter();
 const route = useRoute();
 const profileStore = useProfileStore();
 
@@ -26,11 +25,12 @@ const profile = ref<CreateProfile>({
 });
 
 const isNewProfile = ref(false);
+const profileId = ref<string | undefined>(undefined);
 
 onMounted(async () => {
-  const profileId = route.params.id as string;
-  if (profileId && profileId !== 'new') {
-    const existingProfile = await profileStore.getProfile(profileId);
+  const id = route.params.id as string;
+  if (id && id !== 'new') {
+    const existingProfile = await profileStore.getProfile(id);
     if (existingProfile) {
       // Note: This is a simplified transformation. A real implementation
       // would need to fetch the full singbox profile from R2.
@@ -46,32 +46,21 @@ onMounted(async () => {
       };
     }
     isNewProfile.value = false;
+    profileId.value = id;
   } else {
     isNewProfile.value = true;
   }
 });
 
-const onSave = async () => {
-  if (isNewProfile.value) {
-    await profileStore.createProfile(profile.value);
-  } else {
-    await profileStore.updateProfile(route.params.id as string, profile.value);
-  }
-  router.push('/profiles');
-};
-
-const onCancel = () => {
-  router.push('/profiles');
-};
 </script>
 
 <template>
   <div>
     <h1>{{ isNewProfile ? 'Create Profile' : 'Edit Profile' }}</h1>
     <ProfileEditor
-      :modelValue="profile"
-      @save="onSave"
-      @cancel="onCancel"
+      v-model="profile"
+      :profile-id="profileId"
+      :is-new-profile="isNewProfile"
     />
   </div>
 </template>
