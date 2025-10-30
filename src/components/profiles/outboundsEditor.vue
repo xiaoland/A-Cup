@@ -13,7 +13,10 @@ const props = defineProps<{
   modelValue: SingBoxOutbound[];
 }>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+  'update:modelValue': [value: SingBoxOutbound[]];
+  'update:referencedOutbounds': [value: number[]];
+}>();
 
 const normalOutbounds = ref<(SingBoxOutbound)[]>([]);
 const specialOutbounds = ref<(SingBoxOutbound)[]>([]);
@@ -22,9 +25,25 @@ const combinedOutbounds = computed(() => {
     return [...normalOutbounds.value, ...specialOutbounds.value].filter(o => o !== undefined) as SingBoxOutbound[];
 });
 
+// Extract referenced outbound IDs from outbound tags
+const referencedOutbounds = computed<number[]>(() => {
+  const referenced: number[] = [];
+  for (const outbound of combinedOutbounds.value) {
+    const outboundId = parseInt(outbound.tag);
+    if (!isNaN(outboundId) && !referenced.includes(outboundId)) {
+      referenced.push(outboundId);
+    }
+  }
+  return referenced;
+});
+
 watch(combinedOutbounds, (newValue) => {
     emit('update:modelValue', newValue);
 }, { deep: true });
+
+watch(referencedOutbounds, (newValue) => {
+  emit('update:referencedOutbounds', newValue);
+}, { immediate: true });
 
 
 function addNormalOutbound() {

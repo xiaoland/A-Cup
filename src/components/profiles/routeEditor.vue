@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import type { Route, RouteRule, SingBoxRuleSet } from '../../../schemas/route';
 import JSONEditor from '@/components/common/JSONEditor.vue';
 import SingBoxOutboundPicker from '@/components/outbounds/singBoxOutboundPicker.vue';
@@ -17,12 +17,33 @@ const props = defineProps<{
   modelValue: Route;
 }>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+  'update:modelValue': [value: Route];
+  'update:referencedRuleSets': [value: number[]];
+}>();
 
 const route = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value),
 });
+
+// Extract referenced rule set IDs from rule set tags
+const referencedRuleSets = computed<number[]>(() => {
+  const referenced: number[] = [];
+  if (props.modelValue.rule_set) {
+    for (const ruleSet of props.modelValue.rule_set) {
+      const ruleSetId = parseInt(ruleSet.tag);
+      if (!isNaN(ruleSetId) && !referenced.includes(ruleSetId)) {
+        referenced.push(ruleSetId);
+      }
+    }
+  }
+  return referenced;
+});
+
+watch(referencedRuleSets, (newValue) => {
+  emit('update:referencedRuleSets', newValue);
+}, { immediate: true });
 
 // Basic Settings
 const final = computed({

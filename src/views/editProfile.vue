@@ -70,6 +70,26 @@ watch(
 const clearDraft = () => {
   localStorage.removeItem(DRAFT_PROFILE_KEY);
 };
+
+const onClearDraft = () => {
+  localStorage.removeItem(DRAFT_PROFILE_KEY);
+  // Reset profile to initial state
+  profile.value = {
+    name: '',
+    tags: [],
+    referencedOutbounds: [],
+    referencedRuleSets: [],
+    outbounds: [],
+    route: {
+      rules: [],
+    },
+    dns: {
+      servers: [],
+      rules: [],
+    },
+    inbounds: [],
+  };
+};
 </script>
 
 <template>
@@ -81,6 +101,7 @@ const clearDraft = () => {
       :is-new-profile="isNewProfile"
       @save="clearDraft"
       @cancel="clearDraft"
+      @clear-draft="onClearDraft"
     />
   </div>
 </template>

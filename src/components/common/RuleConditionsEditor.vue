@@ -55,9 +55,9 @@ const conditions = computed({
 // Track which conditions are currently visible
 const visibleConditions = computed(() => {
   const visible: ConditionKey[] = [];
-  for (const key of Object.keys(conditions.value) as ConditionKey[]) {
-    if (conditions.value[key] !== undefined) {
-      visible.push(key);
+  for (const item of conditionTypes) {
+    if (conditions.value[item.value] !== undefined) {
+      visible.push(item.value);
     }
   }
   return visible;

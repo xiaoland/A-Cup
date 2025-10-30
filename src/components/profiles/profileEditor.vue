@@ -10,7 +10,7 @@ import Button from 'primevue/button';
 import Panel from 'primevue/panel';
 import InputText from 'primevue/inputtext';
 import Chips from 'primevue/chips';
-import { provide, computed } from 'vue';
+import { provide, computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useProfileStore } from '@/stores/profile';
 
@@ -20,7 +20,7 @@ const props = defineProps<{
   isNewProfile?: boolean;
 }>();
 
-const emit = defineEmits(['update:modelValue', 'save', 'cancel']);
+const emit = defineEmits(['update:modelValue', 'save', 'cancel', 'clearDraft']);
 
 const router = useRouter();
 const profileStore = useProfileStore();
@@ -32,6 +32,14 @@ provide('profileOutbounds', profileOutbounds);
 // Provide profileRuleSets to child components
 const profileRuleSets = computed<SingBoxRuleSet[]>(() => props.modelValue.route?.rule_set || []);
 provide('profileRuleSets', profileRuleSets);
+
+const onUpdateReferencedOutbounds = (value: number[]) => {
+  props.modelValue.referencedOutbounds = value;
+};
+
+const onUpdateReferencedRuleSets = (value: number[]) => {
+  props.modelValue.referencedRuleSets = value;
+};
 
 const onSave = async () => {
   if (props.isNewProfile) {
@@ -46,6 +54,10 @@ const onSave = async () => {
 const onCancel = () => {
   emit('cancel');
   router.push('/profiles');
+};
+
+const onClearDraft = () => {
+  emit('clearDraft');
 };
 
 </script>
@@ -85,7 +97,10 @@ const onCancel = () => {
     </Panel>
 
     <Panel header="Outbounds" :toggleable="true" class="mt-4">
-      <OutboundsEditor v-model="modelValue.outbounds" />
+      <OutboundsEditor 
+        v-model="modelValue.outbounds" 
+        @update:referencedOutbounds="onUpdateReferencedOutbounds"
+      />
     </Panel>
 
     <Panel header="DNS" :toggleable="true" class="mt-4">
@@ -93,11 +108,23 @@ const onCancel = () => {
     </Panel>
 
     <Panel header="Route" :toggleable="true" class="mt-4">
-      <RouteEditor v-model="modelValue.route" />
+      <RouteEditor 
+        v-model="modelValue.route" 
+        @update:referencedRuleSets="onUpdateReferencedRuleSets"
+      />
     </Panel>
 
-    <div class="flex justify-content-end mt-4">
-      <Button label="Cancel" icon="pi pi-times" severity="secondary" class="mr-2" @click="onCancel" />
+    <div class="flex flex-wrap gap-2 mt-4 justify-content-end">
+      <Button 
+        v-if="isNewProfile"
+        label="Clear Draft" 
+        icon="pi pi-trash" 
+        severity="danger" 
+        outlined
+        @click="onClearDraft"
+        class="mr-auto"
+      />
+      <Button label="Cancel" icon="pi pi-times" severity="secondary" @click="onCancel" />
       <Button label="Save" icon="pi pi-check" @click="onSave" />
     </div>
   </div>
