@@ -1,32 +1,47 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import type { Profile, CreateProfile, UpdateProfile } from '../../schemas/profile';
-import { useUserStore } from './user';
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import type {
+  Profile,
+  CreateProfile,
+  UpdateProfile,
+} from "../../schemas/profile";
+import { useUserStore } from "./user";
 
-export const useProfileStore = defineStore('profile', () => {
+export const useProfileStore = defineStore("profile", () => {
   const profiles = ref<Profile[]>([]);
   const currentProfile = ref<Profile | null>(null);
   const userStore = useUserStore();
 
   async function fetchProfiles() {
-    profiles.value = await userStore.authorizedRequest<Profile[]>('/api/profiles');
+    profiles.value =
+      await userStore.authorizedRequest<Profile[]>("/api/profiles");
   }
 
   async function getProfile(id: string) {
-    currentProfile.value = await userStore.authorizedRequest<Profile>(`/api/profiles/${id}`);
+    currentProfile.value = await userStore.authorizedRequest<Profile>(
+      `/api/profiles/${id}`,
+    );
     return currentProfile.value;
   }
 
+  async function getProfileForEdit(id: string) {
+    return await userStore.authorizedRequest<CreateProfile>(
+      `/api/profiles/${id}?mode=edit`,
+    );
+  }
+
   async function deleteProfile(id: string) {
-    await userStore.authorizedRequest(`/api/profiles/${id}`, { method: 'DELETE' });
+    await userStore.authorizedRequest(`/api/profiles/${id}`, {
+      method: "DELETE",
+    });
     await fetchProfiles();
   }
 
   async function createProfile(profile: CreateProfile) {
-    await userStore.authorizedRequest('/api/profiles', {
-      method: 'POST',
+    await userStore.authorizedRequest("/api/profiles", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(profile),
     });
@@ -35,9 +50,9 @@ export const useProfileStore = defineStore('profile', () => {
 
   async function updateProfile(id: string, profile: UpdateProfile) {
     await userStore.authorizedRequest(`/api/profiles/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(profile),
     });
@@ -49,6 +64,7 @@ export const useProfileStore = defineStore('profile', () => {
     currentProfile,
     fetchProfiles,
     getProfile,
+    getProfileForEdit,
     deleteProfile,
     createProfile,
     updateProfile,
