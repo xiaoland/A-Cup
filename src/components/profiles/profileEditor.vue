@@ -3,10 +3,11 @@ import {
     CreateProfileSchema,
     type CreateProfile,
 } from "../../../schemas/profile";
-import type { SingBoxOutbound } from "../../../schemas/singbox";
+import type { SingBoxOutbound, SingBoxProfile } from "../../../schemas/singbox";
 import type { SingBoxRuleSet } from "../../../schemas/route";
 import { getOutboundNickname } from "../../../schemas/outbound";
 import { useOutboundStore } from "@/stores/outbound";
+import { useRuleSetStore } from "@/stores/ruleset";
 import InboundsEditor from "./inboundsEditor.vue";
 import OutboundsEditor from "./outboundsEditor.vue";
 import DnsEditor from "./dnsEditor.vue";
@@ -15,8 +16,9 @@ import Button from "primevue/button";
 import Panel from "primevue/panel";
 import InputText from "primevue/inputtext";
 import Chips from "primevue/chips";
+import Drawer from "primevue/drawer";
 import JSONEditor from "@/components/common/JSONEditor.vue";
-import { provide, computed } from "vue";
+import { provide, computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useProfileStore } from "@/stores/profile";
 
@@ -31,6 +33,10 @@ const emit = defineEmits(["update:modelValue", "save", "cancel", "clearDraft"]);
 const router = useRouter();
 const profileStore = useProfileStore();
 const outboundStore = useOutboundStore();
+const ruleSetStore = useRuleSetStore();
+
+// Preview drawer state
+const previewVisible = ref(false);
 
 // Provide profileOutbounds to child components with type and nickname information
 const profileOutbounds = computed<
@@ -66,10 +72,18 @@ const profileOutbounds = computed<
 });
 provide("profileOutbounds", profileOutbounds);
 
-// Provide profileRuleSets to child components
-const profileRuleSets = computed<SingBoxRuleSet[]>(
-    () => props.modelValue.route?.rule_set || [],
-);
+// Provide profileRuleSets to child components with tag (RuleSet id as string) and name
+const profileRuleSets = computed<Array<{ tag: string; name: string }>>(() => {
+    const ruleSets = props.modelValue.route?.rule_set || [];
+    return ruleSets.map((singBoxRuleSet) => {
+        const ruleSetId = parseInt(singBoxRuleSet.tag);
+        const ruleSet = ruleSetStore.ruleSets.find((rs) => rs.id === ruleSetId);
+        return {
+            tag: singBoxRuleSet.tag,
+            name: ruleSet?.name || singBoxRuleSet.tag, // fallback to tag if name not found
+        };
+    });
+});
 provide("profileRuleSets", profileRuleSets);
 
 const onUpdateReferencedOutbounds = (value: number[]) => {
@@ -112,6 +126,10 @@ const onCancel = () => {
 const onClearDraft = () => {
     emit("clearDraft");
 };
+
+const onPreview = () => {
+    previewVisible.value = true;
+};
 </script>
 
 <template>
@@ -138,19 +156,6 @@ const onClearDraft = () => {
                     />
                 </div>
             </div>
-        </Panel>
-
-        <Panel
-            header="In JSON"
-            :toggleable="true"
-            :collapsed="true"
-            class="mb-4"
-        >
-            <JSONEditor
-                height="400"
-                :modelValue="modelValue"
-                @update:modelValue="emit('update:modelValue', $event)"
-            />
         </Panel>
 
         <Panel header="Inbounds" :toggleable="true">
@@ -193,5 +198,34 @@ const onClearDraft = () => {
             />
             <Button label="Save" icon="pi pi-check" @click="onSave" />
         </div>
+
+        <!-- Floating Preview Button -->
+        <div class="fixed bottom-12 right-6 z-50">
+            <Button
+                v-tooltip.left="'Preview SingBox JSON'"
+                icon="pi pi-eye"
+                severity="info"
+                rounded
+                size="large"
+                @click="onPreview"
+                class="shadow-lg"
+                aria-label="Preview Profile"
+            />
+        </div>
+
+        <!-- Preview Drawer -->
+        <Drawer
+            v-model:visible="previewVisible"
+            header="SingBox Profile Preview"
+            position="right"
+            class="!w-full md:!w-[600px] lg:!w-[800px]"
+        >
+            <div class="flex flex-col gap-3">
+                <p class="text-surface-600 dark:text-surface-400">
+                    This is how your profile will look in SingBox JSON format.
+                </p>
+                <pre>{{ JSON.stringify(modelValue, null, 2) }}</pre>
+            </div>
+        </Drawer>
     </div>
 </template>
