@@ -94,23 +94,21 @@ const onUpdateReferencedRuleSets = (value: number[]) => {
     props.modelValue.referencedRuleSets = value;
 };
 
-const onSave = async () => {
+const onSave = () => {
     // Validate with schema before saving
     try {
         const validated = CreateProfileSchema.parse(props.modelValue);
 
         if (props.isNewProfile) {
-            await profileStore.createProfile(validated).then(() => {
+            profileStore.createProfile(validated).then(() => {
                 emit("clearDraft");
                 emit("save");
             });
         } else if (props.profileId) {
-            await profileStore
-                .updateProfile(props.profileId, validated)
-                .then(() => {
-                    emit("clearDraft");
-                    emit("save");
-                });
+            profileStore.updateProfile(props.profileId, validated).then(() => {
+                emit("clearDraft");
+                emit("save");
+            });
         }
     } catch (error) {
         console.error("Profile validation error:", error);

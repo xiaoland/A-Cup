@@ -75,7 +75,7 @@ function addNormalOutbound() {
         ...props.modelValue,
         {
             tag: "",
-            type: "direct",
+            type: "vless",
         } as SingBoxOutbound,
     ];
     emit("update:modelValue", newOutbounds);
