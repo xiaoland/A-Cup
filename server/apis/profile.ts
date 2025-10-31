@@ -45,6 +45,11 @@ profileRouter.post("/", zValidator("json", CreateProfileSchema), async (c) => {
   await c.env.R2.put(
     `profiles/${profileId}.json`,
     JSON.stringify(singBoxProfile),
+    {
+      HTTPMetadata: {
+        "Content-Type": "application/json",
+      },
+    },
   );
 
   return c.json(insertedProfile, 201);
@@ -130,7 +135,11 @@ profileRouter.put(
       .where(eq(profiles.id, id));
 
     const singBoxProfile = exportProfileCreateToSingBox(body);
-    await c.env.R2.put(`profiles/${id}.json`, JSON.stringify(singBoxProfile));
+    await c.env.R2.put(`profiles/${id}.json`, JSON.stringify(singBoxProfile), {
+      HTTPMetadata: {
+        "Content-Type": "application/json",
+      },
+    });
 
     return c.body(null, 204);
   },
