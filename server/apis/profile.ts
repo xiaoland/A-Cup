@@ -46,7 +46,7 @@ profileRouter.post("/", zValidator("json", CreateProfileSchema), async (c) => {
     `profiles/${profileId}.json`,
     JSON.stringify(singBoxProfile),
     {
-      HTTPMetadata: {
+      httpMetadata: {
         "Content-Type": "application/json",
       },
     },
@@ -136,7 +136,7 @@ profileRouter.put(
 
     const singBoxProfile = exportProfileCreateToSingBox(body);
     await c.env.R2.put(`profiles/${id}.json`, JSON.stringify(singBoxProfile), {
-      HTTPMetadata: {
+      httpMetadata: {
         "Content-Type": "application/json",
       },
     });
