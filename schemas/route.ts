@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const HeadlessRuleSchema = z.object({
   domain: z.array(z.string()).optional(),
@@ -17,22 +17,22 @@ export const HeadlessRuleSchema = z.object({
   invert: z.boolean().optional(),
 });
 
-export const SingBoxRuleSetSchema = z.discriminatedUnion('type', [
+export const SingBoxRuleSetSchema = z.discriminatedUnion("type", [
   z.object({
-    type: z.literal('inline'),
+    type: z.literal("inline"),
     tag: z.string(),
     rules: z.array(HeadlessRuleSchema),
   }),
   z.object({
-    type: z.literal('local'),
+    type: z.literal("local"),
     tag: z.string(),
-    format: z.enum(['source', 'binary']).optional(),
+    format: z.enum(["source", "binary"]).optional(),
     path: z.string(),
   }),
   z.object({
-    type: z.literal('remote'),
+    type: z.literal("remote"),
     tag: z.string(),
-    format: z.enum(['source', 'binary']).optional(),
+    format: z.enum(["source", "binary"]).optional(),
     url: z.string(),
     download_detour: z.string().optional(),
     update_interval: z.string().optional(),
@@ -43,32 +43,33 @@ export type SingBoxRuleSet = z.infer<typeof SingBoxRuleSetSchema>;
 
 export const RouteRuleAction = z
   .object({
-    action: z.enum(['route', 'reject', 'hijack-dns']),
+    action: z.enum(["route", "reject", "hijack-dns"]),
     outbound: z.string().optional(),
     server: z.string().optional(),
   })
   .refine(
     (data) => {
-      if (data.action === 'route') {
+      if (data.action === "route") {
         return data.outbound !== undefined;
       }
       return true;
     },
-    { message: 'Outbound is required for route action' },
+    { message: "Outbound is required for route action" },
   )
   .refine(
     (data) => {
-      if (data.action === 'hijack-dns') {
+      if (data.action === "hijack-dns") {
         return data.server !== undefined;
       }
       return true;
     },
-    { message: 'Server is required for hijack-dns action' },
+    { message: "Server is required for hijack-dns action" },
   );
 
 export const RouteRuleSchema = z.intersection(
   RouteRuleAction,
   z.object({
+    name: z.string().optional(),
     rule_set: z.array(z.string()).optional(),
     domain: z.array(z.string()).optional(),
     domain_suffix: z.array(z.string()).optional(),

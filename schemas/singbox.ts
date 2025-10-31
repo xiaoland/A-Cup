@@ -1,24 +1,26 @@
-import { z } from 'zod';
-import { DnsSchema } from './dns';
-import { InboundSchema } from './inbound';
-import { RouteSchema } from './route';
-import { SingBoxTlsSchema } from './tls';
-import { SingBoxMultiplexSchema } from './multiplex';
-import { SingBoxTransportSchema } from './transport';
-import { DialFieldsSchema } from './shared';
+import { z } from "zod";
+import { DnsSchema } from "./dns";
+import { InboundSchema } from "./inbound";
+import { RouteSchema } from "./route";
+import { SingBoxTlsSchema } from "./tls";
+import { SingBoxMultiplexSchema } from "./multiplex";
+import { SingBoxTransportSchema } from "./transport";
+import { DialFieldsSchema } from "./shared";
 
 // SingBox Outbound Schemas
-const SingBoxBaseOutboundSchema = z.object({
-  tag: z.string(),
-}).merge(DialFieldsSchema);
+const SingBoxBaseOutboundSchema = z
+  .object({
+    tag: z.string(),
+  })
+  .merge(DialFieldsSchema);
 
 const SingBoxVlessOutboundSchema = SingBoxBaseOutboundSchema.extend({
-  type: z.literal('vless'),
+  type: z.literal("vless"),
   server: z.string(),
   server_port: z.int(),
   uuid: z.uuid(),
   flow: z.string().optional(),
-  network: z.enum(['tcp', 'udp']).optional(),
+  network: z.enum(["tcp", "udp"]).optional(),
   tls: SingBoxTlsSchema.optional(),
   packet_encoding: z.string().optional(),
   multiplex: SingBoxMultiplexSchema.optional(),
@@ -26,7 +28,7 @@ const SingBoxVlessOutboundSchema = SingBoxBaseOutboundSchema.extend({
 });
 
 const SingBoxVmessOutboundSchema = SingBoxBaseOutboundSchema.extend({
-  type: z.literal('vmess'),
+  type: z.literal("vmess"),
   server: z.string(),
   server_port: z.int(),
   uuid: z.uuid(),
@@ -38,7 +40,7 @@ const SingBoxVmessOutboundSchema = SingBoxBaseOutboundSchema.extend({
 });
 
 const SingBoxShadowsocksOutboundSchema = SingBoxBaseOutboundSchema.extend({
-  type: z.literal('shadowsocks'),
+  type: z.literal("shadowsocks"),
   server: z.string(),
   server_port: z.int(),
   method: z.string(),
@@ -49,7 +51,7 @@ const SingBoxShadowsocksOutboundSchema = SingBoxBaseOutboundSchema.extend({
 });
 
 const SingBoxHysteria2OutboundSchema = SingBoxBaseOutboundSchema.extend({
-  type: z.literal('hysteria2'),
+  type: z.literal("hysteria2"),
   server: z.string(),
   server_port: z.int(),
   password: z.string(),
@@ -61,23 +63,27 @@ const SingBoxHysteria2OutboundSchema = SingBoxBaseOutboundSchema.extend({
 });
 
 export const SelectorOutboundSchema = SingBoxBaseOutboundSchema.extend({
-    type: z.literal('selector'),
-    outbounds: z.array(z.string()).default([]),
-    default: z.string().optional(),
+  type: z.literal("selector"),
+  outbounds: z.array(z.string()).default([]),
+  default: z.string().optional(),
 });
 
 export const UrlTestOutboundSchema = SingBoxBaseOutboundSchema.extend({
-    type: z.literal('urltest'),
-    outbounds: z.array(z.string()).default([]),
-    url: z.string().default('https://www.gstatic.com/generate_204'),
-    interval: z.string().default('5m'),
+  type: z.literal("urltest"),
+  outbounds: z.array(z.string()).default([]),
+  url: z.string().default("https://www.gstatic.com/generate_204"),
+  interval: z.string().default("5m"),
 });
 
 export const DirectOutboundSchema = SingBoxBaseOutboundSchema.extend({
-    type: z.literal('direct'),
+  type: z.literal("direct"),
 });
 
-export const SingBoxOutboundSchema = z.discriminatedUnion('type', [
+export function isSpecialOutbound(type: string): boolean {
+  return ["direct", "selector", "urltest"].includes(type);
+}
+
+export const SingBoxOutboundSchema = z.discriminatedUnion("type", [
   SingBoxVlessOutboundSchema,
   SingBoxVmessOutboundSchema,
   SingBoxShadowsocksOutboundSchema,
