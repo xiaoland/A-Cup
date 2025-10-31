@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { watch, computed } from "vue";
 import type { SingBoxOutbound } from "../../../schemas/singbox";
+import { isSpecialOutbound } from "../../../schemas/singbox";
 import HybirdOutboundEditor from "../outbounds/hybirdOutboundEditor.vue";
 import SpecialOutboundEditor from "../outbounds/specialOutboundEditor/specialOutboundEditor.vue";
 import Button from "primevue/button";
@@ -21,19 +22,23 @@ const emit = defineEmits<{
 }>();
 
 const outboundStore = useOutboundStore();
-const normalOutbounds = ref<SingBoxOutbound[]>([]);
-const specialOutbounds = ref<SingBoxOutbound[]>([]);
 
-const combinedOutbounds = computed(() => {
-    return [...normalOutbounds.value, ...specialOutbounds.value].filter(
-        (o) => o !== undefined,
-    ) as SingBoxOutbound[];
+const normalOutbounds = computed(() => {
+    return props.modelValue.filter(
+        (outbound) => !isSpecialOutbound(outbound.type),
+    );
+});
+
+const specialOutbounds = computed(() => {
+    return props.modelValue.filter((outbound) =>
+        isSpecialOutbound(outbound.type),
+    );
 });
 
 // Extract referenced outbound IDs from outbound tags
 const referencedOutbounds = computed<number[]>(() => {
     const referenced: number[] = [];
-    for (const outbound of combinedOutbounds.value) {
+    for (const outbound of props.modelValue) {
         const outboundId = parseInt(outbound.tag);
         if (!isNaN(outboundId) && !referenced.includes(outboundId)) {
             referenced.push(outboundId);
@@ -58,14 +63,6 @@ function getOutboundHeaderText(singBoxOutbound: SingBoxOutbound): string {
 }
 
 watch(
-    combinedOutbounds,
-    (newValue) => {
-        emit("update:modelValue", newValue);
-    },
-    { deep: true },
-);
-
-watch(
     referencedOutbounds,
     (newValue) => {
         emit("update:referencedOutbounds", newValue);
@@ -74,26 +71,81 @@ watch(
 );
 
 function addNormalOutbound() {
-    normalOutbounds.value.push({
-        tag: "",
-        type: "direct",
-    } as SingBoxOutbound);
+    const newOutbounds = [
+        ...props.modelValue,
+        {
+            tag: "",
+            type: "direct",
+        } as SingBoxOutbound,
+    ];
+    emit("update:modelValue", newOutbounds);
 }
 
 function addSpecialOutbound() {
-    specialOutbounds.value.push({
-        tag: `special-outbound.${specialOutbounds.value.length + 1}`,
-    } as SingBoxOutbound);
+    const newOutbounds = [
+        ...props.modelValue,
+        {
+            tag: `special-outbound.${specialOutbounds.value.length + 1}`,
+            type: "direct",
+        } as SingBoxOutbound,
+    ];
+    emit("update:modelValue", newOutbounds);
 }
 
 function removeNormalOutbound(index: number) {
-    normalOutbounds.value.splice(index, 1);
-    emit("update:modelValue", combinedOutbounds.value);
+    const normalIndex = props.modelValue.findIndex(
+        (outbound) =>
+            !isSpecialOutbound(outbound.type) &&
+            props.modelValue
+                .filter((o) => !isSpecialOutbound(o.type))
+                .indexOf(outbound) === index,
+    );
+    if (normalIndex !== -1) {
+        const newOutbounds = props.modelValue.filter(
+            (_, i) => i !== normalIndex,
+        );
+        emit("update:modelValue", newOutbounds);
+    }
 }
 
 function removeSpecialOutbound(index: number) {
-    specialOutbounds.value.splice(index, 1);
-    emit("update:modelValue", combinedOutbounds.value);
+    const specialIndex = props.modelValue.findIndex(
+        (outbound) =>
+            isSpecialOutbound(outbound.type) &&
+            props.modelValue
+                .filter((o) => isSpecialOutbound(o.type))
+                .indexOf(outbound) === index,
+    );
+    if (specialIndex !== -1) {
+        const newOutbounds = props.modelValue.filter(
+            (_, i) => i !== specialIndex,
+        );
+        emit("update:modelValue", newOutbounds);
+    }
+}
+
+function updateNormalOutbound(index: number, value: SingBoxOutbound) {
+    const normalOutboundsList = normalOutbounds.value;
+    const targetOutbound = normalOutboundsList[index];
+    const actualIndex = props.modelValue.indexOf(targetOutbound);
+
+    if (actualIndex !== -1) {
+        const newOutbounds = [...props.modelValue];
+        newOutbounds[actualIndex] = value;
+        emit("update:modelValue", newOutbounds);
+    }
+}
+
+function updateSpecialOutbound(index: number, value: SingBoxOutbound) {
+    const specialOutboundsList = specialOutbounds.value;
+    const targetOutbound = specialOutboundsList[index];
+    const actualIndex = props.modelValue.indexOf(targetOutbound);
+
+    if (actualIndex !== -1) {
+        const newOutbounds = [...props.modelValue];
+        newOutbounds[actualIndex] = value;
+        emit("update:modelValue", newOutbounds);
+    }
 }
 </script>
 
@@ -133,7 +185,12 @@ function removeSpecialOutbound(index: number) {
                             label="Remove"
                         />
                     </div>
-                    <HybirdOutboundEditor v-model="normalOutbounds[index]" />
+                    <HybirdOutboundEditor
+                        :model-value="normalOutbounds[index]"
+                        @update:model-value="
+                            (value) => updateNormalOutbound(index, value)
+                        "
+                    />
                 </AccordionContent>
             </AccordionPanel>
         </Accordion>
@@ -158,7 +215,12 @@ function removeSpecialOutbound(index: number) {
                             label="Remove"
                         />
                     </div>
-                    <SpecialOutboundEditor v-model="specialOutbounds[index]" />
+                    <SpecialOutboundEditor
+                        :model-value="specialOutbounds[index]"
+                        @update:model-value="
+                            (value) => updateSpecialOutbound(index, value)
+                        "
+                    />
                 </AccordionContent>
             </AccordionPanel>
         </Accordion>
