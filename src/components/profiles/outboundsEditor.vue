@@ -74,7 +74,10 @@ watch(
 );
 
 function addNormalOutbound() {
-    normalOutbounds.value.push({} as SingBoxOutbound);
+    normalOutbounds.value.push({
+        tag: "",
+        type: "direct",
+    } as SingBoxOutbound);
 }
 
 function addSpecialOutbound() {
