@@ -5,6 +5,8 @@ import {
 } from "../../../schemas/profile";
 import type { SingBoxOutbound } from "../../../schemas/singbox";
 import type { SingBoxRuleSet } from "../../../schemas/route";
+import { getOutboundNickname } from "../../../schemas/outbound";
+import { useOutboundStore } from "@/stores/outbound";
 import InboundsEditor from "./inboundsEditor.vue";
 import OutboundsEditor from "./outboundsEditor.vue";
 import DnsEditor from "./dnsEditor.vue";
@@ -28,11 +30,40 @@ const emit = defineEmits(["update:modelValue", "save", "cancel", "clearDraft"]);
 
 const router = useRouter();
 const profileStore = useProfileStore();
+const outboundStore = useOutboundStore();
 
-// Provide profileOutbounds to child components
-const profileOutbounds = computed<SingBoxOutbound[]>(
-    () => props.modelValue.outbounds || [],
-);
+// Provide profileOutbounds to child components with type and nickname information
+const profileOutbounds = computed<
+    Array<{
+        type: "common" | "special";
+        tag: string;
+        nickname?: string;
+        outbound: SingBoxOutbound;
+    }>
+>(() => {
+    const outbounds = props.modelValue.outbounds || [];
+    return outbounds.map((outbound) => {
+        const outboundId = parseInt(outbound.tag);
+        const isCommon = !isNaN(outboundId);
+
+        let nickname: string | undefined;
+        if (isCommon) {
+            const commonOutbound = outboundStore.outbounds.find(
+                (o) => o.id === outboundId,
+            );
+            if (commonOutbound) {
+                nickname = getOutboundNickname(commonOutbound);
+            }
+        }
+
+        return {
+            type: isCommon ? "common" : "special",
+            tag: outbound.tag,
+            nickname,
+            outbound,
+        };
+    });
+});
 provide("profileOutbounds", profileOutbounds);
 
 // Provide profileRuleSets to child components

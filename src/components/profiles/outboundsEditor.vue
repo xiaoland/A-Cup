@@ -9,6 +9,7 @@ import AccordionPanel from "primevue/accordionpanel";
 import AccordionHeader from "primevue/accordionheader";
 import AccordionContent from "primevue/accordioncontent";
 import { useOutboundStore } from "@/stores/outbound";
+import { getOutboundNickname } from "../../../schemas/outbound";
 
 const props = defineProps<{
     modelValue: SingBoxOutbound[];
@@ -53,25 +54,7 @@ function getOutboundHeaderText(singBoxOutbound: SingBoxOutbound): string {
         return `Outbound #${outboundId}`;
     }
 
-    const parts: string[] = [];
-
-    if (outbound.name) {
-        parts.push(outbound.name);
-    }
-
-    if (outbound.region) {
-        parts.push(outbound.region);
-    }
-
-    if (outbound.provider) {
-        parts.push(outbound.provider);
-    }
-
-    if (outbound.type) {
-        parts.push(`[${outbound.type}]`);
-    }
-
-    return parts.length > 0 ? parts.join(" - ") : `Outbound #${outboundId}`;
+    return getOutboundNickname(outbound);
 }
 
 watch(
