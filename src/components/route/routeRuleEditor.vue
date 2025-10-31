@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { RouteRule } from "../../../schemas/route";
-import InputText from "primevue/inputtext";
 import Select from "primevue/select";
 import Fieldset from "primevue/fieldset";
 import SingBoxOutboundPicker from "@/components/outbounds/singBoxOutboundPicker.vue";
 import RuleConditionsEditor from "@/components/common/RuleConditionsEditor.vue";
+import InputText from "primevue/inputtext";
 
 const props = defineProps<{
     modelValue: RouteRule;
@@ -42,18 +42,6 @@ const onActionChange = (newAction: "route" | "reject" | "hijack-dns") => {
 
 <template>
     <div class="route-rule-editor">
-        <div class="formgrid grid mb-6">
-            <div class="field col-12">
-                <label for="rule-name">Name (Optional)</label>
-                <InputText
-                    id="rule-name"
-                    v-model="rule.name"
-                    class="w-full mt-2"
-                    placeholder="Enter a descriptive name for this rule which will be displayed in the accordion header"
-                />
-            </div>
-        </div>
-
         <Fieldset legend="Rule Conditions" :toggleable="true">
             <RuleConditionsEditor v-model="rule" />
         </Fieldset>

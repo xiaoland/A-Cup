@@ -111,12 +111,7 @@ const onAdvancedChange = (newValue: any) => {
 };
 
 const getRuleLabel = (rule: RouteRule, index: number): string => {
-    // Use the name field if available
-    if (rule.name) {
-        return rule.name;
-    }
-
-    // Fallback to auto-generated labels
+    // Auto-generated labels based on action
     if (rule.action === "route" && rule.outbound) {
         return `Rule ${index + 1}: → ${rule.outbound}`;
     }

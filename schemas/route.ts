@@ -69,7 +69,6 @@ export const RouteRuleAction = z
 export const RouteRuleSchema = z.intersection(
   RouteRuleAction,
   z.object({
-    name: z.string().optional(),
     rule_set: z.array(z.string()).optional(),
     domain: z.array(z.string()).optional(),
     domain_suffix: z.array(z.string()).optional(),
