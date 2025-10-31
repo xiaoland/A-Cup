@@ -66,8 +66,8 @@ export function exportOutboundToSingBox(outbound: Outbound) {
     server: outbound.server,
     server_port: outbound.server_port,
     ...outbound.credential,
-    ...outbound.tls,
-    ...outbound.mux,
+    tls: outbound.tls,
+    multiplex: outbound.mux,
     ...outbound.other,
   };
 }
