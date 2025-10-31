@@ -52,7 +52,11 @@ const outboundOptions = computed(() => {
 const selectedTag = computed({
     get: () => props.modelValue,
     set: (tag: string | undefined) => {
-        emit("update:modelValue", tag);
+        if (!tag) {
+            emit("update:modelValue", undefined);
+        } else {
+            emit("update:modelValue", tag);
+        }
     },
 });
 </script>
