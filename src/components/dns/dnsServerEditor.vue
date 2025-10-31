@@ -1,17 +1,21 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { DNSServerSchema, type DNSServer } from "../../../schemas/dns";
 import { TLSClientFieldsSchema } from "../../../schemas/shared";
 import DialFieldsEditor from "../common/DialFieldsEditor.vue";
 import TLSClientFieldsEditor from "../common/TLSClientFieldsEditor.vue";
+import ImportDnsServer from "./importDnsServer.vue";
 import InputText from "primevue/inputtext";
 import Select from "primevue/select";
+import Button from "primevue/button";
 
 const props = defineProps<{
     modelValue: DNSServer;
 }>();
 
 const emit = defineEmits(["update:modelValue"]);
+
+const isImportDialogVisible = ref(false);
 
 const server = computed({
     get: () => props.modelValue,
@@ -54,10 +58,30 @@ const onTypeChange = (newType: "udp" | "tls" | "https") => {
         console.error("Failed to parse DNS server configuration:", error);
     }
 };
+
+function showImportDialog() {
+    isImportDialogVisible.value = true;
+}
+
+function onParsed(parsedServer: DNSServer) {
+    server.value = { ...parsedServer };
+}
 </script>
 
 <template>
     <div class="flex flex-col gap-4">
+        <ImportDnsServer
+            v-model:visible="isImportDialogVisible"
+            @parsed="onParsed"
+        />
+        <div class="flex justify-end mb-2">
+            <Button
+                label="Import"
+                icon="pi pi-upload"
+                @click="showImportDialog"
+                class="p-button-secondary p-button-sm"
+            />
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="tag" class="block mb-2 font-medium">Tag</label>
