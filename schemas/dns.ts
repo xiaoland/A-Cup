@@ -1,12 +1,11 @@
-
-import { z } from 'zod';
-import { DialFieldsSchema, TLSClientFieldsSchema } from './shared';
+import { z } from "zod";
+import { DialFieldsSchema, TLSClientFieldsSchema } from "./shared";
 
 const DNSRuleActionRouteSchema = z.object({
-  action: z.literal('route').optional(),
+  action: z.literal("route").optional(),
   server: z.string(),
   strategy: z
-    .enum(['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only'])
+    .enum(["prefer_ipv4", "prefer_ipv6", "ipv4_only", "ipv6_only"])
     .optional(),
   disable_cache: z.boolean().optional(),
   rewrite_ttl: z.int().optional(),
@@ -14,27 +13,27 @@ const DNSRuleActionRouteSchema = z.object({
 });
 
 const DNSRuleActionRouteOptionsSchema = z.object({
-  action: z.literal('route-options'),
+  action: z.literal("route-options"),
   disable_cache: z.boolean().optional(),
   rewrite_ttl: z.int().optional(),
   client_subnet: z.string().optional(),
 });
 
 const DNSRuleActionRejectSchema = z.object({
-  action: z.literal('reject'),
-  method: z.enum(['default', 'drop']).optional(),
+  action: z.literal("reject"),
+  method: z.enum(["default", "drop"]).optional(),
   no_drop: z.boolean().optional(),
 });
 
 const DNSRuleActionPredefinedSchema = z.object({
-  action: z.literal('predefined'),
+  action: z.literal("predefined"),
   rcode: z.string().optional(),
   answer: z.array(z.string()).optional(),
   ns: z.array(z.string()).optional(),
   extra: z.array(z.string()).optional(),
 });
 
-export const DNSRuleActionSchema = z.discriminatedUnion('action', [
+export const DNSRuleActionSchema = z.discriminatedUnion("action", [
   DNSRuleActionRouteSchema,
   DNSRuleActionRouteOptionsSchema,
   DNSRuleActionRejectSchema,
@@ -46,14 +45,14 @@ export const DNSRuleSchema = z.intersection(
     inbound: z.array(z.string()).optional(),
     ip_version: z.int().optional(),
     query_type: z.array(z.union([z.string(), z.number()])).optional(),
-    network: z.enum(['tcp', 'udp']).optional(),
+    network: z.enum(["tcp", "udp"]).optional(),
     domain: z.array(z.string()).optional(),
     domain_suffix: z.array(z.string()).optional(),
     domain_keyword: z.array(z.string()).optional(),
     domain_regex: z.array(z.string()).optional(),
     source_ip_cidr: z.array(z.string()).optional(),
   }),
-  DNSRuleActionSchema
+  DNSRuleActionSchema,
 );
 
 export type DNSRule = z.infer<typeof DNSRuleSchema>;
@@ -63,23 +62,27 @@ const DNSServerBaseSchema = z.object({
 });
 
 const DNSServerUDPSchema = DNSServerBaseSchema.extend({
-  type: z.literal('udp'),
+  type: z.literal("udp"),
   address: z.string(),
 }).merge(DialFieldsSchema);
 
 const DNSServerTLSSchema = DNSServerBaseSchema.extend({
-  type: z.literal('tls'),
-  address: z.string(),
+  type: z.literal("tls"),
+  server: z.string(),
+  server_port: z.number().int().default(853),
   tls: TLSClientFieldsSchema.optional(),
 }).merge(DialFieldsSchema);
 
 const DNSServerHTTPSSchema = DNSServerBaseSchema.extend({
-  type: z.literal('https'),
-  address: z.string(),
+  type: z.literal("https"),
+  server: z.string(),
+  server_port: z.number().int().default(443),
+  path: z.string().optional(),
+  headers: z.record(z.string(), z.string()).optional(),
   tls: TLSClientFieldsSchema.optional(),
 }).merge(DialFieldsSchema);
 
-export const DNSServerSchema = z.discriminatedUnion('type', [
+export const DNSServerSchema = z.discriminatedUnion("type", [
   DNSServerUDPSchema,
   DNSServerTLSSchema,
   DNSServerHTTPSSchema,
@@ -92,7 +95,7 @@ export const DnsSchema = z.object({
   rules: z.array(DNSRuleSchema),
   final: z.string().optional(),
   strategy: z
-    .enum(['prefer_ipv4', 'prefer_ipv6', 'ipv4_only', 'ipv6_only'])
+    .enum(["prefer_ipv4", "prefer_ipv6", "ipv4_only", "ipv6_only"])
     .optional(),
 });
 

@@ -76,7 +76,8 @@ describe("importDnsServer.vue", () => {
     const tlsServer = JSON.stringify({
       tag: "cloudflare-tls",
       type: "tls",
-      address: "tls://1.1.1.1",
+      server: "1.1.1.1",
+      server_port: 853,
       tls: {
         enabled: true,
       },
@@ -90,7 +91,8 @@ describe("importDnsServer.vue", () => {
     expect(emitted![0][0]).toMatchObject({
       tag: "cloudflare-tls",
       type: "tls",
-      address: "tls://1.1.1.1",
+      server: "1.1.1.1",
+      server_port: 853,
     });
   });
 
@@ -99,7 +101,9 @@ describe("importDnsServer.vue", () => {
     const httpsServer = JSON.stringify({
       tag: "google-https",
       type: "https",
-      address: "https://dns.google/dns-query",
+      server: "dns.google",
+      server_port: 443,
+      path: "/dns-query",
       tls: {
         enabled: true,
       },
@@ -113,7 +117,9 @@ describe("importDnsServer.vue", () => {
     expect(emitted![0][0]).toMatchObject({
       tag: "google-https",
       type: "https",
-      address: "https://dns.google/dns-query",
+      server: "dns.google",
+      server_port: 443,
+      path: "/dns-query",
     });
   });
 

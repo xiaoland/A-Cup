@@ -6,6 +6,7 @@ import DialFieldsEditor from "../common/DialFieldsEditor.vue";
 import TLSClientFieldsEditor from "../common/TLSClientFieldsEditor.vue";
 import ImportDnsServer from "./importDnsServer.vue";
 import InputText from "primevue/inputtext";
+import InputNumber from "primevue/inputnumber";
 import Select from "primevue/select";
 import Button from "primevue/button";
 
@@ -37,14 +38,17 @@ const onTypeChange = (newType: "udp" | "tls" | "https") => {
             server.value = DNSServerSchema.parse({
                 tag,
                 type: "tls",
-                address: "tls://8.8.8.8",
+                server: "8.8.8.8",
+                server_port: 853,
                 tls: TLSClientFieldsSchema.parse({ enabled: true }),
             });
         } else if (newType === "https") {
             server.value = DNSServerSchema.parse({
                 tag,
                 type: "https",
-                address: "https://dns.google/dns-query",
+                server: "dns.google",
+                server_port: 443,
+                path: "/dns-query",
                 tls: TLSClientFieldsSchema.parse({ enabled: true }),
             });
         } else {
@@ -105,10 +109,48 @@ function onParsed(parsedServer: DNSServer) {
             </div>
         </div>
 
-        <div v-if="server.type">
+        <div v-if="server.type === 'udp'">
             <label for="address" class="block mb-2 font-medium">Address</label>
             <InputText id="address" v-model="server.address" class="w-full" />
         </div>
+
+        <template v-if="server.type === 'tls' || server.type === 'https'">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="server" class="block mb-2 font-medium"
+                        >Server</label
+                    >
+                    <InputText
+                        id="server"
+                        v-model="server.server"
+                        class="w-full"
+                    />
+                </div>
+                <div>
+                    <label for="server_port" class="block mb-2 font-medium"
+                        >Server Port</label
+                    >
+                    <InputNumber
+                        id="server_port"
+                        v-model="server.server_port"
+                        :use-grouping="false"
+                        class="w-full"
+                    />
+                </div>
+            </div>
+
+            <div v-if="server.type === 'https'" class="mt-4">
+                <label for="path" class="block mb-2 font-medium"
+                    >Path (optional)</label
+                >
+                <InputText
+                    id="path"
+                    v-model="server.path"
+                    placeholder="/dns-query"
+                    class="w-full"
+                />
+            </div>
+        </template>
 
         <template
             v-if="
