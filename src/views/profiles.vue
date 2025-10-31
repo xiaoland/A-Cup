@@ -31,6 +31,27 @@ const deleteProfile = async (id: string) => {
     profiles.value = profileStore.profiles;
 };
 
+const duplicateProfile = async (id: string) => {
+    try {
+        await profileStore.duplicateProfile(id);
+        profiles.value = profileStore.profiles;
+        toast.add({
+            severity: "success",
+            summary: "Success",
+            detail: "Profile duplicated successfully",
+            life: 3000,
+        });
+    } catch (err) {
+        console.error(err);
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to duplicate profile",
+            life: 3000,
+        });
+    }
+};
+
 const newProfile = () => {
     router.push("/profiles/new");
 };
@@ -83,6 +104,7 @@ const copyUrl = async (id: string) => {
                         icon="pi pi-pencil"
                         class="p-button-rounded p-button-success mr-2"
                         @click="editProfile(slotProps.data.id)"
+                        v-tooltip.top="'Edit Profile'"
                     />
                     <Button
                         icon="pi pi-copy"
@@ -91,9 +113,16 @@ const copyUrl = async (id: string) => {
                         v-tooltip.top="'Copy SingBox URL'"
                     />
                     <Button
+                        icon="pi pi-clone"
+                        class="p-button-rounded p-button-secondary mr-2"
+                        @click="duplicateProfile(slotProps.data.id)"
+                        v-tooltip.top="'Duplicate Profile'"
+                    />
+                    <Button
                         icon="pi pi-trash"
                         class="p-button-rounded p-button-danger"
                         @click="deleteProfile(slotProps.data.id)"
+                        v-tooltip.top="'Delete Profile'"
                     />
                 </template>
             </Column>

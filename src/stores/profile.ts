@@ -59,6 +59,25 @@ export const useProfileStore = defineStore("profile", () => {
     await fetchProfiles();
   }
 
+  async function duplicateProfile(id: string) {
+    const profileToDuplicate = await getProfileForEdit(id);
+
+    // Create a new profile with modified name
+    const duplicatedProfile: CreateProfile = {
+      ...profileToDuplicate,
+      name: `${profileToDuplicate.name} (Copy)`,
+    };
+
+    await userStore.authorizedRequest("/api/profiles", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(duplicatedProfile),
+    });
+    await fetchProfiles();
+  }
+
   return {
     profiles,
     currentProfile,
@@ -68,5 +87,6 @@ export const useProfileStore = defineStore("profile", () => {
     deleteProfile,
     createProfile,
     updateProfile,
+    duplicateProfile,
   };
 });
