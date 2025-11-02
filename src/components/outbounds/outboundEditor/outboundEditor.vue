@@ -16,7 +16,6 @@ import Button from "primevue/button";
 import Fieldset from "primevue/fieldset";
 import InputNumber from "primevue/inputnumber";
 import Textarea from "primevue/textarea";
-import UsersPicker from "../../user/usersPicker.vue";
 import JSONEditor from "../../common/JSONEditor.vue";
 
 import VlessForm from "./vlessForm.vue";
@@ -207,20 +206,6 @@ function cancel() {
             class="mt-4"
         >
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="readableBy">Readable By</label>
-                    <UsersPicker
-                        id="readableBy"
-                        v-model="localOutbound.readableBy"
-                    />
-                </div>
-                <div>
-                    <label for="writeableBy">Writeable By</label>
-                    <UsersPicker
-                        id="writeableBy"
-                        v-model="localOutbound.writeableBy"
-                    />
-                </div>
                 <div>
                     <label for="tls">TLS</label>
                     <JSONEditor id="tls" v-model="localOutbound.tls" />

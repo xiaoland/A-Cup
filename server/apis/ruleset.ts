@@ -7,45 +7,40 @@ import { authMiddleware } from '../auth';
 export const ruleSetApi = new Hono()
   .use(authMiddleware)
   .get('/', async (c) => {
-    const userId = c.get('userId');
     const ruleSetService = new RuleSetService(c.get('db'));
-    const ruleSets = await ruleSetService.getRuleSets(userId);
+    const ruleSets = await ruleSetService.getRuleSets();
     return c.json(ruleSets);
   })
   .get('/:id', async (c) => {
-    const userId = c.get('userId');
     const ruleSetService = new RuleSetService(c.get('db'));
     const id = parseInt(c.req.param('id'));
-    const ruleSet = await ruleSetService.getRuleSetById(id, userId);
+    const ruleSet = await ruleSetService.getRuleSetById(id);
     if (!ruleSet) {
       return c.notFound();
     }
     return c.json(ruleSet);
   })
   .post('/', zValidator('json', RuleSetSchema), async (c) => {
-    const userId = c.get('userId');
     const ruleSetService = new RuleSetService(c.get('db'));
     const ruleSet = c.req.valid('json');
-    const newRuleSet = await ruleSetService.createRuleSet(ruleSet, userId);
+    const newRuleSet = await ruleSetService.createRuleSet(ruleSet);
     return c.json(newRuleSet, 201);
   })
   .put('/:id', zValidator('json', RuleSetSchema), async (c) => {
-    const userId = c.get('userId');
     const ruleSetService = new RuleSetService(c.get('db'));
     const id = parseInt(c.req.param('id'));
     const ruleSet = c.req.valid('json');
-    const updatedRuleSet = await ruleSetService.updateRuleSet(id, ruleSet, userId);
+    const updatedRuleSet = await ruleSetService.updateRuleSet(id, ruleSet);
     if (!updatedRuleSet) {
       return c.notFound();
     }
     return c.json(updatedRuleSet);
   })
   .delete('/:id', async (c) => {
-    const userId = c.get('userId');
     const ruleSetService = new RuleSetService(c.get('db'));
     const id = parseInt(c.req.param('id'));
     try {
-      await ruleSetService.deleteRuleSet(id, userId);
+      await ruleSetService.deleteRuleSet(id);
       return c.body(null, 204);
     } catch (error) {
       if (error.message === 'Forbidden') {

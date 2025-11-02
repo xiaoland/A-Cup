@@ -8,7 +8,6 @@ export const ProfileSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   tags: z.array(z.string()),
-  createdBy: z.uuid(),
   outbounds: z.array(z.int()),
   rule_sets: z.array(z.int()),
 });

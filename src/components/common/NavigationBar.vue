@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import Menubar from 'primevue/menubar';
 import Button from 'primevue/button';
-import Avatar from 'primevue/avatar';
 
 const router = useRouter();
-const route = useRoute();
 const userStore = useUserStore();
 
 const menuItems = ref([
@@ -34,8 +32,7 @@ const menuItems = ref([
 ]);
 
 const handleLogout = () => {
-  userStore.clearToken();
-  router.push('/user/login');
+  userStore.logout();
 };
 </script>
 
@@ -50,7 +47,6 @@ const handleLogout = () => {
       </template>
       <template #end>
         <div class="flex items-center gap-2">
-          <Avatar icon="pi pi-user" class="mr-2" shape="circle" />
           <Button
             label="Logout"
             icon="pi pi-sign-out"

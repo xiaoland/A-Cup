@@ -15,11 +15,10 @@ export function exportProfileCreateToSingBox(
 export class ProfileService {
   constructor(private db: DrizzleD1Database) {}
 
-  async getProfiles(userId: string) {
+  async getProfiles() {
     const profileList = await this.db
       .select()
-      .from(profiles)
-      .where(eq(profiles.createdBy, userId));
+      .from(profiles);
 
     return profileList.map(p => ({
       ...p,
@@ -29,14 +28,14 @@ export class ProfileService {
     }));
   }
 
-  async getProfileById(id: string, userId: string) {
+  async getProfileById(id: string) {
     const profile = await this.db
       .select()
       .from(profiles)
       .where(eq(profiles.id, id))
       .get();
 
-    if (!profile || profile.createdBy !== userId) {
+    if (!profile) {
       return null;
     }
 
@@ -48,14 +47,14 @@ export class ProfileService {
     };
   }
 
-  async deleteProfile(id: string, userId: string): Promise<boolean> {
+  async deleteProfile(id: string): Promise<boolean> {
     const profile = await this.db
       .select()
       .from(profiles)
       .where(eq(profiles.id, id))
       .get();
 
-    if (!profile || profile.createdBy !== userId) {
+    if (!profile) {
       return false;
     }
 

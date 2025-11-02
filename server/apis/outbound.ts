@@ -8,45 +8,40 @@ import type { HonoEnv } from '../types';
 export const outboundApi = new Hono<HonoEnv>()
   .use(authMiddleware)
   .get('/', async (c) => {
-    const userId = c.get('userId');
     const outboundService = new OutboundService(c.get('db'));
-    const outbounds = await outboundService.getOutbounds(userId);
+    const outbounds = await outboundService.getOutbounds();
     return c.json(outbounds);
   })
   .get('/:id', async (c) => {
-    const userId = c.get('userId');
     const outboundService = new OutboundService(c.get('db'));
     const id = parseInt(c.req.param('id'));
-    const outbound = await outboundService.getOutboundById(id, userId);
+    const outbound = await outboundService.getOutboundById(id);
     if (!outbound) {
       return c.notFound();
     }
     return c.json(outbound);
   })
   .post('/', zValidator('json', OutboundSchema), async (c) => {
-    const userId = c.get('userId');
     const outboundService = new OutboundService(c.get('db'));
     const outbound = c.req.valid('json');
-    const newOutbound = await outboundService.createOutbound(outbound, userId);
+    const newOutbound = await outboundService.createOutbound(outbound);
     return c.json(newOutbound, 201);
   })
   .put('/:id', zValidator('json', OutboundSchema), async (c) => {
-    const userId = c.get('userId');
     const outboundService = new OutboundService(c.get('db'));
     const id = parseInt(c.req.param('id'));
     const outbound = c.req.valid('json');
-    const updatedOutbound = await outboundService.updateOutbound(id, outbound, userId);
+    const updatedOutbound = await outboundService.updateOutbound(id, outbound);
     if (!updatedOutbound) {
       return c.notFound();
     }
     return c.json(updatedOutbound);
   })
   .delete('/:id', async (c) => {
-    const userId = c.get('userId');
     const outboundService = new OutboundService(c.get('db'));
     const id = parseInt(c.req.param('id'));
     try {
-      await outboundService.deleteOutbound(id, userId);
+      await outboundService.deleteOutbound(id);
       return c.body(null, 204);
     } catch (error) {
       if (error instanceof Error && error.message === 'Forbidden') {

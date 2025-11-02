@@ -26,8 +26,6 @@ export const Hysteria2CredentialSchema = z.object({
 
 export const BaseOutboundSchema = z.object({
   id: z.int().optional(),
-  readableBy: z.array(z.uuid()).default([]),
-  writeableBy: z.array(z.uuid()).default([]),
   name: z.string().default(""),
   region: z.string().default(""),
   provider: z.string().default(""),

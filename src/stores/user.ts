@@ -16,6 +16,28 @@ export const useUserStore = defineStore('user', () => {
     localStorage.removeItem('token');
   }
 
+  async function login(password: string) {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Login failed');
+    }
+
+    const data = await response.json();
+    setToken(data.token);
+  }
+
+  function logout() {
+    clearToken();
+    router.push('/login');
+  }
+
   async function authorizedRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
     const headers = new Headers(options.headers);
     if (token.value) {
@@ -26,7 +48,7 @@ export const useUserStore = defineStore('user', () => {
 
     if (response.status === 401) {
       clearToken();
-      router.push('/user/login');
+      router.push('/login');
       throw new Error('Unauthorized');
     }
 
@@ -41,5 +63,5 @@ export const useUserStore = defineStore('user', () => {
     return response.json();
   }
 
-  return { token, setToken, clearToken, authorizedRequest };
+  return { token, setToken, clearToken, login, logout, authorizedRequest };
 });

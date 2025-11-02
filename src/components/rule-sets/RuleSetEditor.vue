@@ -8,7 +8,6 @@ import Select from "primevue/select";
 import Button from "primevue/button";
 import Fieldset from "primevue/fieldset";
 import Textarea from "primevue/textarea";
-import UsersPicker from "../user/usersPicker.vue";
 
 const props = defineProps<{
     modelValue: RuleSet;
@@ -118,30 +117,6 @@ function onParsed(parsedRuleSet: Partial<RuleSet>) {
 
         <Fieldset legend="Content" class="mt-4">
             <Textarea v-model="localRuleSet.content" class="w-full" rows="10" />
-        </Fieldset>
-
-        <Fieldset
-            legend="Permissions"
-            :toggleable="true"
-            :collapsed="true"
-            class="mt-4"
-        >
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label for="readableBy">Readable By</label>
-                    <UsersPicker
-                        id="readableBy"
-                        v-model="localRuleSet.readableBy"
-                    />
-                </div>
-                <div>
-                    <label for="writeableBy">Writeable By</label>
-                    <UsersPicker
-                        id="writeableBy"
-                        v-model="localRuleSet.writeableBy"
-                    />
-                </div>
-            </div>
         </Fieldset>
 
         <div class="flex justify-between mt-4">

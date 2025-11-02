@@ -20,7 +20,6 @@ profileRouter.use(authMiddleware);
 profileRouter.post("/", zValidator("json", CreateProfileSchema), async (c) => {
   const body = c.req.valid("json");
   const db = c.get("db");
-  const userId = c.get("userId");
 
   const profileId = uuidv4();
 
@@ -31,7 +30,6 @@ profileRouter.post("/", zValidator("json", CreateProfileSchema), async (c) => {
       id: profileId,
       name: body.name,
       tags: JSON.stringify(body.tags),
-      createdBy: userId,
       outbounds: JSON.stringify(body.referencedOutbounds),
       rule_sets: JSON.stringify(body.referencedRuleSets),
     })
@@ -56,18 +54,16 @@ profileRouter.post("/", zValidator("json", CreateProfileSchema), async (c) => {
 });
 
 profileRouter.get("/", async (c) => {
-  const userId = c.get("userId");
   const profileService = new ProfileService(c.get("db"));
-  const profiles = await profileService.getProfiles(userId);
-  return c.json(profiles);
+  const profileList = await profileService.getProfiles();
+  return c.json(profileList);
 });
 
 profileRouter.get("/:id", async (c) => {
   const { id } = c.req.param();
-  const userId = c.get("userId");
   const mode = c.req.query("mode");
   const profileService = new ProfileService(c.get("db"));
-  const profile = await profileService.getProfileById(id, userId);
+  const profile = await profileService.getProfileById(id);
 
   if (!profile) {
     return c.json({ message: "Profile not found" }, 404);
@@ -115,10 +111,9 @@ profileRouter.put(
     const { id } = c.req.param();
     const body = c.req.valid("json");
     const db = c.get("db");
-    const userId = c.get("userId");
 
     const profileService = new ProfileService(db);
-    const existingProfile = await profileService.getProfileById(id, userId);
+    const existingProfile = await profileService.getProfileById(id);
 
     if (!existingProfile) {
       return c.json({ message: "Profile not found" }, 404);
@@ -147,10 +142,9 @@ profileRouter.put(
 
 profileRouter.delete("/:id", async (c) => {
   const { id } = c.req.param();
-  const userId = c.get("userId");
   const profileService = new ProfileService(c.get("db"));
 
-  const success = await profileService.deleteProfile(id, userId);
+  const success = await profileService.deleteProfile(id);
 
   if (!success) {
     return c.json({ message: "Profile not found" }, 404);

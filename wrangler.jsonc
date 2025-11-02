@@ -48,8 +48,9 @@
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
-	"vars": { 
+	"vars": {
 		"JWT_SECRET": "your_jwt_secret",
+		"ADMIN_PASSWORD": "your_admin_password",
 		"R2_PUBLIC_URL": "your_bucket_public_domain.r2.dev"
 	},
 

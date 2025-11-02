@@ -5,8 +5,8 @@ import Home from "@/views/Home.vue";
 
 const routes = [
   {
-    path: "/user/login",
-    name: "userLogin",
+    path: "/login",
+    name: "login",
     component: userLogin,
   },
   {
@@ -82,7 +82,7 @@ router.beforeEach((to, from, next) => {
 
   if (requiresAuth && !userStore.token) {
     next({
-      name: "userLogin",
+      name: "login",
       query: { redirect: to.fullPath },
     });
   } else {

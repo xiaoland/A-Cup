@@ -7,7 +7,7 @@ const route = useRoute();
 
 // Hide navigation bar on login page
 const showNavigation = computed(() => {
-    return route.path !== "/user/login";
+    return route.path !== "/login";
 });
 </script>
 

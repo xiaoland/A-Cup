@@ -3,8 +3,6 @@ import { HeadlessRuleSchema, type SingBoxRuleSet } from "./route";
 
 export const RuleSetSchema = z.object({
   id: z.int().optional(),
-  readableBy: z.array(z.uuid()),
-  writeableBy: z.array(z.uuid()),
   name: z.string(),
   type: z.enum(["remote", "inline"]),
   format: z.string().nullable(),

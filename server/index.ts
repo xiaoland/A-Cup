@@ -62,7 +62,7 @@ import { outboundApi } from './apis/outbound';
 import { ruleSetApi } from './apis/ruleset';
 
 // Register module routers
-api.route('/users', userRouter);
+api.route('/', userRouter);
 api.route('/profiles', profileRouter);
 api.route('/outbounds', outboundApi);
 api.route('/rulesets', ruleSetApi);
