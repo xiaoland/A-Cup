@@ -15,32 +15,32 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
 - Modern ECMAScript modules (package.json `type: "module"`)
 
 ### Frontend
-- Framework: Vue 3 (v3.5.17) with Composition API
-- State management: Pinia (v3.0.3)
-- Router: Vue Router v4 (v4.5.1)
-- UI components: PrimeVue (v4.4.1) + @primevue/themes
-- Icons: PrimeIcons (v7.0.0)
+- Framework: Vue 3 with Composition API
+- State management: Pinia
+- Form validation: Zod
+- Router: Vue Router v4 
+- UI components: PrimeVue + @primevue/themes
+- Icons: PrimeIcons
 - CSS / Utility: 
-  - UnoCSS (v66.5.4) with presets (@unocss/preset-uno, transformers for directives and variant groups)
-  - Sass (sass-embedded v1.89.2)
-- JSON Editor: vue3-ts-jsoneditor (v3.1.2) for Monaco-like editing
-- Build / dev server: Vite (v7.0.0) + @vitejs/plugin-vue
+  - UnoCSS with presets (@unocss/preset-uno, transformers for directives and variant groups)
+  - Sass (sass-embedded)
+- Build / dev server: Vite + @vitejs/plugin-vue
 
 ### Backend / Runtime
 - Hosting/runtime: Cloudflare Workers (configured via `wrangler.jsonc`)
   - Uses Node.js compatibility flags (nodejs_compat)
   - Entry point: `server/index.ts`
-- HTTP framework: Hono (v4.10.1) - lightweight web framework
-- Validation: Zod (v4.0.5) + @hono/zod-validator (v0.7.4) + zod-class (v0.0.18)
-- Authentication: jsonwebtoken (v9.0.2) for JWT-based auth
+- HTTP framework: Hono
+- Data model & services: Zod + @hono/zod-validator + zod-class
+- Authentication: jsonwebtoken + @hono/jwt
 - Utilities: 
-  - crypto-js (v4.2.0) for password hashing
-  - uuid (v13.0.0) for unique identifiers
-  - immer (v10.2.0) for immutable state updates
+  - crypto-js for password hashing
+  - uuid for unique identifiers
+  - immer for immutable state updates
 
 ### Database & Storage
-- ORM: Drizzle ORM (drizzle-orm v0.44.2)
-- Migrations: drizzle-kit (v0.31.4)
+- ORM: Drizzle ORM
+- Migrations: drizzle-kit
   - Config: `drizzle.config.ts`
   - Output: `./drizzle/migrations`
   - Script: `pnpm run orm-mig-gen`
@@ -52,9 +52,9 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
   - R2 bucket binding in `wrangler.jsonc`
 
 ### Testing
-- Framework: Vitest (v3.2.4)
-- Frontend testing: @vue/test-utils (v2.4.6) + jsdom (v27.0.1) + @pinia/testing (v0.1.3)
-- Backend testing: @cloudflare/vitest-pool-workers (v0.10.0)
+- Framework: Vitest
+- Frontend testing: @vue/test-utils  + jsdom + @pinia/testing 
+- Backend testing: @cloudflare/vitest-pool-workers
 - Configs: 
   - `vitest.config.frontend.ts` for Vue components
   - `vitest.config.backend.ts` for Hono/Worker code
@@ -71,23 +71,12 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
 
 ### Tooling & Developer Experience
 - Package manager: pnpm
-- Type checking: vue-tsc (v2.2.10) - `pnpm run type-check`
+- Type checking: vue-tsc  - `pnpm run type-check`
 - Dev helpers: 
-  - vite-plugin-vue-devtools (v7.7.7)
-  - @cloudflare/vite-plugin (v1.9.4) for Cloudflare integration
-- Task runner: npm-run-all2 (v8.0.4) - used in scripts (run-p)
-- Runtimes: ts-node (v10.9.2), vite-node (v3.2.4) for running TS scripts
-
-### API Documentation
-- OpenAPI/Swagger: Specs in `openapi/` directory
-  - `openapi.yaml` - main OpenAPI 3.x spec
-  - `viewer.html` - static Redoc viewer
-  - `profile.yaml` - profile-specific endpoints
-  - `spec.json` - generated JSON spec
-- Scripts:
-  - `pnpm run openapi:serve:redoc` - serve spec with Redoc (auto-reload)
-  - `pnpm run openapi:serve:http` - static file server on port 8080
-  - `pnpm run openapi:validate` - validate spec with Swagger CLI
+  - vite-plugin-vue-devtools 
+  - @cloudflare/vite-plugin for Cloudflare integration
+- Task runner: npm-run-all2  - used in scripts (run-p)
+- Runtimes: ts-node, vite-node  for running TS scripts
 
 ### Project Structure
 ```
@@ -139,7 +128,6 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
 ├── drizzle/              # Database migrations
 │   ├── migrations/       # Generated SQL migrations
 │   └── init-user.sql     # Initial user setup
-├── openapi/              # API documentation
 ├── docs/                 # Project documentation
 └── public/               # Static assets
 ```

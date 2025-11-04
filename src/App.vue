@@ -1,19 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import NavigationBar from "@/components/common/NavigationBar.vue";
 
 const route = useRoute();
-
-// Hide navigation bar on login page
-const showNavigation = computed(() => {
-    return route.path !== "/user/login";
-});
 </script>
 
 <template>
     <div id="app">
-        <NavigationBar v-if="showNavigation" />
         <main class="main-content">
             <router-view />
         </main>

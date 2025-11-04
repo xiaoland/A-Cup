@@ -1,100 +1,51 @@
+<template>
+  <div class="edit-profile-view">
+    <h1>Edit Profile</h1>
+    <ProfileEditor v-if="profile" v-model="profile" @save="handleSave" />
+  </div>
+</template>
+
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
-import { useRoute } from "vue-router";
-import { useProfileStore } from "@/stores/profile";
-import ProfileEditor from "@/components/profiles/profileEditor.vue";
-import type { CreateProfile } from "../../schemas/profile";
-import { RouteSchema } from "../../schemas/route";
-import { DnsSchema } from "../../schemas/dns";
-import router from "@/router";
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import ProfileEditor from '@/components/profiles/profileEditor.vue';
+import { useProfileStore } from '@/stores/profile';
+import type { CreateProfile } from '~/schemas/profile';
 
 const route = useRoute();
+const router = useRouter();
 const profileStore = useProfileStore();
 
-// Initialize profile with schema defaults
-const profile = ref<CreateProfile>({
-    name: "",
-    tags: [],
-    referencedOutbounds: [],
-    referencedRuleSets: [],
-    outbounds: [],
-    route: RouteSchema.parse({}),
-    dns: DnsSchema.parse({ servers: [], rules: [] }),
-    inbounds: [],
-});
-
-const isNewProfile = ref(false);
-const profileId = ref<string | undefined>(undefined);
-const DRAFT_PROFILE_KEY = "draft_profile";
+const profile = ref<CreateProfile | null>(null);
 
 onMounted(async () => {
-    const id = route.params.id as string;
-    if (id && id !== "new") {
-        const existingProfile = await profileStore.getProfileForEdit(id);
-        if (existingProfile) {
-            profile.value = existingProfile;
-        }
-        isNewProfile.value = false;
-        profileId.value = id;
-    } else {
-        isNewProfile.value = true;
-        const savedDraft = localStorage.getItem(DRAFT_PROFILE_KEY);
-        if (savedDraft) {
-            profile.value = JSON.parse(savedDraft);
-        }
+  const profileId = route.params.id as string;
+  if (profileId) {
+    try {
+      profile.value = await profileStore.getProfileForEdit(profileId);
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+      // Handle error, maybe redirect
     }
+  }
 });
 
-watch(
-    profile,
-    (newProfile) => {
-        if (isNewProfile.value) {
-            localStorage.setItem(DRAFT_PROFILE_KEY, JSON.stringify(newProfile));
-        }
-    },
-    { deep: true },
-);
-
-const clearDraft = () => {
-    localStorage.removeItem(DRAFT_PROFILE_KEY);
-};
-
-const onClearDraft = () => {
-    localStorage.removeItem(DRAFT_PROFILE_KEY);
-    // Reset profile to initial state using schema defaults
-    profile.value = {
-        name: "",
-        tags: [],
-        referencedOutbounds: [],
-        referencedRuleSets: [],
-        outbounds: [],
-        route: RouteSchema.parse({}),
-        dns: DnsSchema.parse({ servers: [], rules: [] }),
-        inbounds: [],
-    };
-};
-
-const onSave = () => {
-    router.push("/profiles");
-};
-
-const onCancel = () => {
-    router.push("/profiles");
+const handleSave = async (updatedProfile: CreateProfile) => {
+  const profileId = route.params.id as string;
+  if (profileId) {
+    try {
+      await profileStore.updateProfile(profileId, updatedProfile);
+      router.push('/profiles'); // Assuming there's a profiles list route
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+      // Handle error
+    }
+  }
 };
 </script>
 
-<template>
-    <div class="p-4">
-        <h1 class="text-2xl font-bold mb-4">
-            {{ isNewProfile ? "Create Profile" : "Edit Profile" }}
-        </h1>
-        <ProfileEditor
-            v-model="profile"
-            :profile-id="profileId"
-            :is-new-profile="isNewProfile"
-            @save="onSave"
-            @cancel="onCancel"
-            @clear-draft="onClearDraft"
-        />
-    </div>
-</template>
+<style scoped>
+.edit-profile-view {
+  padding: 1rem;
+}
+</style>
