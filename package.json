@@ -12,9 +12,11 @@
     "test": "vitest --config ./vitest.config.backend.ts run && vitest --config ./vitest.config.frontend.ts run",
     "deploy": "pnpm run build && wrangler deploy && wrangler d1 migrations apply a-cup --remote",
     "cf-typegen": "wrangler types",
-    "orm-mig-gen": "drizzle-kit generate"
+    "gen-db-migration": "drizzle-kit generate",
+    "gen-json-schema": "vite-node scripts/gen-json-schema.ts"
   },
   "dependencies": {
+    "@black-duty/sing-box-schema": "^1.12.3",
     "@guolao/vue-monaco-editor": "^1.6.0",
     "@hono/zod-validator": "^0.7.4",
     "@primevue/themes": "^4.4.1",
@@ -28,6 +30,7 @@
     "hono": "^4.10.1",
     "immer": "^10.2.0",
     "jsonwebtoken": "^9.0.2",
+    "monaco-editor": "^0.54.0",
     "pinia": "^3.0.3",
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",
@@ -37,7 +40,7 @@
     "vue-router": "^4.5.1",
     "vue3-ts-jsoneditor": "^3.1.2",
     "zod": "^4.0.5",
-    "zod-class": "^0.0.18"
+    "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.9.4",

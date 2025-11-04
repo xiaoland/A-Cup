@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "LogOptions",
+  "title": "Log",
+  "description": "Log settings for sing-box.",
+  "type": "object",
+  "properties": {
+    "disabled": {
+      "description": "Disable logging, no output after start.",
+      "type": "boolean"
+    },
+    "level": {
+      "description": "Log level. One of: `trace` `debug` `info` `warn` `error` `fatal` `panic`.",
+      "type": "string",
+      "enum": [
+        "trace",
+        "debug",
+        "info",
+        "warn",
+        "error",
+        "fatal",
+        "panic"
+      ]
+    },
+    "output": {
+      "description": "Output file path. Will not write log to console after enable.",
+      "type": "string"
+    },
+    "timestamp": {
+      "description": "Add time to each line.",
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

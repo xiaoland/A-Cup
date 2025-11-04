@@ -1,0 +1,2019 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "RouteOptions",
+  "title": "Route",
+  "type": "object",
+  "properties": {
+    "rules": {
+      "description": "List of Route Rule",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RouteRule"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RouteRule"
+          }
+        }
+      ]
+    },
+    "rule_set": {
+      "description": "List of rule-set",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RuleSet"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuleSet"
+          }
+        }
+      ]
+    },
+    "final": {
+      "description": "Default outbound tag. the first outbound will be used if empty.",
+      "type": "string"
+    },
+    "auto_detect_interface": {
+      "description": "Bind outbound connections to the default NIC by default to prevent routing loops under tun.",
+      "type": "boolean"
+    },
+    "override_android_vpn": {
+      "description": "Accept Android VPN as upstream NIC when `auto_detect_interface` enabled.",
+      "type": "boolean"
+    },
+    "default_interface": {
+      "description": "Bind outbound connections to the specified NIC by default to prevent routing loops under tun.",
+      "type": "string"
+    },
+    "default_mark": {
+      "description": "Set routing mark by default.",
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "default_domain_resolver": {
+      "description": "Set domain resolver to use for resolving domain names.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/DomainResolverOptions"
+        }
+      ]
+    },
+    "default_network_strategy": {
+      "description": "Strategy for selecting network interfaces.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/NetworkStrategy"
+        }
+      ]
+    },
+    "default_network_type": {
+      "description": "Network types to use.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema61"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema61"
+          }
+        }
+      ]
+    },
+    "default_fallback_network_type": {
+      "description": "Fallback network types.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema61"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema61"
+          }
+        }
+      ]
+    },
+    "default_fallback_delay": {
+      "description": "The length of time to wait before spawning a RFC 6555 Fast Fallback connection.",
+      "type": "string"
+    },
+    "geoip": {
+      "$ref": "#/$defs/GeoIPOptions"
+    },
+    "geosite": {
+      "$ref": "#/$defs/GeositeOptions"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "RouteRule": {
+      "id": "RouteRule",
+      "title": "Route Rule",
+      "anyOf": [
+        {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema6"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema7"
+                },
+                "client": {
+                  "$ref": "#/$defs/__schema9"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema12"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema13"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema14"
+                },
+                "geosite": {
+                  "$ref": "#/$defs/__schema15"
+                },
+                "source_geoip": {
+                  "$ref": "#/$defs/__schema16"
+                },
+                "geoip": {
+                  "$ref": "#/$defs/__schema17"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema18"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema19"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema20"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema21"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema22"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema27"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema29"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema42"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema43"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "rule_set_ipcidr_match_source": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "outbound": {
+                  "$ref": "#/$defs/__schema47"
+                },
+                "override_address": {
+                  "$ref": "#/$defs/__schema48"
+                },
+                "override_port": {
+                  "$ref": "#/$defs/__schema49"
+                },
+                "network_strategy": {
+                  "$ref": "#/$defs/__schema50"
+                },
+                "fallback_delay": {
+                  "$ref": "#/$defs/__schema51"
+                },
+                "udp_disable_domain_unmapping": {
+                  "$ref": "#/$defs/__schema52"
+                },
+                "udp_connect": {
+                  "$ref": "#/$defs/__schema53"
+                },
+                "udp_timeout": {
+                  "$ref": "#/$defs/__schema54"
+                },
+                "tls_fragment": {
+                  "$ref": "#/$defs/__schema55"
+                },
+                "tls_fragment_fallback_delay": {
+                  "$ref": "#/$defs/__schema56"
+                },
+                "tls_record_fragment": {
+                  "$ref": "#/$defs/__schema57"
+                }
+              },
+              "required": [
+                "outbound"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema6"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema7"
+                },
+                "client": {
+                  "$ref": "#/$defs/__schema9"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema12"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema13"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema14"
+                },
+                "geosite": {
+                  "$ref": "#/$defs/__schema15"
+                },
+                "source_geoip": {
+                  "$ref": "#/$defs/__schema16"
+                },
+                "geoip": {
+                  "$ref": "#/$defs/__schema17"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema18"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema19"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema20"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema21"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema22"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema27"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema29"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema42"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema43"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "rule_set_ipcidr_match_source": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "action": {
+                  "description": "Action type.",
+                  "type": "string",
+                  "const": "route"
+                },
+                "outbound": {
+                  "$ref": "#/$defs/__schema47"
+                },
+                "override_address": {
+                  "$ref": "#/$defs/__schema48"
+                },
+                "override_port": {
+                  "$ref": "#/$defs/__schema49"
+                },
+                "network_strategy": {
+                  "$ref": "#/$defs/__schema50"
+                },
+                "fallback_delay": {
+                  "$ref": "#/$defs/__schema51"
+                },
+                "udp_disable_domain_unmapping": {
+                  "$ref": "#/$defs/__schema52"
+                },
+                "udp_connect": {
+                  "$ref": "#/$defs/__schema53"
+                },
+                "udp_timeout": {
+                  "$ref": "#/$defs/__schema54"
+                },
+                "tls_fragment": {
+                  "$ref": "#/$defs/__schema55"
+                },
+                "tls_fragment_fallback_delay": {
+                  "$ref": "#/$defs/__schema56"
+                },
+                "tls_record_fragment": {
+                  "$ref": "#/$defs/__schema57"
+                }
+              },
+              "required": [
+                "action",
+                "outbound"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema6"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema7"
+                },
+                "client": {
+                  "$ref": "#/$defs/__schema9"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema12"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema13"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema14"
+                },
+                "geosite": {
+                  "$ref": "#/$defs/__schema15"
+                },
+                "source_geoip": {
+                  "$ref": "#/$defs/__schema16"
+                },
+                "geoip": {
+                  "$ref": "#/$defs/__schema17"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema18"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema19"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema20"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema21"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema22"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema27"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema29"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema42"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema43"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "rule_set_ipcidr_match_source": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "action": {
+                  "description": "Action type.",
+                  "type": "string",
+                  "const": "reject"
+                },
+                "method": {
+                  "description": "`default`: Reply with TCP RST for TCP connections, and ICMP port unreachable for UDP packets. `drop`: Drop packets.",
+                  "type": "string",
+                  "enum": [
+                    "default",
+                    "drop"
+                  ]
+                },
+                "no_drop": {
+                  "description": "If not enabled, `method` will be temporarily overwritten to `drop` after 50 triggers in 30s.",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "action"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema6"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema7"
+                },
+                "client": {
+                  "$ref": "#/$defs/__schema9"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema12"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema13"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema14"
+                },
+                "geosite": {
+                  "$ref": "#/$defs/__schema15"
+                },
+                "source_geoip": {
+                  "$ref": "#/$defs/__schema16"
+                },
+                "geoip": {
+                  "$ref": "#/$defs/__schema17"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema18"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema19"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema20"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema21"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema22"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema27"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema29"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema42"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema43"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "rule_set_ipcidr_match_source": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "action": {
+                  "description": "Action type.",
+                  "type": "string",
+                  "const": "hijack-dns"
+                }
+              },
+              "required": [
+                "action"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema6"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema7"
+                },
+                "client": {
+                  "$ref": "#/$defs/__schema9"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema12"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema13"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema14"
+                },
+                "geosite": {
+                  "$ref": "#/$defs/__schema15"
+                },
+                "source_geoip": {
+                  "$ref": "#/$defs/__schema16"
+                },
+                "geoip": {
+                  "$ref": "#/$defs/__schema17"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema18"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema19"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema20"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema21"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema22"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema27"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema29"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema42"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema43"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "rule_set_ipcidr_match_source": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "action": {
+                  "description": "Action type.",
+                  "type": "string",
+                  "const": "route-options"
+                },
+                "override_address": {
+                  "$ref": "#/$defs/__schema48"
+                },
+                "override_port": {
+                  "$ref": "#/$defs/__schema49"
+                },
+                "network_strategy": {
+                  "$ref": "#/$defs/__schema50"
+                },
+                "fallback_delay": {
+                  "$ref": "#/$defs/__schema51"
+                },
+                "udp_disable_domain_unmapping": {
+                  "$ref": "#/$defs/__schema52"
+                },
+                "udp_connect": {
+                  "$ref": "#/$defs/__schema53"
+                },
+                "udp_timeout": {
+                  "$ref": "#/$defs/__schema54"
+                },
+                "tls_fragment": {
+                  "$ref": "#/$defs/__schema55"
+                },
+                "tls_fragment_fallback_delay": {
+                  "$ref": "#/$defs/__schema56"
+                },
+                "tls_record_fragment": {
+                  "$ref": "#/$defs/__schema57"
+                }
+              },
+              "required": [
+                "action"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema6"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema7"
+                },
+                "client": {
+                  "$ref": "#/$defs/__schema9"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema12"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema13"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema14"
+                },
+                "geosite": {
+                  "$ref": "#/$defs/__schema15"
+                },
+                "source_geoip": {
+                  "$ref": "#/$defs/__schema16"
+                },
+                "geoip": {
+                  "$ref": "#/$defs/__schema17"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema18"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema19"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema20"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema21"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema22"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema27"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema29"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema42"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema43"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "rule_set_ipcidr_match_source": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "action": {
+                  "description": "Performs protocol sniffing on connections.",
+                  "type": "string",
+                  "const": "sniff"
+                },
+                "sniffer": {
+                  "description": "Enabled sniffers. All sniffers enabled by default.",
+                  "$ref": "#/$defs/__schema1"
+                },
+                "timeout": {
+                  "description": "Timeout for sniffing.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "action"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema0"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema3"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema4"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema6"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema7"
+                },
+                "client": {
+                  "$ref": "#/$defs/__schema9"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema11"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema12"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema13"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema14"
+                },
+                "geosite": {
+                  "$ref": "#/$defs/__schema15"
+                },
+                "source_geoip": {
+                  "$ref": "#/$defs/__schema16"
+                },
+                "geoip": {
+                  "$ref": "#/$defs/__schema17"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema18"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema19"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema20"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema21"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema22"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema27"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema29"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema42"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema43"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "rule_set_ipcidr_match_source": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "action": {
+                  "description": "Resolve request destination from domain to IP addresses.",
+                  "type": "string",
+                  "const": "resolve"
+                },
+                "server": {
+                  "description": "Specifies DNS server tag to use instead of selecting through DNS routing.",
+                  "type": "string"
+                },
+                "strategy": {
+                  "description": "DNS resolution strategy.",
+                  "type": "string",
+                  "enum": [
+                    "prefer_ipv4",
+                    "prefer_ipv6",
+                    "ipv4_only",
+                    "ipv6_only"
+                  ]
+                },
+                "disable_cache": {
+                  "description": "Disable cache and save cache in this query.",
+                  "type": "boolean"
+                },
+                "rewrite_ttl": {
+                  "description": "Rewrite TTL in DNS responses.",
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "client_subnet": {
+                  "description": "Append a `edns0-subnet` OPT extra record with the specified IP prefix to every query by default.",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "action"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/LogicalRouteRule"
+        }
+      ]
+    },
+    "__schema0": {
+      "description": "Tags of Inbound.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema1": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema2"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema2"
+          }
+        }
+      ]
+    },
+    "__schema2": {
+      "type": "string"
+    },
+    "__schema3": {
+      "description": "4 or 6. Not limited if empty.",
+      "anyOf": [
+        {
+          "type": "number",
+          "const": 4
+        },
+        {
+          "type": "number",
+          "const": 6
+        }
+      ]
+    },
+    "__schema4": {
+      "description": "`tcp` or `udp`.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema5"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema5"
+          }
+        }
+      ]
+    },
+    "__schema5": {
+      "type": "string",
+      "enum": [
+        "tcp",
+        "udp"
+      ]
+    },
+    "__schema6": {
+      "description": "Username, see each inbound for details.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema7": {
+      "description": "Sniffed protocol.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema8"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema8"
+          }
+        }
+      ]
+    },
+    "__schema8": {
+      "type": "string",
+      "enum": [
+        "http",
+        "tls",
+        "quic",
+        "stun",
+        "dns",
+        "bittorrent",
+        "dtls",
+        "ssh",
+        "rdp",
+        "ntp"
+      ]
+    },
+    "__schema9": {
+      "description": "Sniffed client type.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema10"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema10"
+          }
+        }
+      ]
+    },
+    "__schema10": {
+      "type": "string",
+      "enum": [
+        "chromium",
+        "safari",
+        "firefox",
+        "quic-go"
+      ]
+    },
+    "__schema11": {
+      "description": "Match full domain.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema12": {
+      "description": "Match domain suffix.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema13": {
+      "description": "Match domain using keyword.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema14": {
+      "description": "Match domain using regular expression.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema15": {
+      "description": "Match geosite.",
+      "deprecated": true,
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema16": {
+      "description": "Match source geoip.",
+      "deprecated": true,
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema17": {
+      "description": "Match geoip.",
+      "deprecated": true,
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema18": {
+      "description": "Match source IP CIDR.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema19": {
+      "description": "Match non-public source IP.",
+      "type": "boolean"
+    },
+    "__schema20": {
+      "description": "Match IP CIDR.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema21": {
+      "description": "Match non-public IP.",
+      "type": "boolean"
+    },
+    "__schema22": {
+      "description": "Match source port.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema23"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema23"
+          }
+        }
+      ]
+    },
+    "__schema23": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "__schema24": {
+      "description": "Match source port range.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema25": {
+      "description": "Match port.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema26"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema26"
+          }
+        }
+      ]
+    },
+    "__schema26": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "__schema27": {
+      "description": "Match port range.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema28": {
+      "description": "Match process name.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema29": {
+      "description": "Match process path.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema30": {
+      "description": "Match process path using regular expression.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema31": {
+      "description": "Match android package name.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema32": {
+      "description": "Match user name.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema33": {
+      "description": "Match user id.",
+      "$ref": "#/$defs/__schema34"
+    },
+    "__schema34": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema35"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema35"
+          }
+        }
+      ]
+    },
+    "__schema35": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "__schema36": {
+      "description": "Match Clash mode.",
+      "type": "string"
+    },
+    "__schema37": {
+      "description": "Match network type.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema38"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema38"
+          }
+        }
+      ]
+    },
+    "__schema38": {
+      "type": "string",
+      "enum": [
+        "wifi",
+        "cellular",
+        "ethernet",
+        "other"
+      ]
+    },
+    "__schema39": {
+      "description": "Match if network is considered Metered.",
+      "type": "boolean"
+    },
+    "__schema40": {
+      "description": "Match if network is in Low Data Mode.",
+      "type": "boolean"
+    },
+    "__schema41": {
+      "description": "Match WiFi SSID.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema42": {
+      "description": "Match WiFi BSSID.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema43": {
+      "description": "Match rule-set.",
+      "$ref": "#/$defs/__schema1"
+    },
+    "__schema44": {
+      "description": "Make `ip_cidr` in rule-sets match the source IP.",
+      "type": "boolean"
+    },
+    "__schema45": {
+      "description": "Deprecated in sing-box 1.10.0. Renamed to `rule_set_ip_cidr_match_source`.",
+      "deprecated": true,
+      "type": "boolean"
+    },
+    "__schema46": {
+      "description": "Invert match result.",
+      "type": "boolean"
+    },
+    "__schema47": {
+      "description": "Tag of target outbound.",
+      "type": "string"
+    },
+    "__schema48": {
+      "description": "Override the connection destination address.",
+      "type": "string"
+    },
+    "__schema49": {
+      "description": "Override the connection destination port.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "__schema50": {
+      "description": "See Dial Fields for details.",
+      "type": "string",
+      "enum": [
+        "prefer_ipv4",
+        "prefer_ipv6",
+        "ipv4_only",
+        "ipv6_only"
+      ]
+    },
+    "__schema51": {
+      "description": "See Dial Fields for details.",
+      "type": "string"
+    },
+    "__schema52": {
+      "description": "If enabled, for UDP proxy requests addressed to a domain, the original packet address will be sent in the response instead of the mapped domain.",
+      "type": "boolean"
+    },
+    "__schema53": {
+      "description": "If enabled, attempts to connect UDP connection to the destination instead of listen.",
+      "type": "boolean"
+    },
+    "__schema54": {
+      "description": "Timeout for UDP connections.",
+      "type": "string"
+    },
+    "__schema55": {
+      "description": "Fragment TLS handshakes to bypass firewalls.",
+      "type": "boolean"
+    },
+    "__schema56": {
+      "description": "The fallback value used when TLS segmentation cannot automatically determine the wait time.",
+      "type": "string"
+    },
+    "__schema57": {
+      "description": "Fragment TLS handshake into multiple TLS records to bypass firewalls.",
+      "type": "string"
+    },
+    "LogicalRouteRule": {
+      "id": "LogicalRouteRule",
+      "title": "Logical Route Rule",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Rule type.",
+          "type": "string",
+          "const": "logical"
+        },
+        "mode": {
+          "description": "`and` or `or`.",
+          "type": "string",
+          "enum": [
+            "and",
+            "or"
+          ]
+        },
+        "rules": {
+          "description": "Included rules.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RouteRule"
+          }
+        },
+        "invert": {
+          "description": "Invert match result.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "RuleSet": {
+      "id": "RuleSet",
+      "title": "Rule Set",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/InlineRuleSetOptions"
+        },
+        {
+          "$ref": "#/$defs/LocalRuleSetOptions"
+        },
+        {
+          "$ref": "#/$defs/RemoteRuleSetOptions"
+        }
+      ]
+    },
+    "InlineRuleSetOptions": {
+      "id": "InlineRuleSetOptions",
+      "title": "Inline Rule Set Options",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Rule set type.",
+          "type": "string",
+          "const": "inline"
+        },
+        "tag": {
+          "description": "Tag of rule-set.",
+          "type": "string"
+        },
+        "rules": {
+          "description": "List of Headless Rules.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HeadlessRule"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "rules"
+      ],
+      "additionalProperties": false
+    },
+    "HeadlessRule": {
+      "id": "HeadlessRule",
+      "title": "Headless Rule",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "query_type": {
+              "description": "DNS query type.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/__schema58"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/__schema58"
+                  }
+                }
+              ]
+            },
+            "network": {
+              "description": "`tcp` or `udp`.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/__schema59"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/__schema59"
+                  }
+                }
+              ]
+            },
+            "domain": {
+              "description": "Match full domain.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "domain_suffix": {
+              "description": "Match domain suffix.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "domain_keyword": {
+              "description": "Match domain using keyword.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "domain_regex": {
+              "description": "Match domain using regular expression.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "source_ip_cidr": {
+              "description": "Match source IP CIDR.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "ip_cidr": {
+              "description": "Match IP CIDR.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "source_port": {
+              "description": "Match source port.",
+              "$ref": "#/$defs/__schema34"
+            },
+            "source_port_range": {
+              "description": "Match source port range.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "port": {
+              "description": "Match port.",
+              "$ref": "#/$defs/__schema34"
+            },
+            "port_range": {
+              "description": "Match port range.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "process_name": {
+              "description": "Match process name.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "process_path": {
+              "description": "Match process path.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "process_path_regex": {
+              "description": "Match process path using regular expression.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "package_name": {
+              "description": "Match android package name.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "network_type": {
+              "description": "Match network type.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/__schema61"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/__schema61"
+                  }
+                }
+              ]
+            },
+            "network_is_expensive": {
+              "description": "Match if network is considered Metered.",
+              "type": "boolean"
+            },
+            "network_is_constrained": {
+              "description": "Match if network is in Low Data Mode.",
+              "type": "boolean"
+            },
+            "wifi_ssid": {
+              "description": "Match WiFi SSID.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "wifi_bssid": {
+              "description": "Match WiFi BSSID.",
+              "$ref": "#/$defs/__schema1"
+            },
+            "invert": {
+              "description": "Invert match result.",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "$ref": "#/$defs/LogicalHeadlessRule"
+        }
+      ]
+    },
+    "__schema58": {
+      "description": "DNS query type. Values can be integers or type name strings.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      ]
+    },
+    "__schema59": {
+      "description": "Network protocol, `tcp` or `udp`.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema60"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema60"
+          }
+        }
+      ]
+    },
+    "__schema60": {
+      "type": "string",
+      "enum": [
+        "",
+        "tcp",
+        "udp"
+      ]
+    },
+    "__schema61": {
+      "description": "Network type.",
+      "type": "string",
+      "enum": [
+        "wifi",
+        "cellular",
+        "ethernet",
+        "other"
+      ]
+    },
+    "LogicalHeadlessRule": {
+      "id": "LogicalHeadlessRule",
+      "title": "Logical Headless Rule",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Rule type.",
+          "type": "string",
+          "const": "logical"
+        },
+        "mode": {
+          "description": "`and` or `or`.",
+          "type": "string",
+          "enum": [
+            "and",
+            "or"
+          ]
+        },
+        "rules": {
+          "description": "Included rules.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HeadlessRule"
+          }
+        },
+        "invert": {
+          "description": "Invert match result.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "LocalRuleSetOptions": {
+      "id": "LocalRuleSetOptions",
+      "title": "Local Rule Set Options",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Rule set type.",
+          "type": "string",
+          "const": "local"
+        },
+        "tag": {
+          "description": "Tag of rule-set.",
+          "type": "string"
+        },
+        "format": {
+          "description": "Format of rule-set file, `source` or `binary`.",
+          "type": "string",
+          "enum": [
+            "source",
+            "binary"
+          ]
+        },
+        "path": {
+          "description": "File path of rule-set.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "RemoteRuleSetOptions": {
+      "id": "RemoteRuleSetOptions",
+      "title": "Remote Rule Set Options",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Rule set type.",
+          "type": "string",
+          "const": "remote"
+        },
+        "tag": {
+          "description": "Tag of rule-set.",
+          "type": "string"
+        },
+        "format": {
+          "description": "Format of rule-set file, `source` or `binary`.",
+          "type": "string",
+          "enum": [
+            "source",
+            "binary"
+          ]
+        },
+        "url": {
+          "description": "Download URL of rule-set.",
+          "type": "string"
+        },
+        "download_detour": {
+          "description": "Tag of the outbound to download rule-set.",
+          "type": "string"
+        },
+        "update_interval": {
+          "description": "Update interval of rule-set.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "DomainResolverOptions": {
+      "id": "DomainResolverOptions",
+      "title": "Domain Resolver Options",
+      "type": "object",
+      "properties": {
+        "server": {
+          "description": "Tag of a another server to resolve the domain name in the address.",
+          "type": "string"
+        },
+        "strategy": {
+          "description": "The domain strategy for resolving the domain name in the address.",
+          "type": "string",
+          "enum": [
+            "",
+            "prefer_ipv4",
+            "prefer_ipv6",
+            "ipv4_only",
+            "ipv6_only"
+          ]
+        },
+        "disable_cache": {
+          "description": "Disable cache and save cache in this query.",
+          "type": "boolean"
+        },
+        "rewrite_ttl": {
+          "description": "Rewrite TTL in DNS responses.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "client_subnet": {
+          "description": "Append a `edns0-subnet` OPT extra record with the specified IP prefix to every query by default.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "NetworkStrategy": {
+      "id": "NetworkStrategy",
+      "title": "Network Strategy",
+      "type": "object",
+      "properties": {
+        "network_type": {
+          "description": "Network types to use.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema61"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema61"
+              }
+            }
+          ]
+        },
+        "fallback_network_type": {
+          "description": "Fallback network types.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema61"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema61"
+              }
+            }
+          ]
+        },
+        "fallback_delay": {
+          "description": "The length of time to wait before spawning a RFC 6555 Fast Fallback connection.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GeoIPOptions": {
+      "id": "GeoIPOptions",
+      "title": "GeoIP",
+      "deprecated": true,
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "The path to the sing-geoip database.",
+          "type": "string"
+        },
+        "download_url": {
+          "description": "The download URL of the sing-geoip database.",
+          "type": "string"
+        },
+        "download_detour": {
+          "description": "The tag of the outbound to download the database.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GeositeOptions": {
+      "id": "GeositeOptions",
+      "title": "Geosite",
+      "deprecated": true,
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "The path to the sing-geosite database.",
+          "type": "string"
+        },
+        "download_url": {
+          "description": "The download URL of the sing-geoip database.",
+          "type": "string"
+        },
+        "download_detour": {
+          "description": "The tag of the outbound to download the database.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

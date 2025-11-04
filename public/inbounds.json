@@ -1,0 +1,3085 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/Inbound"
+  },
+  "$defs": {
+    "Inbound": {
+      "id": "Inbound",
+      "title": "Inbound",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DirectInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/MixedInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/SocksInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/HTTPInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/ShadowsocksInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/VMessInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/TrojanInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/NaiveInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/HysteriaInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/ShadowTLSInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/Hysteria2InboundOptions"
+        },
+        {
+          "$ref": "#/$defs/AnyTLSInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/VLESSInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/TUICInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/TunInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/RedirectInboundOptions"
+        },
+        {
+          "$ref": "#/$defs/TProxyInboundOptions"
+        }
+      ]
+    },
+    "DirectInboundOptions": {
+      "id": "DirectInboundOptions",
+      "title": "Direct Inbound",
+      "description": "Direct inbound is a tunnel server.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "direct"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "network": {
+          "description": "Listen network, one of `tcp` `udp`.",
+          "$ref": "#/$defs/__schema0"
+        },
+        "override_address": {
+          "description": "Override the connection destination address.",
+          "type": "string"
+        },
+        "override_port": {
+          "description": "Override the connection destination port.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "__schema0": {
+      "description": "Network protocol, `tcp` or `udp`.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema1"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema1"
+          }
+        }
+      ]
+    },
+    "__schema1": {
+      "type": "string",
+      "enum": [
+        "",
+        "tcp",
+        "udp"
+      ]
+    },
+    "__schema2": {
+      "description": "Listen address.",
+      "type": "string"
+    },
+    "__schema3": {
+      "description": "Listen port.",
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "__schema4": {
+      "description": "The network interface to bind to.",
+      "type": "string"
+    },
+    "__schema5": {
+      "description": "Set netfilter routing mark.",
+      "$ref": "#/$defs/__schema6"
+    },
+    "__schema6": {
+      "description": "Set netfilter routing mark.",
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "__schema7": {
+      "description": "Reuse listener address.",
+      "type": "boolean"
+    },
+    "__schema8": {
+      "description": "Set network namespace, name or path.",
+      "type": "string"
+    },
+    "__schema9": {
+      "description": "TCP keep alive interval.",
+      "type": "string"
+    },
+    "__schema10": {
+      "description": "TCP keep alive interval.",
+      "type": "string"
+    },
+    "__schema11": {
+      "description": "Enable TCP Fast Open.",
+      "type": "boolean"
+    },
+    "__schema12": {
+      "description": "Enable TCP Multi Path.",
+      "type": "boolean"
+    },
+    "__schema13": {
+      "description": "Enable UDP fragmentation.",
+      "type": "boolean"
+    },
+    "__schema14": {
+      "description": "UDP NAT expiration time.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "__schema15": {
+      "description": "Enable sniffing.",
+      "deprecated": true,
+      "type": "boolean"
+    },
+    "__schema16": {
+      "description": "Override the connection destination address with the sniffed domain.",
+      "deprecated": true,
+      "type": "boolean"
+    },
+    "__schema17": {
+      "description": "Timeout for sniffing.",
+      "deprecated": true,
+      "type": "string"
+    },
+    "__schema18": {
+      "description": "If set, the requested domain name will be resolved to IP before routing.",
+      "deprecated": true,
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema19": {
+      "description": "Default domain strategy for resolving the domain names.",
+      "type": "string",
+      "enum": [
+        "",
+        "prefer_ipv4",
+        "prefer_ipv6",
+        "ipv4_only",
+        "ipv6_only"
+      ]
+    },
+    "__schema20": {
+      "description": "If enabled, for UDP proxy requests addressed to a domain, the original packet address will be sent in the response instead of the mapped domain.",
+      "deprecated": true,
+      "type": "boolean"
+    },
+    "__schema21": {
+      "description": "If set, connections will be forwarded to the specified inbound.",
+      "type": "string"
+    },
+    "MixedInboundOptions": {
+      "id": "MixedInboundOptions",
+      "title": "Mixed Inbound",
+      "description": "Mixed inbound is a socks4, socks4a, socks5 and http server.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "mixed"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "users": {
+          "description": "SOCKS and HTTP users.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "username",
+              "password"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "set_system_proxy": {
+          "description": "Automatically set system proxy configuration.",
+          "type": "boolean"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "SocksInboundOptions": {
+      "id": "SocksInboundOptions",
+      "title": "SOCKS Inbound",
+      "description": "SOCKS inbound is a socks4, socks4a, socks5 server.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "socks"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "users": {
+          "description": "SOCKS users.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "username",
+              "password"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "HTTPInboundOptions": {
+      "id": "HTTPInboundOptions",
+      "title": "HTTP Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "http"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "users": {
+          "description": "HTTP users.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "username",
+              "password"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/InboundTLSOptions"
+        },
+        "set_system_proxy": {
+          "description": "Automatically set system proxy configuration.",
+          "type": "boolean"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "InboundTLSOptions": {
+      "id": "InboundTLSOptions",
+      "title": "Inbound TLS Options",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable TLS.",
+          "type": "boolean"
+        },
+        "server_name": {
+          "description": "Used to verify the hostname on the returned certificates unless insecure is given.",
+          "type": "string"
+        },
+        "alpn": {
+          "description": "List of supported application level protocols, in order of preference.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "min_version": {
+          "description": "The minimum TLS version that is acceptable.",
+          "$ref": "#/$defs/__schema24"
+        },
+        "max_version": {
+          "description": "The maximum TLS version that is acceptable.",
+          "$ref": "#/$defs/__schema24"
+        },
+        "cipher_suites": {
+          "description": "A list of enabled TLS 1.0–1.2 cipher suites.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema25"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema25"
+              }
+            }
+          ]
+        },
+        "certificate": {
+          "description": "The server certificate line array, in PEM format.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "certificate_path": {
+          "description": "The path to the server certificate, in PEM format.",
+          "type": "string"
+        },
+        "key": {
+          "description": "The server private key line array, in PEM format.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "key_path": {
+          "description": "The path to the server private key, in PEM format.",
+          "type": "string"
+        },
+        "acme": {
+          "description": "ACME (Automatic Certificate Management Environment) options.",
+          "$ref": "#/$defs/InboundACMEOptions"
+        },
+        "ech": {
+          "description": "ECH (Encrypted Client Hello) options.",
+          "$ref": "#/$defs/InboundECHOptions"
+        },
+        "reality": {
+          "description": "Reality options.",
+          "$ref": "#/$defs/InboundRealityOptions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "__schema22": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema23"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema23"
+          }
+        }
+      ]
+    },
+    "__schema23": {
+      "type": "string"
+    },
+    "__schema24": {
+      "description": "TLS version.",
+      "type": "string",
+      "enum": [
+        "1.0",
+        "1.1",
+        "1.2",
+        "1.3"
+      ]
+    },
+    "__schema25": {
+      "description": "TLS cipher suite.",
+      "type": "string",
+      "enum": [
+        "TLS_RSA_WITH_AES_128_CBC_SHA",
+        "TLS_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_AES_128_GCM_SHA256",
+        "TLS_AES_256_GCM_SHA384",
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+        "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+      ]
+    },
+    "InboundACMEOptions": {
+      "id": "InboundACMEOptions",
+      "title": "Inbound ACME Options",
+      "type": "object",
+      "properties": {
+        "domain": {
+          "description": "List of domain.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "data_directory": {
+          "description": "The directory to store ACME data.",
+          "type": "string"
+        },
+        "default_server_name": {
+          "description": "Server name to use when choosing a certificate if the ClientHello's ServerName field is empty.",
+          "type": "string"
+        },
+        "email": {
+          "description": "The email address to use when creating or selecting an existing ACME server account.",
+          "type": "string"
+        },
+        "provider": {
+          "description": "The ACME CA provider to use.",
+          "type": "string"
+        },
+        "disable_http_challenge": {
+          "description": "Disable all HTTP challenges.",
+          "type": "boolean"
+        },
+        "disable_tls_alpn_challenge": {
+          "description": "Disable all TLS-ALPN challenges.",
+          "type": "boolean"
+        },
+        "alternative_http_port": {
+          "description": "The alternate port to use for the ACME HTTP challenge.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "alternative_tls_port": {
+          "description": "The alternate port to use for the ACME TLS-ALPN challenge.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "external_account": {
+          "description": "EAB (External Account Binding) contains information necessary to bind or map an ACME account to some other account known by the CA.",
+          "type": "object",
+          "properties": {
+            "key_id": {
+              "description": "The key identifier.",
+              "type": "string"
+            },
+            "mac_key": {
+              "description": "The MAC key.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "key_id",
+            "mac_key"
+          ],
+          "additionalProperties": false
+        },
+        "dns01_challenge": {
+          "description": "ACME DNS01 challenge field.",
+          "$ref": "#/$defs/DNS01Challenge"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DNS01Challenge": {
+      "id": "DNS01Challenge",
+      "title": "DNS01 Challenge",
+      "type": "object",
+      "properties": {
+        "provider": {
+          "description": "ACME CA provider.",
+          "type": "string"
+        },
+        "access_key_id": {
+          "description": "The access key ID.",
+          "type": "string"
+        },
+        "access_key_secret": {
+          "description": "The access key secret.",
+          "type": "string"
+        },
+        "region_id": {
+          "description": "The region ID.",
+          "type": "string"
+        },
+        "api_token": {
+          "description": "The API token.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider"
+      ],
+      "additionalProperties": false
+    },
+    "InboundECHOptions": {
+      "id": "InboundECHOptions",
+      "title": "Inbound ECH Options",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable ECH.",
+          "type": "boolean"
+        },
+        "key": {
+          "description": "ECH key line array, in PEM format.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "key_path": {
+          "description": "The path to ECH key, in PEM format.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "InboundRealityOptions": {
+      "id": "InboundRealityOptions",
+      "title": "Inbound Reality Options",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable Reality.",
+          "type": "boolean"
+        },
+        "handshake": {
+          "description": "Handshake server address and Dial Fields.",
+          "type": "object",
+          "properties": {
+            "server": {
+              "$ref": "#/$defs/__schema26"
+            },
+            "server_port": {
+              "$ref": "#/$defs/__schema27"
+            },
+            "detour": {
+              "$ref": "#/$defs/__schema28"
+            },
+            "bind_interface": {
+              "$ref": "#/$defs/__schema29"
+            },
+            "inet4_bind_address": {
+              "$ref": "#/$defs/__schema30"
+            },
+            "inet6_bind_address": {
+              "$ref": "#/$defs/__schema31"
+            },
+            "routing_mark": {
+              "$ref": "#/$defs/__schema32"
+            },
+            "reuse_addr": {
+              "$ref": "#/$defs/__schema33"
+            },
+            "netns": {
+              "$ref": "#/$defs/__schema34"
+            },
+            "connect_timeout": {
+              "$ref": "#/$defs/__schema35"
+            },
+            "tcp_fast_open": {
+              "$ref": "#/$defs/__schema36"
+            },
+            "tcp_multi_path": {
+              "$ref": "#/$defs/__schema37"
+            },
+            "udp_fragment": {
+              "$ref": "#/$defs/__schema38"
+            },
+            "domain_resolver": {
+              "$ref": "#/$defs/__schema39"
+            },
+            "network_strategy": {
+              "$ref": "#/$defs/__schema40"
+            },
+            "network_type": {
+              "$ref": "#/$defs/__schema42"
+            },
+            "fallback_network_type": {
+              "$ref": "#/$defs/__schema43"
+            },
+            "fallback_delay": {
+              "$ref": "#/$defs/__schema44"
+            },
+            "domain_strategy": {
+              "$ref": "#/$defs/__schema45"
+            }
+          },
+          "required": [
+            "server"
+          ],
+          "additionalProperties": false
+        },
+        "private_key": {
+          "description": "Private key, generated by `sing-box generate reality-keypair`.",
+          "type": "string"
+        },
+        "short_id": {
+          "description": "A hexadecimal string with zero to eight digits.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "max_time_difference": {
+          "description": "The maximum time difference between the server and the client.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "__schema26": {
+      "description": "The server address.",
+      "type": "string"
+    },
+    "__schema27": {
+      "description": "The server port.",
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "__schema28": {
+      "description": "The tag of the upstream outbound.",
+      "type": "string"
+    },
+    "__schema29": {
+      "description": "The network interface to bind to.",
+      "type": "string"
+    },
+    "__schema30": {
+      "description": "The IPv4 address to bind to.",
+      "type": "string"
+    },
+    "__schema31": {
+      "description": "The IPv6 address to bind to.",
+      "type": "string"
+    },
+    "__schema32": {
+      "description": "Set netfilter routing mark.",
+      "$ref": "#/$defs/__schema6"
+    },
+    "__schema33": {
+      "description": "Reuse listener address.",
+      "type": "boolean"
+    },
+    "__schema34": {
+      "description": "Set network namespace, name or path.",
+      "type": "string"
+    },
+    "__schema35": {
+      "description": "Connect timeout, in golang's Duration format.",
+      "type": "string"
+    },
+    "__schema36": {
+      "description": "Enable TCP Fast Open.",
+      "type": "boolean"
+    },
+    "__schema37": {
+      "description": "Enable TCP Multi Path.",
+      "type": "boolean"
+    },
+    "__schema38": {
+      "description": "Enable UDP fragmentation.",
+      "type": "boolean"
+    },
+    "__schema39": {
+      "description": "Set domain resolver to use for resolving domain names.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/DomainResolverOptions"
+        }
+      ]
+    },
+    "DomainResolverOptions": {
+      "id": "DomainResolverOptions",
+      "title": "Domain Resolver Options",
+      "type": "object",
+      "properties": {
+        "server": {
+          "description": "Tag of a another server to resolve the domain name in the address.",
+          "type": "string"
+        },
+        "strategy": {
+          "description": "The domain strategy for resolving the domain name in the address.",
+          "$ref": "#/$defs/__schema19"
+        },
+        "disable_cache": {
+          "description": "Disable cache and save cache in this query.",
+          "type": "boolean"
+        },
+        "rewrite_ttl": {
+          "description": "Rewrite TTL in DNS responses.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "client_subnet": {
+          "description": "Append a `edns0-subnet` OPT extra record with the specified IP prefix to every query by default.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "__schema40": {
+      "description": "Strategy for selecting network interfaces.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/NetworkStrategy"
+        }
+      ]
+    },
+    "NetworkStrategy": {
+      "id": "NetworkStrategy",
+      "title": "Network Strategy",
+      "type": "object",
+      "properties": {
+        "network_type": {
+          "description": "Network types to use.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema41"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema41"
+              }
+            }
+          ]
+        },
+        "fallback_network_type": {
+          "description": "Fallback network types.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema41"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema41"
+              }
+            }
+          ]
+        },
+        "fallback_delay": {
+          "description": "The length of time to wait before spawning a RFC 6555 Fast Fallback connection.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "__schema41": {
+      "description": "Network type.",
+      "type": "string",
+      "enum": [
+        "wifi",
+        "cellular",
+        "ethernet",
+        "other"
+      ]
+    },
+    "__schema42": {
+      "description": "Network types to use.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema41"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema41"
+          }
+        }
+      ]
+    },
+    "__schema43": {
+      "description": "Fallback network types.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema41"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema41"
+          }
+        }
+      ]
+    },
+    "__schema44": {
+      "description": "The length of time to wait before spawning a RFC 6555 Fast Fallback connection.",
+      "type": "string"
+    },
+    "__schema45": {
+      "description": "Default domain strategy for resolving the domain names.",
+      "deprecated": true,
+      "$ref": "#/$defs/__schema19"
+    },
+    "ShadowsocksInboundOptions": {
+      "id": "ShadowsocksInboundOptions",
+      "title": "Shadowsocks Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "shadowsocks"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "network": {
+          "description": "Listen network, one of `tcp` `udp`.",
+          "$ref": "#/$defs/__schema0"
+        },
+        "method": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "password"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "destinations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              },
+              "server": {
+                "$ref": "#/$defs/__schema26"
+              },
+              "server_port": {
+                "$ref": "#/$defs/__schema27"
+              }
+            },
+            "required": [
+              "name",
+              "password",
+              "server"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "multiplex": {
+          "$ref": "#/$defs/InboundMultiplexOptions"
+        },
+        "managed": {
+          "type": "boolean"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type",
+        "method"
+      ],
+      "additionalProperties": false
+    },
+    "InboundMultiplexOptions": {
+      "id": "InboundMultiplexOptions",
+      "title": "Inbound Multiplex Options",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable multiplex support.",
+          "type": "boolean"
+        },
+        "padding": {
+          "description": "If enabled, non-padded connections will be rejected.",
+          "type": "boolean"
+        },
+        "brutal": {
+          "description": "TCP Brutal options.",
+          "$ref": "#/$defs/BrutalOptions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "BrutalOptions": {
+      "id": "BrutalOptions",
+      "title": "Brutal Options",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable TCP Brutal congestion control algorithm.",
+          "type": "boolean"
+        },
+        "up_mbps": {
+          "description": "Upload bandwidth, in Mbps.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "down_mbps": {
+          "description": "Download bandwidth, in Mbps.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      },
+      "additionalProperties": false
+    },
+    "VMessInboundOptions": {
+      "id": "VMessInboundOptions",
+      "title": "VMess Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "vmess"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "users": {
+          "description": "VMess users.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "uuid": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "alterId": {
+                "description": "Alter ID.",
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "name",
+              "uuid"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/InboundTLSOptions"
+        },
+        "multiplex": {
+          "description": "Multiplex configuration.",
+          "$ref": "#/$defs/InboundMultiplexOptions"
+        },
+        "transport": {
+          "description": "V2Ray Transport configuration.",
+          "$ref": "#/$defs/V2RayTransportOptions"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "V2RayTransportOptions": {
+      "id": "V2RayTransportOptions",
+      "title": "V2Ray Transport Options",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/V2RayHTTPOptions"
+        },
+        {
+          "$ref": "#/$defs/V2RayWebsocketOptions"
+        },
+        {
+          "$ref": "#/$defs/V2RayQUICOptions"
+        },
+        {
+          "$ref": "#/$defs/V2RayGRPCOptions"
+        },
+        {
+          "$ref": "#/$defs/V2RayHTTPUpgradeOptions"
+        }
+      ]
+    },
+    "V2RayHTTPOptions": {
+      "id": "V2RayHTTPOptions",
+      "title": "V2Ray HTTP Options",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "http"
+        },
+        "host": {
+          "description": "List of host domain.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "path": {
+          "description": "Path of HTTP request.",
+          "type": "string"
+        },
+        "method": {
+          "description": "Method of HTTP request.",
+          "type": "string"
+        },
+        "headers": {
+          "description": "Extra headers of HTTP request.",
+          "$ref": "#/$defs/__schema46"
+        },
+        "idle_timeout": {
+          "description": "Specifies the time until idle clients should be closed with a GOAWAY frame.",
+          "type": "string"
+        },
+        "ping_timeout": {
+          "description": "Specifies the timeout duration after sending a PING frame, within which a response must be received.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "__schema46": {
+      "description": "HTTP headers.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "V2RayWebsocketOptions": {
+      "id": "V2RayWebsocketOptions",
+      "title": "V2Ray WebSocket Options",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "ws"
+        },
+        "path": {
+          "description": "Path of HTTP request.",
+          "type": "string"
+        },
+        "headers": {
+          "description": "Extra headers of HTTP request.",
+          "$ref": "#/$defs/__schema46"
+        },
+        "max_early_data": {
+          "description": "Allowed payload size is in the request.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "early_data_header_name": {
+          "description": "Early data is sent in path instead of header by default.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "V2RayQUICOptions": {
+      "id": "V2RayQUICOptions",
+      "title": "V2Ray QUIC Options",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "quic"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "V2RayGRPCOptions": {
+      "id": "V2RayGRPCOptions",
+      "title": "V2Ray gRPC Options",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "grpc"
+        },
+        "service_name": {
+          "description": "Service name of gRPC.",
+          "type": "string"
+        },
+        "idle_timeout": {
+          "description": "If the transport doesn't see any activity after a duration of this time, it pings the client to check if the connection is still active.",
+          "type": "string"
+        },
+        "ping_timeout": {
+          "description": "The timeout that after performing a keepalive check, the client will wait for activity.",
+          "type": "string"
+        },
+        "permit_without_stream": {
+          "description": "If enabled, the client transport sends keepalive pings even with no active connections.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "V2RayHTTPUpgradeOptions": {
+      "id": "V2RayHTTPUpgradeOptions",
+      "title": "V2Ray HTTPUpgrade Options",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "httpupgrade"
+        },
+        "host": {
+          "description": "Host domain.",
+          "type": "string"
+        },
+        "path": {
+          "description": "Path of HTTP request.",
+          "type": "string"
+        },
+        "headers": {
+          "description": "Extra headers of HTTP request.",
+          "$ref": "#/$defs/__schema46"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "TrojanInboundOptions": {
+      "id": "TrojanInboundOptions",
+      "title": "Trojan Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "trojan"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "users": {
+          "description": "Trojan users.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "password"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/InboundTLSOptions"
+        },
+        "fallback": {
+          "description": "Fallback server configuration.",
+          "$ref": "#/$defs/ServerOptions"
+        },
+        "fallback_for_alpn": {
+          "description": "Fallback server configuration for specified ALPN.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/ServerOptions"
+          }
+        },
+        "multiplex": {
+          "description": "Multiplex configuration.",
+          "$ref": "#/$defs/InboundMultiplexOptions"
+        },
+        "transport": {
+          "description": "V2Ray Transport configuration.",
+          "$ref": "#/$defs/V2RayTransportOptions"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "ServerOptions": {
+      "id": "ServerOptions",
+      "title": "Server Options",
+      "type": "object",
+      "properties": {
+        "server": {
+          "$ref": "#/$defs/__schema26"
+        },
+        "server_port": {
+          "$ref": "#/$defs/__schema27"
+        }
+      },
+      "required": [
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "NaiveInboundOptions": {
+      "id": "NaiveInboundOptions",
+      "title": "Naive Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "naive"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "network": {
+          "description": "Listen network.",
+          "$ref": "#/$defs/__schema0"
+        },
+        "users": {
+          "description": "Naive users.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "username",
+              "password"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/InboundTLSOptions"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type",
+        "users"
+      ],
+      "additionalProperties": false
+    },
+    "HysteriaInboundOptions": {
+      "id": "HysteriaInboundOptions",
+      "title": "Hysteria Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "hysteria"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "up": {
+          "type": "string"
+        },
+        "up_mbps": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "down": {
+          "type": "string"
+        },
+        "down_mbps": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "obfs": {
+          "description": "Obfuscated password.",
+          "type": "string"
+        },
+        "users": {
+          "description": "Hysteria users",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "auth": {
+                "description": "Authentication password, in base64.",
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "auth_str": {
+                "description": "Authentication password.",
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "recv_window_conn": {
+          "description": "The QUIC stream-level flow control window for receiving data.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "recv_window_client": {
+          "description": "The QUIC connection-level flow control window for receiving data.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "max_conn_client": {
+          "description": "The maximum number of QUIC concurrent bidirectional streams that a peer is allowed to open.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "disable_mtu_discovery": {
+          "description": "Disables Path MTU Discovery (RFC 8899).",
+          "type": "boolean"
+        },
+        "tls": {
+          "$ref": "#/$defs/InboundTLSOptions"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "ShadowTLSInboundOptions": {
+      "id": "ShadowTLSInboundOptions",
+      "title": "ShadowTLS Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "shadowtls"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "version": {
+          "description": "ShadowTLS protocol version.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3
+        },
+        "password": {
+          "description": "ShadowTLS password.",
+          "type": "string"
+        },
+        "users": {
+          "description": "ShadowTLS users.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "password"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "handshake": {
+          "$ref": "#/$defs/__schema47"
+        },
+        "handshake_for_server_name": {
+          "description": "Handshake server address for specific server name.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema47"
+          }
+        },
+        "strict_mode": {
+          "description": "ShadowTLS strict mode.",
+          "type": "boolean"
+        },
+        "wildcard_sni": {
+          "description": "ShadowTLS wildcard SNI mode.",
+          "type": "string",
+          "enum": [
+            "off",
+            "authed",
+            "all"
+          ]
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type",
+        "handshake"
+      ],
+      "additionalProperties": false
+    },
+    "__schema47": {
+      "type": "object",
+      "properties": {
+        "server": {
+          "$ref": "#/$defs/__schema26"
+        },
+        "server_port": {
+          "$ref": "#/$defs/__schema27"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema28"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema29"
+        },
+        "inet4_bind_address": {
+          "$ref": "#/$defs/__schema30"
+        },
+        "inet6_bind_address": {
+          "$ref": "#/$defs/__schema31"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema32"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema33"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema34"
+        },
+        "connect_timeout": {
+          "$ref": "#/$defs/__schema35"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema36"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema37"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema38"
+        },
+        "domain_resolver": {
+          "$ref": "#/$defs/__schema39"
+        },
+        "network_strategy": {
+          "$ref": "#/$defs/__schema40"
+        },
+        "network_type": {
+          "$ref": "#/$defs/__schema42"
+        },
+        "fallback_network_type": {
+          "$ref": "#/$defs/__schema43"
+        },
+        "fallback_delay": {
+          "$ref": "#/$defs/__schema44"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema45"
+        }
+      },
+      "required": [
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "Hysteria2InboundOptions": {
+      "id": "Hysteria2InboundOptions",
+      "title": "Hysteria2 Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "hysteria2"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "up_mbps": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "down_mbps": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "obfs": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "description": "QUIC traffic obfuscator type, only available with `salamander`.",
+              "type": "string"
+            },
+            "password": {
+              "description": "QUIC traffic obfuscator password.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "password": {
+                "description": "Authentication password",
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "ignore_client_bandwidth": {
+          "description": "Commands clients to use the BBR CC instead of Hysteria CC.",
+          "type": "boolean"
+        },
+        "tls": {
+          "$ref": "#/$defs/InboundTLSOptions"
+        },
+        "masquerade": {
+          "description": "HTTP3 server behavior (Object configuration) when authentication fails.",
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "file"
+                },
+                "directory": {
+                  "description": "File server root directory.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "directory"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "proxy"
+                },
+                "url": {
+                  "description": "Reverse proxy target URL.",
+                  "type": "string"
+                },
+                "rewrite_host": {
+                  "description": "Rewrite the `Host` header to the target URL.",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "type",
+                "url"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "string"
+                },
+                "status_code": {
+                  "description": "Fixed response status code.",
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "headers": {
+                  "description": "Fixed response headers.",
+                  "$ref": "#/$defs/__schema46"
+                },
+                "content": {
+                  "description": "Fixed response content.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "content"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "brutal_debug": {
+          "description": "Enable debug information logging for Hysteria Brutal CC.",
+          "type": "boolean"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "AnyTLSInboundOptions": {
+      "id": "AnyTLSInboundOptions",
+      "title": "AnyTLS Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "anytls"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "users": {
+          "description": "AnyTLS users.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "padding_scheme": {
+          "description": "AnyTLS padding scheme line array.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/InboundTLSOptions"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type",
+        "tag"
+      ],
+      "additionalProperties": false
+    },
+    "VLESSInboundOptions": {
+      "id": "VLESSInboundOptions",
+      "title": "VLESS Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "vless"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "users": {
+          "description": "VLESS users.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "uuid": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "flow": {
+                "description": "VLESS Sub-protocol.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "uuid"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/InboundTLSOptions"
+        },
+        "multiplex": {
+          "description": "Multiplex configuration.",
+          "$ref": "#/$defs/InboundMultiplexOptions"
+        },
+        "transport": {
+          "description": "V2Ray Transport configuration.",
+          "$ref": "#/$defs/V2RayTransportOptions"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "TUICInboundOptions": {
+      "id": "TUICInboundOptions",
+      "title": "TUIC Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tuic"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "uuid": {
+                "description": "TUIC user uuid",
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "password": {
+                "description": "TUIC user password",
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "congestion_control": {
+          "description": "QUIC congestion control algorithm",
+          "type": "string"
+        },
+        "auth_timeout": {
+          "description": "How long the server should wait for the client to send the authentication command",
+          "type": "string"
+        },
+        "zero_rtt_handshake": {
+          "description": "Enable 0-RTT QUIC connection handshake on the client side",
+          "type": "boolean"
+        },
+        "heartbeat": {
+          "description": "Interval for sending heartbeat packets for keeping the connection alive",
+          "type": "string"
+        },
+        "tls": {
+          "$ref": "#/$defs/InboundTLSOptions"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "TunInboundOptions": {
+      "id": "TunInboundOptions",
+      "title": "Tun Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tun"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "interface_name": {
+          "description": "Virtual device name, automatically selected if empty.",
+          "type": "string"
+        },
+        "address": {
+          "description": "IPv4 and IPv6 prefix for the tun interface.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "mtu": {
+          "description": "The maximum transmission unit.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "auto_route": {
+          "description": "Set the default route to the Tun.",
+          "type": "boolean"
+        },
+        "iproute2_table_index": {
+          "description": "Linux iproute2 table index generated by `auto_route`.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "iproute2_rule_index": {
+          "description": "Linux iproute2 rule start index generated by `auto_route`.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "auto_redirect": {
+          "description": "Improve TUN routing and performance using nftables.",
+          "type": "boolean"
+        },
+        "auto_redirect_input_mark": {
+          "description": "Connection input mark used by `auto_redirect`.",
+          "$ref": "#/$defs/__schema6"
+        },
+        "auto_redirect_output_mark": {
+          "description": "Connection output mark used by `auto_redirect`.",
+          "$ref": "#/$defs/__schema6"
+        },
+        "loopback_address": {
+          "description": "Loopback addresses make TCP connections to the specified address connect to the source address.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "strict_route": {
+          "description": "Enforce strict routing rules when `auto_route` is enabled.",
+          "type": "boolean"
+        },
+        "route_address": {
+          "description": "Use custom routes instead of default when `auto_route` is enabled.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "route_address_set": {
+          "description": "Add the destination IP CIDR rules in the specified rule-sets to the firewall.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "route_exclude_address": {
+          "description": "Exclude custom routes when `auto_route` is enabled.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "route_exclude_address_set": {
+          "description": "Add the destination IP CIDR rules in the specified rule-sets to the firewall.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "include_interface": {
+          "description": "Limit interfaces in route.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "exclude_interface": {
+          "description": "Exclude interfaces in route.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "include_uid": {
+          "description": "Limit users in route.",
+          "$ref": "#/$defs/__schema48"
+        },
+        "include_uid_range": {
+          "description": "Limit users in route, but in range.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "exclude_uid": {
+          "description": "Exclude users in route.",
+          "$ref": "#/$defs/__schema48"
+        },
+        "exclude_uid_range": {
+          "description": "Exclude users in route, but in range.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "include_android_user": {
+          "description": "Limit android users in route.",
+          "$ref": "#/$defs/__schema48"
+        },
+        "include_package": {
+          "description": "Limit android packages in route.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "exclude_package": {
+          "description": "Exclude android packages in route.",
+          "$ref": "#/$defs/__schema22"
+        },
+        "stack": {
+          "description": "TCP/IP stack.",
+          "type": "string",
+          "enum": [
+            "system",
+            "gvisor",
+            "mixed"
+          ]
+        },
+        "platform": {
+          "description": "Platform-specific settings, provided by client applications.",
+          "type": "object",
+          "properties": {
+            "http_proxy": {
+              "description": "System HTTP proxy settings.",
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "description": "Enable system HTTP proxy.",
+                  "type": "boolean"
+                },
+                "server": {
+                  "description": "HTTP proxy server address.",
+                  "type": "string"
+                },
+                "server_port": {
+                  "description": "HTTP proxy server port.",
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "bypass_domain": {
+                  "description": "Hostnames that bypass the HTTP proxy.",
+                  "$ref": "#/$defs/__schema22"
+                },
+                "match_domain": {
+                  "description": "Hostnames that use the HTTP proxy.",
+                  "$ref": "#/$defs/__schema22"
+                }
+              },
+              "required": [
+                "server",
+                "server_port"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "gso": {
+          "description": "Enable generic segmentation offload.",
+          "deprecated": true,
+          "type": "boolean"
+        },
+        "inet4_address": {
+          "description": "IPv4 prefix for the tun interface.",
+          "deprecated": true,
+          "$ref": "#/$defs/__schema22"
+        },
+        "inet6_address": {
+          "description": "IPv6 prefix for the tun interface.",
+          "deprecated": true,
+          "$ref": "#/$defs/__schema22"
+        },
+        "inet4_route_address": {
+          "description": "Use custom routes instead of default when `auto_route` is enabled.",
+          "deprecated": true,
+          "$ref": "#/$defs/__schema22"
+        },
+        "inet6_route_address": {
+          "description": "Use custom routes instead of default when `auto_route` is enabled.",
+          "deprecated": true,
+          "$ref": "#/$defs/__schema22"
+        },
+        "inet4_route_exclude_address": {
+          "description": "Exclude custom routes when `auto_route` is enabled.",
+          "deprecated": true,
+          "$ref": "#/$defs/__schema22"
+        },
+        "inet6_route_exclude_address": {
+          "description": "Exclude custom routes when `auto_route` is enabled.",
+          "deprecated": true,
+          "$ref": "#/$defs/__schema22"
+        },
+        "endpoint_independent_nat": {
+          "description": "Enable endpoint-independent NAT.",
+          "type": "boolean"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "__schema48": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema49"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema49"
+          }
+        }
+      ]
+    },
+    "__schema49": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "RedirectInboundOptions": {
+      "id": "RedirectInboundOptions",
+      "title": "Redirect Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "redirect"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "TProxyInboundOptions": {
+      "id": "TProxyInboundOptions",
+      "title": "TProxy Inbound",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tproxy"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "network": {
+          "description": "Listen network, one of `tcp` `udp`. Both if empty.",
+          "$ref": "#/$defs/__schema0"
+        },
+        "listen": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "listen_port": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_keep_alive": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "tcp_keep_alive_interval": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema12"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "udp_timeout": {
+          "$ref": "#/$defs/__schema14"
+        },
+        "sniff": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "sniff_override_destination": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "sniff_timeout": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        },
+        "udp_disable_domain_unmapping": {
+          "$ref": "#/$defs/__schema20"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema21"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

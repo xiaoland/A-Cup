@@ -1,0 +1,38 @@
+{
+  "inbounds": [
+    {
+      "tag": "VLESS-REALITY-42602.json",
+      "type": "vless",
+      "listen": "::",
+      "listen_port": 42602,
+      "users": [
+        {
+          "flow": "xtls-rprx-vision",
+          "uuid": "767da739-0beb-4297-b42d-9c8ce6afc6c2"
+        }
+      ],
+      "tls": {
+        "enabled": true,
+        "server_name": "aws.amazon.com",
+        "reality": {
+          "enabled": true,
+          "handshake": {
+            "server": "aws.amazon.com",
+            "server_port": 443
+          },
+          "private_key": "QAc5V8SpJfN6sg9d5jf6GuO7wFCMMjeA0y6-m2nvP1U",
+          "short_id": [""]
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct"
+    },
+    {
+      "tag": "public_key_pUhSVEL_ph6WJCoJA02hk6DtAXG-6yXz6NTTdF2PYR4",
+      "type": "direct"
+    }
+  ]
+}

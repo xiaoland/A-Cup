@@ -1,10 +1,6 @@
 # A-Cup
 
-A proxy configuration management platform for small-scale VPN services. Built with Vue 3, Hono, and Cloudflare Workers.
-
-## Project Overview
-
-Purpose: Manage and host Sing-Box proxy configurations for small teams (multi-user support, configuration sharing, hosted profiles).
+Purpose: Manage and host Sing-Box proxy configurations.
 
 Architecture: Full-stack serverless application with Vue 3 SPA frontend and Cloudflare Workers backend, using D1 (SQLite) for data and R2 for object storage.
 
@@ -18,10 +14,10 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
 - Framework: Vue 3 with Composition API
 - State management: Pinia
 - Form validation: Zod
-- Router: Vue Router v4 
+- Router: Vue Router v4
 - UI components: PrimeVue + @primevue/themes
 - Icons: PrimeIcons
-- CSS / Utility: 
+- CSS / Utility:
   - UnoCSS with presets (@unocss/preset-uno, transformers for directives and variant groups)
   - Sass (sass-embedded)
 - Build / dev server: Vite + @vitejs/plugin-vue
@@ -33,7 +29,7 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
 - HTTP framework: Hono
 - Data model & services: Zod + @hono/zod-validator + zod-class
 - Authentication: jsonwebtoken + @hono/jwt
-- Utilities: 
+- Utilities:
   - crypto-js for password hashing
   - uuid for unique identifiers
   - immer for immutable state updates
@@ -43,7 +39,7 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
 - Migrations: drizzle-kit
   - Config: `drizzle.config.ts`
   - Output: `./drizzle/migrations`
-  - Script: `pnpm run orm-mig-gen`
+  - Script: `pnpm run gen-db-migration`
 - Database: Cloudflare D1 (SQLite-compatible)
   - D1 bindings configured in `wrangler.jsonc`
   - Schema: `server/db/schema.ts`
@@ -51,11 +47,16 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
 - Object storage: Cloudflare R2 for profile hosting
   - R2 bucket binding in `wrangler.jsonc`
 
+
+### SingBox Profile Schema
+
+Use package `@black-duty/sing-box-schema` (https://github.com/BlackDuty/sing-box-schema/)
+
 ### Testing
 - Framework: Vitest
-- Frontend testing: @vue/test-utils  + jsdom + @pinia/testing 
+- Frontend testing: @vue/test-utils  + jsdom + @pinia/testing
 - Backend testing: @cloudflare/vitest-pool-workers
-- Configs: 
+- Configs:
   - `vitest.config.frontend.ts` for Vue components
   - `vitest.config.backend.ts` for Hono/Worker code
 - Test command: `pnpm test` (runs both frontend and backend tests)
@@ -72,15 +73,14 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
 ### Tooling & Developer Experience
 - Package manager: pnpm
 - Type checking: vue-tsc  - `pnpm run type-check`
-- Dev helpers: 
-  - vite-plugin-vue-devtools 
+- Dev helpers:
+  - vite-plugin-vue-devtools
   - @cloudflare/vite-plugin for Cloudflare integration
 - Task runner: npm-run-all2  - used in scripts (run-p)
 - Runtimes: ts-node, vite-node  for running TS scripts
 
 ### Project Structure
 ```
-/workspaces/A-Cup/
 ├── server/                 # Backend (Hono + Cloudflare Workers)
 │   ├── index.ts           # Worker entry point
 │   ├── auth.ts            # JWT authentication
@@ -119,12 +119,6 @@ Architecture: Full-stack serverless application with Vue 3 SPA frontend and Clou
 │   ├── user.ts
 │   ├── profile.ts
 │   ├── outbound.ts
-│   ├── dns.ts
-│   ├── inbound.ts
-│   ├── route.ts
-│   ├── ruleset.ts
-│   ├── singbox.ts
-│   └── ... (transport, tls, etc.)
 ├── drizzle/              # Database migrations
 │   ├── migrations/       # Generated SQL migrations
 │   └── init-user.sql     # Initial user setup
@@ -151,7 +145,7 @@ pnpm run preview            # Build and run wrangler dev (local preview)
 pnpm run deploy             # Build, deploy to Cloudflare, apply migrations
 
 # Database
-pnpm run orm-mig-gen        # Generate Drizzle migrations
+pnpm run gen-db-migration        # Generate Drizzle migrations
 
 # Cloudflare
 pnpm run cf-typegen         # Generate Cloudflare Worker types
@@ -163,11 +157,6 @@ pnpm run openapi:validate       # Validate OpenAPI spec
 ```
 
 ## Features
-
-### Multi-user Support
-- JWT-based authentication
-- Role-based access control (admin, user)
-- User management APIs
 
 ### Profile Management
 - Create/edit/delete Sing-Box profiles
@@ -186,7 +175,7 @@ pnpm run openapi:validate       # Validate OpenAPI spec
 - Dark mode support
 - Responsive layout (mobile-friendly)
 - PrimeVue components for consistent UI
-- JSON editor for advanced configuration
+- Edit in JSON with Intellisense support
 
 ## Configuration
 
@@ -198,19 +187,9 @@ Required configuration:
 - `vars.JWT_SECRET` - Secret for JWT signing
 - `vars.OSS_PUBLIC_DOMAIN` - Public domain for hosted profiles
 
-### Initial User Setup
-Run in D1 query console:
-```sql
-INSERT INTO users (username, password, roles) 
-VALUES ('admin', '21232f297a57a5a743894a0e4a801fc3', '["admin"]');
-```
-(Creates admin user with password "admin", MD5 hashed)
-
 ## Development Notes
 
 - TypeScript strict mode enabled for both frontend and backend
 - Schema-first development: Zod schemas in `schemas/` are shared between client and server
-- Immutable updates: Use immer for complex state mutations in stores
-- Component testing: Tests in `__tests__/` directories alongside components
+- Component testing: Tests in `tests/`
 - API testing: Backend tests use Vitest with Cloudflare Workers pool
-

@@ -1,8 +1,32 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
+import { useToast } from "primevue/usetoast";
+import Toast from "primevue/toast";
 
 const route = useRoute();
+const toast = useToast();
+
+let handleKeydown: (event: KeyboardEvent) => void;
+
+onMounted(() => {
+    handleKeydown = (event: KeyboardEvent) => {
+        if (event.ctrlKey && event.key === "s") {
+            event.preventDefault();
+            toast.add({
+                severity: "info",
+                summary: "Auto-Saved",
+                detail: "Your changes are already auto-saved.",
+                life: 3000,
+            });
+        }
+    };
+    window.addEventListener("keydown", handleKeydown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener("keydown", handleKeydown);
+});
 </script>
 
 <template>
@@ -10,6 +34,7 @@ const route = useRoute();
         <main class="main-content">
             <router-view />
         </main>
+        <Toast />
     </div>
 </template>
 

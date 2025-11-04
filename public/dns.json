@@ -1,0 +1,2314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "DNSOptions",
+  "title": "DNS",
+  "type": "object",
+  "properties": {
+    "servers": {
+      "description": "List of DNS Servers",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/DNSServer"
+      }
+    },
+    "rules": {
+      "description": "List of DNS Rules",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/DNSRule"
+      }
+    },
+    "final": {
+      "description": "Default dns server tag.",
+      "type": "string"
+    },
+    "reverse_mapping": {
+      "description": "Stores a reverse mapping of IP addresses after responding to a DNS query in order to provide domain names when routing.",
+      "type": "boolean"
+    },
+    "fakeip": {
+      "description": "FakeIP settings.",
+      "$ref": "#/$defs/LegacyDNSFakeIPOptions"
+    },
+    "strategy": {
+      "description": "Default domain strategy for resolving the domain names.",
+      "$ref": "#/$defs/__schema12"
+    },
+    "disable_cache": {
+      "description": "Disable dns cache.",
+      "type": "boolean"
+    },
+    "disable_expire": {
+      "description": "Disable dns cache expire.",
+      "type": "boolean"
+    },
+    "independent_cache": {
+      "description": "Make each DNS server's cache independent for special purposes. If enabled, will slightly degrade performance.",
+      "type": "boolean"
+    },
+    "cache_capacity": {
+      "description": "LRU cache capacity.",
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "client_subnet": {
+      "description": "Append a `edns0-subnet` OPT extra record with the specified IP prefix to every query by default.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "DNSServer": {
+      "id": "DNSServer",
+      "title": "DNS Server",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LocalDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/HostsDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/TCPDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/UDPDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/TLSDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/QUICDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/HTTPSDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/HTTP3DNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/DHCPDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/FakeIPDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/TailscaleDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/ResolvedDNSServerOptions"
+        },
+        {
+          "$ref": "#/$defs/LegacyDNSServer"
+        }
+      ]
+    },
+    "LocalDNSServerOptions": {
+      "id": "LocalDNSServerOptions",
+      "title": "Local DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "local"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "inet4_bind_address": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "inet6_bind_address": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "connect_timeout": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "domain_resolver": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "network_strategy": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "network_type": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "fallback_network_type": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "fallback_delay": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        }
+      },
+      "required": [
+        "type",
+        "tag"
+      ],
+      "additionalProperties": false
+    },
+    "__schema0": {
+      "description": "The tag of the upstream outbound.",
+      "type": "string"
+    },
+    "__schema1": {
+      "description": "The network interface to bind to.",
+      "type": "string"
+    },
+    "__schema2": {
+      "description": "The IPv4 address to bind to.",
+      "type": "string"
+    },
+    "__schema3": {
+      "description": "The IPv6 address to bind to.",
+      "type": "string"
+    },
+    "__schema4": {
+      "description": "Set netfilter routing mark.",
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "__schema5": {
+      "description": "Reuse listener address.",
+      "type": "boolean"
+    },
+    "__schema6": {
+      "description": "Set network namespace, name or path.",
+      "type": "string"
+    },
+    "__schema7": {
+      "description": "Connect timeout, in golang's Duration format.",
+      "type": "string"
+    },
+    "__schema8": {
+      "description": "Enable TCP Fast Open.",
+      "type": "boolean"
+    },
+    "__schema9": {
+      "description": "Enable TCP Multi Path.",
+      "type": "boolean"
+    },
+    "__schema10": {
+      "description": "Enable UDP fragmentation.",
+      "type": "boolean"
+    },
+    "__schema11": {
+      "description": "Set domain resolver to use for resolving domain names.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/DomainResolverOptions"
+        }
+      ]
+    },
+    "DomainResolverOptions": {
+      "id": "DomainResolverOptions",
+      "title": "Domain Resolver Options",
+      "type": "object",
+      "properties": {
+        "server": {
+          "description": "Tag of a another server to resolve the domain name in the address.",
+          "type": "string"
+        },
+        "strategy": {
+          "description": "The domain strategy for resolving the domain name in the address.",
+          "$ref": "#/$defs/__schema12"
+        },
+        "disable_cache": {
+          "description": "Disable cache and save cache in this query.",
+          "type": "boolean"
+        },
+        "rewrite_ttl": {
+          "description": "Rewrite TTL in DNS responses.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "client_subnet": {
+          "description": "Append a `edns0-subnet` OPT extra record with the specified IP prefix to every query by default.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "__schema12": {
+      "description": "Default domain strategy for resolving the domain names.",
+      "type": "string",
+      "enum": [
+        "",
+        "prefer_ipv4",
+        "prefer_ipv6",
+        "ipv4_only",
+        "ipv6_only"
+      ]
+    },
+    "__schema13": {
+      "description": "Strategy for selecting network interfaces.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/NetworkStrategy"
+        }
+      ]
+    },
+    "NetworkStrategy": {
+      "id": "NetworkStrategy",
+      "title": "Network Strategy",
+      "type": "object",
+      "properties": {
+        "network_type": {
+          "description": "Network types to use.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema14"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema14"
+              }
+            }
+          ]
+        },
+        "fallback_network_type": {
+          "description": "Fallback network types.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema14"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema14"
+              }
+            }
+          ]
+        },
+        "fallback_delay": {
+          "description": "The length of time to wait before spawning a RFC 6555 Fast Fallback connection.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "__schema14": {
+      "description": "Network type.",
+      "type": "string",
+      "enum": [
+        "wifi",
+        "cellular",
+        "ethernet",
+        "other"
+      ]
+    },
+    "__schema15": {
+      "description": "Network types to use.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema14"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema14"
+          }
+        }
+      ]
+    },
+    "__schema16": {
+      "description": "Fallback network types.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema14"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema14"
+          }
+        }
+      ]
+    },
+    "__schema17": {
+      "description": "The length of time to wait before spawning a RFC 6555 Fast Fallback connection.",
+      "type": "string"
+    },
+    "__schema18": {
+      "description": "Default domain strategy for resolving the domain names.",
+      "deprecated": true,
+      "$ref": "#/$defs/__schema12"
+    },
+    "HostsDNSServerOptions": {
+      "id": "HostsDNSServerOptions",
+      "title": "Hosts DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "hosts"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "path": {
+          "description": "List of paths to hosts files.",
+          "$ref": "#/$defs/__schema19"
+        },
+        "predefined": {
+          "description": "Predefined hosts.",
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema19"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "tag"
+      ],
+      "additionalProperties": false
+    },
+    "__schema19": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema20"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema20"
+          }
+        }
+      ]
+    },
+    "__schema20": {
+      "type": "string"
+    },
+    "TCPDNSServerOptions": {
+      "id": "TCPDNSServerOptions",
+      "title": "TCP DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tcp"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "server": {
+          "description": "The address of the TCP DNS server.",
+          "type": "string"
+        },
+        "server_port": {
+          "description": "The port of the TCP DNS server.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "inet4_bind_address": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "inet6_bind_address": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "connect_timeout": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "domain_resolver": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "network_strategy": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "network_type": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "fallback_network_type": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "fallback_delay": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "UDPDNSServerOptions": {
+      "id": "UDPDNSServerOptions",
+      "title": "UDP DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "udp"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "server": {
+          "description": "The address of the UDP DNS server.",
+          "type": "string"
+        },
+        "server_port": {
+          "description": "The port of the UDP DNS server.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "inet4_bind_address": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "inet6_bind_address": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "connect_timeout": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "domain_resolver": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "network_strategy": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "network_type": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "fallback_network_type": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "fallback_delay": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "TLSDNSServerOptions": {
+      "id": "TLSDNSServerOptions",
+      "title": "TLS DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tls"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "server": {
+          "description": "The address of the TLS DNS server.",
+          "type": "string"
+        },
+        "server_port": {
+          "description": "The port of the TLS DNS server.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/OutboundTLSOptions"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "inet4_bind_address": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "inet6_bind_address": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "connect_timeout": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "domain_resolver": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "network_strategy": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "network_type": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "fallback_network_type": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "fallback_delay": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "OutboundTLSOptions": {
+      "id": "OutboundTLSOptions",
+      "title": "Outbound TLS Options",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable TLS.",
+          "type": "boolean"
+        },
+        "disable_sni": {
+          "description": "Do not send server name in ClientHello.",
+          "type": "boolean"
+        },
+        "server_name": {
+          "description": "Used to verify the hostname on the returned certificates unless insecure is given.",
+          "type": "string"
+        },
+        "insecure": {
+          "description": "Accepts any server certificate.",
+          "type": "boolean"
+        },
+        "alpn": {
+          "description": "List of supported application level protocols, in order of preference.",
+          "$ref": "#/$defs/__schema19"
+        },
+        "min_version": {
+          "description": "The minimum TLS version that is acceptable.",
+          "$ref": "#/$defs/__schema21"
+        },
+        "max_version": {
+          "description": "The maximum TLS version that is acceptable.",
+          "$ref": "#/$defs/__schema21"
+        },
+        "cipher_suites": {
+          "description": "A list of enabled TLS 1.0–1.2 cipher suites.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/__schema22"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema22"
+              }
+            }
+          ]
+        },
+        "certificate": {
+          "description": "The server certificate line array, in PEM format.",
+          "$ref": "#/$defs/__schema19"
+        },
+        "certificate_path": {
+          "description": "The path to the server certificate, in PEM format.",
+          "type": "string"
+        },
+        "fragment": {
+          "description": "Fragment TLS handshakes to bypass firewalls.",
+          "type": "boolean"
+        },
+        "fragment_fallback_delay": {
+          "description": "The fallback value used when TLS segmentation cannot automatically determine the wait time.",
+          "type": "string"
+        },
+        "record_fragment": {
+          "description": "Fragment TLS handshake into multiple TLS records to bypass firewalls.",
+          "type": "boolean"
+        },
+        "ech": {
+          "description": "ECH (Encrypted Client Hello) options.",
+          "$ref": "#/$defs/OutboundECHOptions"
+        },
+        "utls": {
+          "description": "uTLS options.",
+          "$ref": "#/$defs/OutboundUTLSOptions"
+        },
+        "reality": {
+          "description": "Reality options.",
+          "$ref": "#/$defs/OutboundRealityOptions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "__schema21": {
+      "description": "TLS version.",
+      "type": "string",
+      "enum": [
+        "1.0",
+        "1.1",
+        "1.2",
+        "1.3"
+      ]
+    },
+    "__schema22": {
+      "description": "TLS cipher suite.",
+      "type": "string",
+      "enum": [
+        "TLS_RSA_WITH_AES_128_CBC_SHA",
+        "TLS_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_AES_128_GCM_SHA256",
+        "TLS_AES_256_GCM_SHA384",
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+        "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+      ]
+    },
+    "OutboundECHOptions": {
+      "id": "OutboundECHOptions",
+      "title": "Outbound ECH Options",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable ECH.",
+          "type": "boolean"
+        },
+        "config": {
+          "description": "ECH configuration line array, in PEM format.",
+          "$ref": "#/$defs/__schema19"
+        },
+        "config_path": {
+          "description": "The path to ECH configuration, in PEM format.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "OutboundUTLSOptions": {
+      "id": "OutboundUTLSOptions",
+      "title": "Outbound uTLS Options",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable uTLS.",
+          "type": "boolean"
+        },
+        "fingerprint": {
+          "description": "uTLS fingerprint.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "OutboundRealityOptions": {
+      "id": "OutboundRealityOptions",
+      "title": "Outbound Reality Options",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable Reality.",
+          "type": "boolean"
+        },
+        "public_key": {
+          "description": "Public key, generated by `sing-box generate reality-keypair`.",
+          "type": "string"
+        },
+        "short_id": {
+          "description": "A hexadecimal string with zero to eight digits.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QUICDNSServerOptions": {
+      "id": "QUICDNSServerOptions",
+      "title": "QUIC DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "quic"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "server": {
+          "description": "The address of the QUIC DNS server.",
+          "type": "string"
+        },
+        "server_port": {
+          "description": "The port of the QUIC DNS server.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/OutboundTLSOptions"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "inet4_bind_address": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "inet6_bind_address": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "connect_timeout": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "domain_resolver": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "network_strategy": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "network_type": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "fallback_network_type": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "fallback_delay": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "HTTPSDNSServerOptions": {
+      "id": "HTTPSDNSServerOptions",
+      "title": "HTTPS DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "https"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "server": {
+          "description": "The address of the HTTPS DNS server.",
+          "type": "string"
+        },
+        "server_port": {
+          "description": "The port of the HTTPS DNS server.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "path": {
+          "description": "The path of the HTTPS DNS server. `/dns-query` will be used by default.",
+          "type": "string"
+        },
+        "headers": {
+          "description": "Additional headers to be sent to the DNS server.",
+          "$ref": "#/$defs/__schema23"
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/OutboundTLSOptions"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "inet4_bind_address": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "inet6_bind_address": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "connect_timeout": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "domain_resolver": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "network_strategy": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "network_type": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "fallback_network_type": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "fallback_delay": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "__schema23": {
+      "description": "HTTP headers.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "HTTP3DNSServerOptions": {
+      "id": "HTTP3DNSServerOptions",
+      "title": "HTTP3 DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "h3"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "server": {
+          "description": "The address of the HTTP3 DNS server.",
+          "type": "string"
+        },
+        "server_port": {
+          "description": "The port of the HTTP3 DNS server.",
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "path": {
+          "description": "The path of the HTTP3 DNS server. `/dns-query` will be used by default.",
+          "type": "string"
+        },
+        "headers": {
+          "description": "Additional headers to be sent to the DNS server.",
+          "$ref": "#/$defs/__schema23"
+        },
+        "tls": {
+          "description": "TLS configuration.",
+          "$ref": "#/$defs/OutboundTLSOptions"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "inet4_bind_address": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "inet6_bind_address": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "connect_timeout": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "domain_resolver": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "network_strategy": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "network_type": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "fallback_network_type": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "fallback_delay": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "server"
+      ],
+      "additionalProperties": false
+    },
+    "DHCPDNSServerOptions": {
+      "id": "DHCPDNSServerOptions",
+      "title": "DHCP DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "dhcp"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "interface": {
+          "description": "Interface name to listen on.",
+          "type": "string"
+        },
+        "detour": {
+          "$ref": "#/$defs/__schema0"
+        },
+        "bind_interface": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "inet4_bind_address": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "inet6_bind_address": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "routing_mark": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "reuse_addr": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "netns": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "connect_timeout": {
+          "$ref": "#/$defs/__schema7"
+        },
+        "tcp_fast_open": {
+          "$ref": "#/$defs/__schema8"
+        },
+        "tcp_multi_path": {
+          "$ref": "#/$defs/__schema9"
+        },
+        "udp_fragment": {
+          "$ref": "#/$defs/__schema10"
+        },
+        "domain_resolver": {
+          "$ref": "#/$defs/__schema11"
+        },
+        "network_strategy": {
+          "$ref": "#/$defs/__schema13"
+        },
+        "network_type": {
+          "$ref": "#/$defs/__schema15"
+        },
+        "fallback_network_type": {
+          "$ref": "#/$defs/__schema16"
+        },
+        "fallback_delay": {
+          "$ref": "#/$defs/__schema17"
+        },
+        "domain_strategy": {
+          "$ref": "#/$defs/__schema18"
+        }
+      },
+      "required": [
+        "type",
+        "tag"
+      ],
+      "additionalProperties": false
+    },
+    "FakeIPDNSServerOptions": {
+      "id": "FakeIPDNSServerOptions",
+      "title": "FakeIP DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "fakeip"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "inet4_range": {
+          "description": "IPv4 address range for FakeIP.",
+          "type": "string"
+        },
+        "inet6_range": {
+          "description": "IPv6 address range for FakeIP.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "tag"
+      ],
+      "additionalProperties": false
+    },
+    "TailscaleDNSServerOptions": {
+      "id": "TailscaleDNSServerOptions",
+      "title": "Tailscale DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tailscale"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "endpoint": {
+          "description": "The tag of the Tailscale Endpoint.",
+          "type": "string"
+        },
+        "accept_default_resolvers": {
+          "description": "Indicates whether default DNS resolvers should be accepted for fallback queries in addition to MagicDNS，",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "endpoint"
+      ],
+      "additionalProperties": false
+    },
+    "ResolvedDNSServerOptions": {
+      "id": "ResolvedDNSServerOptions",
+      "title": "Resolved DNS Server",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "resolved"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "service": {
+          "description": "The tag of the Resolved Service.",
+          "type": "string"
+        },
+        "accept_default_resolvers": {
+          "description": "Indicates whether the default DNS resolvers should be accepted for fallback queries in addition to matching domains.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "tag",
+        "service"
+      ],
+      "additionalProperties": false
+    },
+    "LegacyDNSServer": {
+      "id": "LegacyDNSServer",
+      "title": "Legacy DNS Server",
+      "description": "Legacy DNS servers is deprecated and will be removed in sing-box 1.14.0, check Migration.",
+      "deprecated": true,
+      "type": "object",
+      "properties": {
+        "tag": {
+          "description": "The tag of the dns server.",
+          "type": "string"
+        },
+        "address": {
+          "description": "The address of the dns server.",
+          "anyOf": [
+            {
+              "description": "System",
+              "type": "string",
+              "const": "local"
+            },
+            {
+              "description": "FakeIP",
+              "type": "string",
+              "const": "fakeip"
+            },
+            {
+              "description": "TCP",
+              "type": "string",
+              "pattern": "^tcp:\\/\\/.*"
+            },
+            {
+              "description": "UDP",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "ipv4",
+                  "pattern": "^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$"
+                },
+                {
+                  "type": "string",
+                  "format": "ipv6",
+                  "pattern": "^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))$"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^udp:\\/\\/.*"
+                }
+              ]
+            },
+            {
+              "description": "TLS",
+              "type": "string",
+              "pattern": "^tls:\\/\\/.*"
+            },
+            {
+              "description": "HTTP",
+              "type": "string",
+              "pattern": "^http:\\/\\/.*"
+            },
+            {
+              "description": "QUIC",
+              "type": "string",
+              "pattern": "^quic:\\/\\/.*"
+            },
+            {
+              "description": "HTTP3",
+              "type": "string",
+              "pattern": "^h3:\\/\\/.*"
+            },
+            {
+              "description": "RCode",
+              "anyOf": [
+                {
+                  "description": "No error",
+                  "type": "string",
+                  "const": "rcode://success"
+                },
+                {
+                  "description": "Format error",
+                  "type": "string",
+                  "const": "rcode://format_error"
+                },
+                {
+                  "description": "Server failure",
+                  "type": "string",
+                  "const": "rcode://server_failure"
+                },
+                {
+                  "description": "Non-existent domain",
+                  "type": "string",
+                  "const": "rcode://name_error"
+                },
+                {
+                  "description": "Not implemented",
+                  "type": "string",
+                  "const": "rcode://not_implemented"
+                },
+                {
+                  "description": "Query refused",
+                  "type": "string",
+                  "const": "rcode://refused"
+                }
+              ]
+            },
+            {
+              "description": "DHCP",
+              "type": "string",
+              "pattern": "^dhcp:\\/\\/.*"
+            }
+          ]
+        },
+        "address_resolver": {
+          "description": "Tag of a another server to resolve the domain name in the address.",
+          "type": "string"
+        },
+        "address_strategy": {
+          "description": "The domain strategy for resolving the domain name in the address.",
+          "$ref": "#/$defs/__schema12"
+        },
+        "strategy": {
+          "description": "Default domain strategy for resolving the domain names.",
+          "$ref": "#/$defs/__schema12"
+        },
+        "detour": {
+          "description": "Tag of an outbound for connecting to the dns server.",
+          "type": "string"
+        },
+        "client_subnet": {
+          "description": "Append a `edns0-subnet` OPT extra record with the specified IP prefix to every query by default.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tag",
+        "address"
+      ],
+      "additionalProperties": false
+    },
+    "DNSRule": {
+      "id": "DNSRule",
+      "title": "DNS Rule",
+      "anyOf": [
+        {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "query_type": {
+                  "$ref": "#/$defs/__schema26"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema34"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema35"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema38"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "ip_accept_any": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema47"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema48"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema49"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema50"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema51"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema52"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema53"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema54"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema55"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema56"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema57"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema58"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema59"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema60"
+                },
+                "rule_set_ip_cidr_accept_empty": {
+                  "$ref": "#/$defs/__schema61"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema62"
+                },
+                "outbound": {
+                  "$ref": "#/$defs/__schema63"
+                },
+                "action": {
+                  "description": "Action type.",
+                  "type": "string",
+                  "const": "route"
+                },
+                "server": {
+                  "description": "Tag of target server.",
+                  "type": "string"
+                },
+                "strategy": {
+                  "description": "Set domain strategy for this query.",
+                  "$ref": "#/$defs/__schema12"
+                },
+                "disable_cache": {
+                  "description": "Disable cache and save cache in this query.",
+                  "type": "boolean"
+                },
+                "rewrite_ttl": {
+                  "description": "Rewrite TTL in DNS responses.",
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "client_subnet": {
+                  "description": "Append a `edns0-subnet` OPT extra record.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "server"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "query_type": {
+                  "$ref": "#/$defs/__schema26"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema34"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema35"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema38"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "ip_accept_any": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema47"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema48"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema49"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema50"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema51"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema52"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema53"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema54"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema55"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema56"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema57"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema58"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema59"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema60"
+                },
+                "rule_set_ip_cidr_accept_empty": {
+                  "$ref": "#/$defs/__schema61"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema62"
+                },
+                "outbound": {
+                  "$ref": "#/$defs/__schema63"
+                },
+                "action": {
+                  "description": "Action type.",
+                  "type": "string",
+                  "const": "route-options"
+                },
+                "disable_cache": {
+                  "description": "Disable cache and save cache in this query.",
+                  "type": "boolean"
+                },
+                "rewrite_ttl": {
+                  "description": "Rewrite TTL in DNS responses.",
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "client_subnet": {
+                  "description": "Append a `edns0-subnet` OPT extra record.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "action"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "query_type": {
+                  "$ref": "#/$defs/__schema26"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema34"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema35"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema38"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "ip_accept_any": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema47"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema48"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema49"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema50"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema51"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema52"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema53"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema54"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema55"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema56"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema57"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema58"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema59"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema60"
+                },
+                "rule_set_ip_cidr_accept_empty": {
+                  "$ref": "#/$defs/__schema61"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema62"
+                },
+                "outbound": {
+                  "$ref": "#/$defs/__schema63"
+                },
+                "action": {
+                  "description": "Action type.",
+                  "type": "string",
+                  "const": "reject"
+                },
+                "method": {
+                  "description": "Reply with REFUSED or drop the request.",
+                  "type": "string",
+                  "enum": [
+                    "default",
+                    "drop"
+                  ]
+                },
+                "no_drop": {
+                  "description": "If not enabled, `method` will be temporarily overwritten to `drop` after 50 triggers in 30s.",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "action"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "inbound": {
+                  "$ref": "#/$defs/__schema24"
+                },
+                "ip_version": {
+                  "$ref": "#/$defs/__schema25"
+                },
+                "query_type": {
+                  "$ref": "#/$defs/__schema26"
+                },
+                "network": {
+                  "$ref": "#/$defs/__schema28"
+                },
+                "auth_user": {
+                  "$ref": "#/$defs/__schema30"
+                },
+                "protocol": {
+                  "$ref": "#/$defs/__schema31"
+                },
+                "domain": {
+                  "$ref": "#/$defs/__schema32"
+                },
+                "domain_suffix": {
+                  "$ref": "#/$defs/__schema33"
+                },
+                "domain_keyword": {
+                  "$ref": "#/$defs/__schema34"
+                },
+                "domain_regex": {
+                  "$ref": "#/$defs/__schema35"
+                },
+                "source_ip_cidr": {
+                  "$ref": "#/$defs/__schema36"
+                },
+                "source_ip_is_private": {
+                  "$ref": "#/$defs/__schema37"
+                },
+                "ip_cidr": {
+                  "$ref": "#/$defs/__schema38"
+                },
+                "ip_is_private": {
+                  "$ref": "#/$defs/__schema39"
+                },
+                "ip_accept_any": {
+                  "$ref": "#/$defs/__schema40"
+                },
+                "source_port": {
+                  "$ref": "#/$defs/__schema41"
+                },
+                "source_port_range": {
+                  "$ref": "#/$defs/__schema44"
+                },
+                "port": {
+                  "$ref": "#/$defs/__schema45"
+                },
+                "port_range": {
+                  "$ref": "#/$defs/__schema46"
+                },
+                "process_name": {
+                  "$ref": "#/$defs/__schema47"
+                },
+                "process_path": {
+                  "$ref": "#/$defs/__schema48"
+                },
+                "process_path_regex": {
+                  "$ref": "#/$defs/__schema49"
+                },
+                "package_name": {
+                  "$ref": "#/$defs/__schema50"
+                },
+                "user": {
+                  "$ref": "#/$defs/__schema51"
+                },
+                "user_id": {
+                  "$ref": "#/$defs/__schema52"
+                },
+                "clash_mode": {
+                  "$ref": "#/$defs/__schema53"
+                },
+                "network_type": {
+                  "$ref": "#/$defs/__schema54"
+                },
+                "network_is_expensive": {
+                  "$ref": "#/$defs/__schema55"
+                },
+                "network_is_constrained": {
+                  "$ref": "#/$defs/__schema56"
+                },
+                "wifi_ssid": {
+                  "$ref": "#/$defs/__schema57"
+                },
+                "wifi_bssid": {
+                  "$ref": "#/$defs/__schema58"
+                },
+                "rule_set": {
+                  "$ref": "#/$defs/__schema59"
+                },
+                "rule_set_ip_cidr_match_source": {
+                  "$ref": "#/$defs/__schema60"
+                },
+                "rule_set_ip_cidr_accept_empty": {
+                  "$ref": "#/$defs/__schema61"
+                },
+                "invert": {
+                  "$ref": "#/$defs/__schema62"
+                },
+                "outbound": {
+                  "$ref": "#/$defs/__schema63"
+                },
+                "action": {
+                  "description": "Action type.",
+                  "type": "string",
+                  "const": "predefined"
+                },
+                "rcode": {
+                  "description": "The response code.",
+                  "type": "string",
+                  "enum": [
+                    "NOERROR",
+                    "FORMERR",
+                    "SERVFAIL",
+                    "NXDOMAIN",
+                    "NOTIMP",
+                    "REFUSED"
+                  ]
+                },
+                "answer": {
+                  "description": "List of text DNS record to respond as answers.",
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/__schema64"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/__schema64"
+                      }
+                    }
+                  ]
+                },
+                "ns": {
+                  "description": "List of text DNS record to respond as name servers.",
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/__schema64"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/__schema64"
+                      }
+                    }
+                  ]
+                },
+                "extra": {
+                  "description": "List of text DNS record to respond as extra records.",
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/__schema64"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/__schema64"
+                      }
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "action"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        {
+          "$ref": "#/$defs/LogicalDNSRule"
+        }
+      ]
+    },
+    "__schema24": {
+      "description": "Tags of Inbound.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema25": {
+      "description": "4 (A DNS query) or 6 (AAAA DNS query).",
+      "anyOf": [
+        {
+          "type": "number",
+          "const": 4
+        },
+        {
+          "type": "number",
+          "const": 6
+        }
+      ]
+    },
+    "__schema26": {
+      "description": "DNS query type.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema27"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema27"
+          }
+        }
+      ]
+    },
+    "__schema27": {
+      "description": "DNS query type. Values can be integers or type name strings.",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
+      ]
+    },
+    "__schema28": {
+      "description": "`tcp` or `udp`.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema29"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema29"
+          }
+        }
+      ]
+    },
+    "__schema29": {
+      "type": "string",
+      "enum": [
+        "",
+        "tcp",
+        "udp"
+      ]
+    },
+    "__schema30": {
+      "description": "Username.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema31": {
+      "description": "Sniffed protocol.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema32": {
+      "description": "Match full domain.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema33": {
+      "description": "Match domain suffix.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema34": {
+      "description": "Match domain using keyword.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema35": {
+      "description": "Match domain using regular expression.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema36": {
+      "description": "Match source IP CIDR.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema37": {
+      "description": "Match non-public source IP.",
+      "type": "boolean"
+    },
+    "__schema38": {
+      "description": "Match IP CIDR with query response.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema39": {
+      "description": "Match private IP with query response.",
+      "type": "boolean"
+    },
+    "__schema40": {
+      "description": "Match any IP with query response.",
+      "type": "boolean"
+    },
+    "__schema41": {
+      "description": "Match source port.",
+      "$ref": "#/$defs/__schema42"
+    },
+    "__schema42": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema43"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema43"
+          }
+        }
+      ]
+    },
+    "__schema43": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "__schema44": {
+      "description": "Match source port range.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema45": {
+      "description": "Match port.",
+      "$ref": "#/$defs/__schema42"
+    },
+    "__schema46": {
+      "description": "Match port range.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema47": {
+      "description": "Match process name.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema48": {
+      "description": "Match process path.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema49": {
+      "description": "Match process path using regular expression.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema50": {
+      "description": "Match android package name.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema51": {
+      "description": "Match user name.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema52": {
+      "description": "Match user id.",
+      "$ref": "#/$defs/__schema42"
+    },
+    "__schema53": {
+      "description": "Match Clash mode.",
+      "type": "string"
+    },
+    "__schema54": {
+      "description": "Match network type.",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/__schema14"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema14"
+          }
+        }
+      ]
+    },
+    "__schema55": {
+      "description": "Match if network is considered Metered.",
+      "type": "boolean"
+    },
+    "__schema56": {
+      "description": "Match if network is in Low Data Mode.",
+      "type": "boolean"
+    },
+    "__schema57": {
+      "description": "Match WiFi SSID.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema58": {
+      "description": "Match WiFi BSSID.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema59": {
+      "description": "Match rule-set.",
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema60": {
+      "description": "Make `ip_cidr` rule items in rule-sets match the source IP.",
+      "type": "boolean"
+    },
+    "__schema61": {
+      "description": "Make `ip_cidr` rules in rule-sets accept empty query response.",
+      "type": "boolean"
+    },
+    "__schema62": {
+      "description": "Invert match result.",
+      "type": "boolean"
+    },
+    "__schema63": {
+      "description": "Match outbound.",
+      "deprecated": true,
+      "$ref": "#/$defs/__schema19"
+    },
+    "__schema64": {
+      "description": "Text DNS record.",
+      "type": "string"
+    },
+    "LogicalDNSRule": {
+      "id": "LogicalDNSRule",
+      "title": "Logical DNS Rule",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Rule type.",
+          "type": "string",
+          "const": "logical"
+        },
+        "mode": {
+          "description": "`and` or `or`.",
+          "type": "string",
+          "enum": [
+            "and",
+            "or"
+          ]
+        },
+        "rules": {
+          "description": "Included rules.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DNSRule"
+          }
+        },
+        "invert": {
+          "description": "Invert match result.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "mode"
+      ],
+      "additionalProperties": false
+    },
+    "LegacyDNSFakeIPOptions": {
+      "id": "LegacyDNSFakeIPOptions",
+      "title": "Legacy DNS FakeIP",
+      "description": "Legacy fake-ip configuration is deprecated",
+      "deprecated": true,
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable FakeIP service.",
+          "type": "boolean"
+        },
+        "inet4_range": {
+          "description": "IPv4 address range for FakeIP.",
+          "type": "string"
+        },
+        "inet6_range": {
+          "description": "IPv6 address range for FakeIP.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
