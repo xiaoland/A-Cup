@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import MonacoEditor from "@guolao/vue-monaco-editor";
-import type { MonacoEditor as monacoEditor } from "@guolao/vue-monaco-editor";
+import * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api";
 import { computed, ref } from "vue";
 import { Outbound } from "@black-duty/sing-box-schema";
 import { useUserStore } from "@/stores/user";
@@ -27,8 +27,8 @@ const outboundsJson = computed(() => JSON.stringify(model.value, null, 2));
 const users = ref<{ id: string; username: string }[]>([]);
 
 const onEditorDidMount = async (
-    editor: monacoEditor["editor"],
-    monaco: monacoEditor,
+    editor: monacoEditor.editor.IStandaloneCodeEditor,
+    monaco: typeof monacoEditor,
 ) => {
     const response = await fetch("/outbounds.json");
     const outboundsSchema = await response.json();
@@ -56,7 +56,7 @@ const onEditorDidMount = async (
 
     // Register completion provider for dynamic uuid suggestions
     monaco.languages.registerCompletionItemProvider("json", {
-        provideCompletionItems: (model, position, context, token) => {
+        provideCompletionItems: (model, position) => {
             const lineContent = model.getLineContent(position.lineNumber);
             const textUntilPosition = model.getValueInRange({
                 startLineNumber: position.lineNumber,
