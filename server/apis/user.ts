@@ -1,11 +1,11 @@
-import { Hono } from 'hono';
-import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
-import { sign } from 'hono/jwt';
-import * as CryptoJS from 'crypto-js';
-import { users } from '../db/schema';
-import { eq } from 'drizzle-orm';
-import type { HonoEnv } from '../types';
+import { Hono } from "hono";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
+import { sign } from "hono/jwt";
+import * as CryptoJS from "crypto-js";
+import { users } from "../db/schema";
+import { eq } from "drizzle-orm";
+import type { HonoEnv } from "../types";
 
 const userRouter = new Hono<HonoEnv>();
 
@@ -13,24 +13,53 @@ const PasswordSchema = z.object({
   password: z.string(),
 });
 
-userRouter.put('/:username', zValidator('json', PasswordSchema), async (c) => {
-  const { username } = c.req.param();
-  const { password } = c.req.valid('json');
-  const db = c.get('db');
+// New login route for single admin
+userRouter.post("/login", zValidator("json", PasswordSchema), async (c) => {
+  const { password } = c.req.valid("json");
 
-  const user = await db.select().from(users).where(eq(users.username, username)).get();
+  // Check against env password (hashed)
+  const hashedPassword = CryptoJS.MD5(password).toString();
+  const adminPasswordHash = CryptoJS.MD5(c.env.ADMIN_PASSWORD).toString();
+
+  if (hashedPassword !== adminPasswordHash) {
+    return c.json({ message: "Invalid password" }, 401);
+  }
+
+  const payload = {
+    iss: "a-cup",
+    sub: "admin",
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
+  };
+
+  const token = await sign(payload, c.env.JWT_SECRET);
+
+  c.header("Authorization", `Bearer ${token}`);
+  return c.body(null, 200);
+});
+
+userRouter.put("/:username", zValidator("json", PasswordSchema), async (c) => {
+  const { username } = c.req.param();
+  const { password } = c.req.valid("json");
+  const db = c.get("db");
+
+  const user = await db
+    .select()
+    .from(users)
+    .where(eq(users.username, username))
+    .get();
 
   if (!user) {
-    return c.json({ message: 'Invalid username or password' }, 401);
+    return c.json({ message: "Invalid username or password" }, 401);
   }
 
   const hashedPassword = CryptoJS.MD5(password).toString();
   if (user.password !== hashedPassword) {
-    return c.json({ message: 'Invalid username or password' }, 401);
+    return c.json({ message: "Invalid username or password" }, 401);
   }
 
   const payload = {
-    iss: 'a-cup',
+    iss: "a-cup",
     sub: user.id,
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
@@ -38,16 +67,18 @@ userRouter.put('/:username', zValidator('json', PasswordSchema), async (c) => {
 
   const token = await sign(payload, c.env.JWT_SECRET);
 
-  c.header('Authorization', `Bearer ${token}`);
+  c.header("Authorization", `Bearer ${token}`);
   return c.body(null, 200);
 });
 
-userRouter.get('/', async (c) => {
-  const db = c.get('db');
-  const allUsers = await db.select({
-    id: users.id,
-    username: users.username,
-  }).from(users);
+userRouter.get("/", async (c) => {
+  const db = c.get("db");
+  const allUsers = await db
+    .select({
+      id: users.id,
+      username: users.username,
+    })
+    .from(users);
   return c.json(allUsers);
 });
 
