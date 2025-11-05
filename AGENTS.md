@@ -177,7 +177,7 @@ pnpm run openapi:validate       # Validate OpenAPI spec
 - PrimeVue components for consistent UI
 - Edit in JSON with Intellisense support
 
-## Configuration
+### Configuration
 
 ### Cloudflare Setup (`wrangler.jsonc`)
 Required configuration:
@@ -185,6 +185,7 @@ Required configuration:
 - `d1_databases[0].database_id` - D1 database ID
 - `r2_buckets[0].bucket_name` - R2 bucket name
 - `vars.JWT_SECRET` - Secret for JWT signing
+- `vars.ADMIN_PASSWORD` - Password for admin login
 - `vars.OSS_PUBLIC_DOMAIN` - Public domain for hosted profiles
 
 ## Development Notes

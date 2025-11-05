@@ -1,4 +1,4 @@
-import { DrizzleD1Database } from 'drizzle-orm/d1';
+import { DrizzleD1Database } from "drizzle-orm/d1";
 
 // Define the Cloudflare bindings (environment variables and bindings)
 // D1Database and R2Bucket types are declared globally in worker-configuration.d.ts
@@ -6,6 +6,7 @@ export type Bindings = {
   DB: D1Database;
   R2: R2Bucket;
   JWT_SECRET: string;
+  ADMIN_PASSWORD: string;
   R2_PUBLIC_URL: string;
 };
 

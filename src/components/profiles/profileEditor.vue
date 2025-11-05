@@ -2,7 +2,7 @@
     <div class="profile-editor">
         <Fieldset legend="Basic">
             <div class="p-field">
-                <label for="tags">Tags</label>
+                <label for="tags" class="mr-4">Tags</label>
                 <AutoComplete
                     v-model="model.tags"
                     :multiple="true"
