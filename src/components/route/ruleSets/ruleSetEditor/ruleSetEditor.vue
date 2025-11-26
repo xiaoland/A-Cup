@@ -88,13 +88,14 @@ const emit = defineEmits(['close', 'created', 'deleted'])
 const form = ref(props.ruleSet)
 const outboundStore = useOutboundStore()
 
-const outboundOptions = computed(() => 
-  outboundStore.outbounds.map(o => ({ label: o.name, value: o.id }))
-)
+const outboundOptions = computed(() => {
+  return outboundStore.outbounds.map(o => ({ label: o.name, value: o.id }))
+})
 
 onMounted(async () => {
   await outboundStore.fetchOutbounds()
 })
+
 const ruleSetStore = useRuleSetStore()
 
 const save = async (data: RuleSet) => {
