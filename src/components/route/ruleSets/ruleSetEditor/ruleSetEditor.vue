@@ -35,7 +35,15 @@
         </div>
         <div class="field col-span-1">
             <label for="download_detour">Download Detour</label>
-            <OutboundsSelector v-model="form.download_detour" value-as="id" />
+            <Select
+              id="download_detour"
+              v-model="form.download_detour"
+              :options="outboundOptions"
+              option-label="label"
+              option-value="value"
+              placeholder="Select Outbound"
+              show-clear
+            />
         </div>
         <div class="field col-span-1">
           <label for="update_interval">Update Interval</label>
@@ -53,15 +61,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRuleSetStore } from '@/stores/ruleSet'
+import { useOutboundStore } from '@/stores/outbound'
 import { RuleSetSchema, type RuleSet } from '@/schemas/route'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
-import OutboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPicker.vue'
 
 const props = defineProps({
   ruleSet: {
@@ -78,6 +86,15 @@ const props = defineProps({
 const emit = defineEmits(['close', 'created', 'deleted'])
 
 const form = ref(props.ruleSet)
+const outboundStore = useOutboundStore()
+
+const outboundOptions = computed(() => 
+  outboundStore.outbounds.map(o => ({ label: o.name, value: o.id }))
+)
+
+onMounted(async () => {
+  await outboundStore.fetchOutbounds()
+})
 const ruleSetStore = useRuleSetStore()
 
 const save = async (data: RuleSet) => {

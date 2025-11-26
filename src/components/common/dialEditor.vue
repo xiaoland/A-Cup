@@ -58,7 +58,15 @@
             </div>
             <div class="field">
               <label for="domain_resolver">Domain Resolver</label>
-              <InputText id="domain_resolver" v-model="dial.domain_resolver" />
+              <Select
+                v-if="dnsServerTags.length > 0"
+                id="domain_resolver"
+                v-model="dial.domain_resolver"
+                :options="dnsServerTags"
+                placeholder="Select DNS server"
+                show-clear
+              />
+              <InputText v-else id="domain_resolver" v-model="dial.domain_resolver" />
             </div>
             <div class="field">
               <label for="network_strategy">Network Strategy</label>
@@ -95,11 +103,15 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Checkbox from 'primevue/checkbox'
 import InputChips from 'primevue/inputchips'
+import Select from 'primevue/select'
 import outboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPicker.vue'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: any
-}>()
+  dnsServerTags?: string[]
+}>(), {
+  dnsServerTags: () => [],
+})
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: any): void

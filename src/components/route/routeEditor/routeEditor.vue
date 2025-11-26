@@ -20,7 +20,7 @@
         </div>
 
         <Dialog v-model:visible="showRuleEditor" modal header="Edit Rule" class="w-full max-w-lg">
-            <route-rule-editor v-if="editableRule" v-model="editableRule" @save="saveRule" @cancel="showRuleEditor = false" />
+            <route-rule-editor v-if="editableRule" v-model="editableRule" :available-outbound-tags="availableOutboundTags" @save="saveRule" @cancel="showRuleEditor = false" />
         </Dialog>
 
         <Divider />
@@ -34,7 +34,7 @@
 
         <div>
             <h3 class="text-lg font-bold mb-2">Final Outbound</h3>
-            <outbounds-selector v-model="route.final" value-as="id" />
+            <OutboundsPicker v-model="route.final" :available-outbound-tags="availableOutboundTags" />
         </div>
 
         <Accordion :value="[]">
@@ -64,7 +64,13 @@
                 </div>
                 <div class="field col-span-1">
                     <label for="default_domain_resolver">Default Domain Resolver</label>
-                    <InputText id="default_domain_resolver" v-model="route.default_domain_resolver" />
+                    <Select
+                      id="default_domain_resolver"
+                      v-model="route.default_domain_resolver"
+                      :options="dnsServerTags"
+                      placeholder="Select DNS server"
+                      show-clear
+                    />
                 </div>
                 <div class="field col-span-1">
                     <label for="default_network_strategy">Default Network Strategy</label>
@@ -102,6 +108,7 @@ import Checkbox from 'primevue/checkbox'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Dialog from 'primevue/dialog'
+import Select from 'primevue/select'
 import RouteRuleEditor from '../routeRuleEditor/routeRuleEditor.vue'
 import RouteRuleCard from '../routeRuleCard.vue'
 import RuleSetsSelector from '../ruleSets/ruleSetsSelector.vue'
@@ -109,11 +116,15 @@ import OutboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPic
 
 const props = withDefaults(defineProps<{
   modelValue: Route
+  dnsServerTags?: string[]
+  availableOutboundTags?: string[]
 }>(), {
   modelValue: () => ({
     rules: [],
     rule_set: [] as number[],
   }),
+  dnsServerTags: () => [],
+  availableOutboundTags: () => [],
 })
 
 const emit = defineEmits(['update:modelValue'])

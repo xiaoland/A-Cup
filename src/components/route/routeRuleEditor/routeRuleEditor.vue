@@ -18,7 +18,7 @@
         </div>
         <div v-if="rule.action === 'route'" class="field">
             <label>Outbound</label>
-            <outbounds-selector v-model="rule.outbound" value-as="id" />
+            <OutboundsPicker v-model="rule.outbound" :available-outbound-tags="availableOutboundTags" />
         </div>
 
         <div v-if="isFieldVisible('domain')" class="field">
@@ -68,6 +68,10 @@ const props = defineProps({
   modelValue: {
     type: Object as () => RouteRule,
     required: true,
+  },
+  availableOutboundTags: {
+    type: Array as () => string[],
+    default: () => [],
   },
 })
 

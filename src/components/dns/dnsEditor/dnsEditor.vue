@@ -8,7 +8,7 @@
         <div class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="field col-span-1">
             <label>Final</label>
-            <outboundsPicker v-model="dns.final" />
+            <dnsServerPicker v-model="dns.final" :servers="serverTags" />
           </div>
           <div class="field col-span-1">
             <label for="strategy">Strategy</label>
@@ -96,7 +96,7 @@
         </Accordion>
       </div>
       <Dialog v-model:visible="showServerEditor" modal header="Edit DNS Server" class="w-full max-w-lg">
-        <dns-server-editor v-if="editableServer" v-model="editableServer" @save="saveServer" @cancel="showServerEditor = false" />
+        <dns-server-editor v-if="editableServer" v-model="editableServer" :dns-server-tags="serverTags" @save="saveServer" @cancel="showServerEditor = false" />
       </Dialog>
       <Dialog v-model:visible="showRuleEditor" modal header="Edit DNS Rule" class="w-full max-w-lg">
         <dns-rule-editor v-if="editableRule" v-model="editableRule" :dns-servers="serverTags" @save="saveRule" @cancel="showRuleEditor = false" />
@@ -119,7 +119,7 @@ import DnsServerCard from '../dnsServerCard.vue'
 import DnsRuleCard from '../dnsRuleCard.vue'
 import Dialog from 'primevue/dialog'
 import dnsRuleEditor from '../dnsRuleEditor/dnsRuleEditor.vue'
-import outboundsPicker from '@/components/outbounds/outboundsPicker/outboundsPicker.vue'
+import dnsServerPicker from '../dnsServerPicker.vue'
 import fakeIpEditor from '../fakeIpEditor.vue'
 import InputNumber from "primevue/inputnumber";
 import JSONEditor from '@/components/common/JSONEditor.vue'

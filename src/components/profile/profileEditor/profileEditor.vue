@@ -106,7 +106,7 @@
         </template>
       </Card>
 
-      <RouteEditor v-model="profile.route" />
+      <RouteEditor v-model="profile.route" :dns-server-tags="dnsServerTags" :available-outbound-tags="allAvailableOutboundTags" />
       <DnsEditor v-model="profile.dns" />
     </div>
 
@@ -213,6 +213,11 @@ const allInboundTags = computed(() => {
 });
 
 const dialogHeader = computed(() => editingInboundIndex.value === null ? 'Add Inbound' : 'Edit Inbound')
+
+// DNS server tags for route editor intellisense
+const dnsServerTags = computed(() => {
+  return (profile.value.dns?.servers || []).map((s: { tag: string }) => s.tag).filter(Boolean) as string[]
+})
 
 const openAddInboundDialog = () => {
   editingInboundIndex.value = null

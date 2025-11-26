@@ -52,7 +52,7 @@
         </template>
 
         <div class="col-span-2">
-            <dialEditor v-model="server" />
+            <dialEditor v-model="server" :dns-server-tags="dnsServerTags" />
         </div>
       </div>
     </template>
@@ -71,6 +71,7 @@ import dialEditor from '@/components/common/dialEditor.vue'
 
 const props = defineProps<{
   modelValue?: DnsServer
+  dnsServerTags?: string[]
 }>()
 
 const emit = defineEmits<{
