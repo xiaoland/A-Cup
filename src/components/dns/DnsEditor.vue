@@ -19,9 +19,10 @@ import { useValueCompletion } from "@/composables/useMonacaEditor";
 
 const props = defineProps<{
     inboundTags?: string[];
+    outboundTags?: string[];
 }>();
 
-const { inboundTags } = toRefs(props);
+const { inboundTags, outboundTags } = toRefs(props);
 
 const model = defineModel("modelValue", {
     type: Object as () => DNSOptions,
@@ -143,15 +144,34 @@ const onEditorDidMount = async (
                 }),
             };
         },
-        // detour field in DNS servers - suggest available outbound tags (not available here, but we leave it for consistency)
+        // detour field in DNS servers - suggest available outbound tags
         detour: (
             lineContent: string,
             position: monacoEditor.IPosition,
             _model: monacoEditor.editor.ITextModel,
         ) => {
-            // detour references outbound tags, but we don't have access to outbound tags here
-            // This would need to be passed from parent component if needed
-            return { suggestions: [] };
+            const colonIndex = lineContent.indexOf(":");
+            const quoteStart = lineContent.indexOf('"', colonIndex);
+
+            const tags = outboundTags?.value || [];
+            return {
+                suggestions: tags.map((tag) => {
+                    let insertText = tag;
+                    if (!(position.column === quoteStart + 2)) {
+                        insertText = `"${tag}"`;
+                    } else if (position.column === colonIndex) {
+                        insertText = ` "${tag}"`;
+                    }
+
+                    return {
+                        label: `Detour via: ${tag}`,
+                        kind: monaco.languages.CompletionItemKind.Reference,
+                        insertText,
+                        documentation: `Use outbound "${tag}" as upstream detour`,
+                        range: monaco.Range.fromPositions(position, position),
+                    };
+                }),
+            };
         },
     };
 

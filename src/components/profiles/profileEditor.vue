@@ -28,6 +28,7 @@
                     <DnsEditor
                         v-model="model.dns"
                         :inbound-tags="inboundTags"
+                        :outbound-tags="outboundTags"
                     />
                 </TabPanel>
                 <TabPanel value="route">
