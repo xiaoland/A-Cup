@@ -13,10 +13,16 @@
 <script setup lang="ts">
 import MonacoEditor from "@guolao/vue-monaco-editor";
 import type * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api";
-import { computed, ref } from "vue";
+import { computed, ref, toRefs } from "vue";
 import { Outbound } from "@black-duty/sing-box-schema";
 import { useUserStore } from "@/stores/user";
 import { useValueCompletion } from "@/composables/useMonacaEditor";
+
+const props = defineProps<{
+    outboundTags?: string[];
+}>();
+
+const { outboundTags } = toRefs(props);
 
 const model = defineModel("modelValue", {
     type: Array as () => Outbound[],
@@ -80,7 +86,7 @@ const onEditorDidMount = async (
         uuid: (
             lineContent: string,
             position: monacoEditor.IPosition,
-            model: monacoEditor.editor.ITextModel,
+            _model: monacoEditor.editor.ITextModel,
         ) => {
             const colonIndex = lineContent.indexOf(":");
             const quoteStart = lineContent.indexOf('"', colonIndex);
@@ -107,7 +113,7 @@ const onEditorDidMount = async (
         public_key: (
             lineContent: string,
             position: monacoEditor.IPosition,
-            model: monacoEditor.editor.ITextModel,
+            _model: monacoEditor.editor.ITextModel,
         ) => {
             const colonIndex = lineContent.indexOf(":");
             const quoteStart = lineContent.indexOf('"', colonIndex);
@@ -142,6 +148,93 @@ const onEditorDidMount = async (
 
             return {
                 suggestions,
+            };
+        },
+        // outbounds field in selector/urltest - suggest available outbound tags
+        outbounds: (
+            lineContent: string,
+            position: monacoEditor.IPosition,
+            _model: monacoEditor.editor.ITextModel,
+        ) => {
+            const colonIndex = lineContent.indexOf(":");
+            const quoteStart = lineContent.indexOf('"', colonIndex);
+
+            const tags = outboundTags?.value || [];
+            return {
+                suggestions: tags.map((tag) => {
+                    let insertText = tag;
+                    if (!(position.column === quoteStart + 2)) {
+                        insertText = `"${tag}"`;
+                    } else if (position.column === colonIndex) {
+                        insertText = ` "${tag}"`;
+                    }
+
+                    return {
+                        label: `Outbound: ${tag}`,
+                        kind: monaco.languages.CompletionItemKind.Reference,
+                        insertText,
+                        documentation: `Reference to outbound with tag "${tag}"`,
+                        range: monaco.Range.fromPositions(position, position),
+                    };
+                }),
+            };
+        },
+        // default field in selector - suggest available outbound tags
+        default: (
+            lineContent: string,
+            position: monacoEditor.IPosition,
+            _model: monacoEditor.editor.ITextModel,
+        ) => {
+            const colonIndex = lineContent.indexOf(":");
+            const quoteStart = lineContent.indexOf('"', colonIndex);
+
+            const tags = outboundTags?.value || [];
+            return {
+                suggestions: tags.map((tag) => {
+                    let insertText = tag;
+                    if (!(position.column === quoteStart + 2)) {
+                        insertText = `"${tag}"`;
+                    } else if (position.column === colonIndex) {
+                        insertText = ` "${tag}"`;
+                    }
+
+                    return {
+                        label: `Default: ${tag}`,
+                        kind: monaco.languages.CompletionItemKind.Reference,
+                        insertText,
+                        documentation: `Set default outbound to "${tag}"`,
+                        range: monaco.Range.fromPositions(position, position),
+                    };
+                }),
+            };
+        },
+        // detour field in outbounds - suggest available outbound tags
+        detour: (
+            lineContent: string,
+            position: monacoEditor.IPosition,
+            _model: monacoEditor.editor.ITextModel,
+        ) => {
+            const colonIndex = lineContent.indexOf(":");
+            const quoteStart = lineContent.indexOf('"', colonIndex);
+
+            const tags = outboundTags?.value || [];
+            return {
+                suggestions: tags.map((tag) => {
+                    let insertText = tag;
+                    if (!(position.column === quoteStart + 2)) {
+                        insertText = `"${tag}"`;
+                    } else if (position.column === colonIndex) {
+                        insertText = ` "${tag}"`;
+                    }
+
+                    return {
+                        label: `Detour via: ${tag}`,
+                        kind: monaco.languages.CompletionItemKind.Reference,
+                        insertText,
+                        documentation: `Use outbound "${tag}" as upstream detour`,
+                        range: monaco.Range.fromPositions(position, position),
+                    };
+                }),
             };
         },
     };

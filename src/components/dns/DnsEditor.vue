@@ -12,8 +12,16 @@
 
 <script setup lang="ts">
 import MonacoEditor from "@guolao/vue-monaco-editor";
-import { computed } from "vue";
+import type * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api";
+import { computed, toRefs } from "vue";
 import { DNSOptions } from "@black-duty/sing-box-schema";
+import { useValueCompletion } from "@/composables/useMonacaEditor";
+
+const props = defineProps<{
+    inboundTags?: string[];
+}>();
+
+const { inboundTags } = toRefs(props);
 
 const model = defineModel("modelValue", {
     type: Object as () => DNSOptions,
@@ -22,7 +30,17 @@ const model = defineModel("modelValue", {
 
 const dnsJson = computed(() => JSON.stringify(model.value, null, 2));
 
-const onEditorDidMount = async (editor: any, monaco: any) => {
+// Computed property to get DNS server tags from current model
+const dnsServerTags = computed(() => {
+    return (model.value?.servers || [])
+        .map((server: { tag?: string }) => server.tag)
+        .filter((tag): tag is string => !!tag);
+});
+
+const onEditorDidMount = async (
+    editor: monacoEditor.editor.IStandaloneCodeEditor,
+    monaco: typeof monacoEditor,
+) => {
     const response = await fetch("/dns.json");
     const dnsSchema = await response.json();
     monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
@@ -30,11 +48,115 @@ const onEditorDidMount = async (editor: any, monaco: any) => {
         schemas: [
             {
                 uri: "dns-schema.json",
-                fileMatch: [editor.getModel().uri.toString()],
+                fileMatch: [editor.getModel()!.uri.toString()],
                 schema: dnsSchema,
             },
         ],
     });
+
+    // Build completion map for dynamic fields
+    const completionMap = {
+        // server field in DNS rules - suggest available DNS server tags
+        server: (
+            lineContent: string,
+            position: monacoEditor.IPosition,
+            _model: monacoEditor.editor.ITextModel,
+        ) => {
+            const colonIndex = lineContent.indexOf(":");
+            const quoteStart = lineContent.indexOf('"', colonIndex);
+
+            const tags = dnsServerTags.value;
+            return {
+                suggestions: tags.map((tag) => {
+                    let insertText = tag;
+                    if (!(position.column === quoteStart + 2)) {
+                        insertText = `"${tag}"`;
+                    } else if (position.column === colonIndex) {
+                        insertText = ` "${tag}"`;
+                    }
+
+                    return {
+                        label: `DNS Server: ${tag}`,
+                        kind: monaco.languages.CompletionItemKind.Reference,
+                        insertText,
+                        documentation: `Reference to DNS server with tag "${tag}"`,
+                        range: monaco.Range.fromPositions(position, position),
+                    };
+                }),
+            };
+        },
+        // inbound field in DNS rules - suggest available inbound tags
+        inbound: (
+            lineContent: string,
+            position: monacoEditor.IPosition,
+            _model: monacoEditor.editor.ITextModel,
+        ) => {
+            const colonIndex = lineContent.indexOf(":");
+            const quoteStart = lineContent.indexOf('"', colonIndex);
+
+            const tags = inboundTags?.value || [];
+            return {
+                suggestions: tags.map((tag) => {
+                    let insertText = tag;
+                    if (!(position.column === quoteStart + 2)) {
+                        insertText = `"${tag}"`;
+                    } else if (position.column === colonIndex) {
+                        insertText = ` "${tag}"`;
+                    }
+
+                    return {
+                        label: `Inbound: ${tag}`,
+                        kind: monaco.languages.CompletionItemKind.Reference,
+                        insertText,
+                        documentation: `Reference to inbound with tag "${tag}"`,
+                        range: monaco.Range.fromPositions(position, position),
+                    };
+                }),
+            };
+        },
+        // final field in DNS - suggest available DNS server tags
+        final: (
+            lineContent: string,
+            position: monacoEditor.IPosition,
+            _model: monacoEditor.editor.ITextModel,
+        ) => {
+            const colonIndex = lineContent.indexOf(":");
+            const quoteStart = lineContent.indexOf('"', colonIndex);
+
+            const tags = dnsServerTags.value;
+            return {
+                suggestions: tags.map((tag) => {
+                    let insertText = tag;
+                    if (!(position.column === quoteStart + 2)) {
+                        insertText = `"${tag}"`;
+                    } else if (position.column === colonIndex) {
+                        insertText = ` "${tag}"`;
+                    }
+
+                    return {
+                        label: `Default server: ${tag}`,
+                        kind: monaco.languages.CompletionItemKind.Reference,
+                        insertText,
+                        documentation: `Set default DNS server to "${tag}"`,
+                        range: monaco.Range.fromPositions(position, position),
+                    };
+                }),
+            };
+        },
+        // detour field in DNS servers - suggest available outbound tags (not available here, but we leave it for consistency)
+        detour: (
+            lineContent: string,
+            position: monacoEditor.IPosition,
+            _model: monacoEditor.editor.ITextModel,
+        ) => {
+            // detour references outbound tags, but we don't have access to outbound tags here
+            // This would need to be passed from parent component if needed
+            return { suggestions: [] };
+        },
+    };
+
+    const { onMount } = useValueCompletion(completionMap);
+    onMount(editor, monaco);
 };
 </script>
 

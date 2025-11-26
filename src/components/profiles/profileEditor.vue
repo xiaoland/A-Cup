@@ -25,16 +25,27 @@
                     <LogEditor v-model="model.log" />
                 </TabPanel>
                 <TabPanel value="dns">
-                    <DnsEditor v-model="model.dns" />
+                    <DnsEditor
+                        v-model="model.dns"
+                        :inbound-tags="inboundTags"
+                    />
                 </TabPanel>
                 <TabPanel value="route">
-                    <RouteEditor v-model="model.route" />
+                    <RouteEditor
+                        v-model="model.route"
+                        :outbound-tags="outboundTags"
+                        :inbound-tags="inboundTags"
+                        :dns-server-tags="dnsServerTags"
+                    />
                 </TabPanel>
                 <TabPanel value="inbounds">
                     <InboundsEditor v-model="model.inbounds" />
                 </TabPanel>
                 <TabPanel value="outbounds">
-                    <OutboundsEditor v-model="model.outbounds" />
+                    <OutboundsEditor
+                        v-model="model.outbounds"
+                        :outbound-tags="outboundTags"
+                    />
                 </TabPanel>
             </TabPanels>
         </Tabs>
@@ -54,7 +65,7 @@ import DnsEditor from "../dns/DnsEditor.vue";
 import RouteEditor from "../route/RouteEditor.vue";
 import InboundsEditor from "../inbounds/InboundsEditor.vue";
 import OutboundsEditor from "../outbounds/OutboundsEditor.vue";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import type { CreateProfile } from "~/schemas/profile";
 
 const model = defineModel("modelValue", {
@@ -63,6 +74,27 @@ const model = defineModel("modelValue", {
 });
 
 const suggestions = ref<string[]>([]);
+
+// Computed property to extract outbound tags from profile outbounds
+const outboundTags = computed(() => {
+    return (model.value.outbounds || [])
+        .map((outbound) => outbound.tag)
+        .filter((tag): tag is string => !!tag);
+});
+
+// Computed property to extract inbound tags from profile inbounds
+const inboundTags = computed(() => {
+    return (model.value.inbounds || [])
+        .map((inbound) => inbound.tag)
+        .filter((tag): tag is string => !!tag);
+});
+
+// Computed property to extract DNS server tags from profile dns servers
+const dnsServerTags = computed(() => {
+    return (model.value.dns?.servers || [])
+        .map((server) => server.tag)
+        .filter((tag): tag is string => !!tag);
+});
 </script>
 
 <style scoped>
