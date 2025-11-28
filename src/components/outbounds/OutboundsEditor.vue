@@ -14,7 +14,7 @@
 import MonacoEditor from "@guolao/vue-monaco-editor";
 import type * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api";
 import { computed, ref, toRefs } from "vue";
-import { Outbound } from "@black-duty/sing-box-schema";
+import type { SingBoxOutbound } from "~/schemas/singbox";
 import { useUserStore } from "@/stores/user";
 import { useValueCompletion } from "@/composables/useMonacaEditor";
 
@@ -25,7 +25,7 @@ const props = defineProps<{
 const { outboundTags } = toRefs(props);
 
 const model = defineModel("modelValue", {
-    type: Array as () => Outbound[],
+    type: Array as () => SingBoxOutbound[],
     required: true,
 });
 

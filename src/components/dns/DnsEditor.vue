@@ -14,7 +14,7 @@
 import MonacoEditor from "@guolao/vue-monaco-editor";
 import type * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api";
 import { computed, toRefs } from "vue";
-import { DNSOptions } from "@black-duty/sing-box-schema";
+import type { Dns } from "~/schemas/dns";
 import { useValueCompletion } from "@/composables/useMonacaEditor";
 
 const props = defineProps<{
@@ -25,7 +25,7 @@ const props = defineProps<{
 const { inboundTags, outboundTags } = toRefs(props);
 
 const model = defineModel("modelValue", {
-    type: Object as () => DNSOptions,
+    type: Object as () => Dns,
     required: true,
 });
 
