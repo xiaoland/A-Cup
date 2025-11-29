@@ -65,10 +65,9 @@ export const useProfileStore = defineStore("profile", () => {
   async function duplicateProfile(id: string) {
     const profileToDuplicate = await getProfileForEdit(id);
 
-    // Create a new profile with modified name
+    // Create a copy of the profile
     const duplicatedProfile: CreateProfile = {
       ...profileToDuplicate,
-      name: `${profileToDuplicate.name} (Copy)`,
     };
 
     await userStore.authorizedRequest("/api/profiles", {

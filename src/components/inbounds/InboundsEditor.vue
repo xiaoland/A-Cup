@@ -14,7 +14,7 @@
 import MonacoEditor from "@guolao/vue-monaco-editor";
 import type * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api";
 import { computed, ref } from "vue";
-import { Inbound } from "@black-duty/sing-box-schema";
+import type { Inbound } from "~/schemas/inbound";
 import { useUserStore } from "@/stores/user";
 import { useValueCompletion } from "@/composables/useMonacaEditor";
 import { generateKeypair } from "~/utils/wireguard";
