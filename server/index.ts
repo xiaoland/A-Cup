@@ -70,7 +70,7 @@ import { ruleSetApi } from "./apis/ruleset";
 import { wireguardKeypairApi } from "./apis/wireguard-keypair";
 
 // Register module routers
-api.route("/users", userRouter);
+api.route("/user", userRouter);
 api.route("/profiles", profileRouter);
 api.route("/outbounds", outboundApi);
 api.route("/rulesets", ruleSetApi);
