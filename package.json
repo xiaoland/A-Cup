@@ -52,35 +52,36 @@
     },
     "jsonValidation": [
       {
-        "fileMatch": ["*.sing-box.json", "*sing-box*.json"],
+        "fileMatch": [
+          "*.sing-box.json",
+          "*sing-box*.json"
+        ],
         "url": "./schemas/sing-box.schema.json"
       }
     ]
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
-    "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
-    "watch": "npm-run-all -p watch:*",
-    "watch:esbuild": "node esbuild.js --watch",
-    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "package": "pnpm run check-types && pnpm run lint && node esbuild.js --production",
+    "compile": "pnpm run check-types && pnpm run lint && vite build",
+    "watch": "vite build --watch",
+    "package": "pnpm run check-types && pnpm run lint && vite build --mode production",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
     "check-types": "tsc --noEmit",
-    "lint": "eslint src",
+    "lint": "biome check src",
+    "lint:fix": "biome check --write src",
+    "format": "biome format --write src",
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.106.1",
+    "@biomejs/biome": "^2.3.8",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.46.3",
-    "eslint": "^9.39.1",
-    "esbuild": "^0.27.0",
-    "npm-run-all": "^4.1.5",
-    "typescript": "^5.9.3",
+    "@types/vscode": "^1.106.1",
     "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4"
   }
 }
