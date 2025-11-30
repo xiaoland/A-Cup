@@ -7,6 +7,7 @@ import {
 	TextDocuments,
 } from 'vscode-languageserver/node.js';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { getCompletions, resolveCompletionItem } from './completion.js';
 
 // Create a connection for the server
 const connection = createConnection(ProposedFeatures.all);
@@ -18,9 +19,9 @@ connection.onInitialize((_params: InitializeParams): InitializeResult => {
 	return {
 		capabilities: {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
-			// Add more capabilities as needed
 			completionProvider: {
 				resolveProvider: true,
+				triggerCharacters: ['"', ':'],
 			},
 		},
 	};
@@ -28,6 +29,20 @@ connection.onInitialize((_params: InitializeParams): InitializeResult => {
 
 connection.onInitialized(() => {
 	connection.console.log('Sing-box Language Server initialized');
+});
+
+// Handle completion requests
+connection.onCompletion((params) => {
+	const document = documents.get(params.textDocument.uri);
+	if (!document) {
+		return [];
+	}
+	return getCompletions(document, params.position);
+});
+
+// Handle completion item resolve
+connection.onCompletionResolve((item) => {
+	return resolveCompletionItem(item);
 });
 
 // Listen on the connection
