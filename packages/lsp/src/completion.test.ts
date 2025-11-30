@@ -1,0 +1,271 @@
+import { describe, expect, it } from 'vitest';
+import { CompletionItemKind } from 'vscode-languageserver/node.js';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import {
+	extractTags,
+	getCompletions,
+	getJsonPathContext,
+	resolveCompletionItem,
+} from './completion.js';
+
+describe('extractTags', () => {
+	it('should extract inbound tags', () => {
+		const config = JSON.stringify({
+			inbounds: [
+				{ type: 'mixed', tag: 'mixed-in' },
+				{ type: 'tun', tag: 'tun-in' },
+			],
+		});
+		const tags = extractTags(config);
+		expect(tags.inboundTags).toEqual(['mixed-in', 'tun-in']);
+	});
+
+	it('should extract outbound tags', () => {
+		const config = JSON.stringify({
+			outbounds: [
+				{ type: 'direct', tag: 'direct-out' },
+				{ type: 'vmess', tag: 'proxy' },
+				{ type: 'selector', tag: 'select' },
+			],
+		});
+		const tags = extractTags(config);
+		expect(tags.outboundTags).toEqual(['direct-out', 'proxy', 'select']);
+	});
+
+	it('should extract DNS server tags', () => {
+		const config = JSON.stringify({
+			dns: {
+				servers: [
+					{ tag: 'cloudflare', address: '1.1.1.1' },
+					{ tag: 'google', address: '8.8.8.8' },
+				],
+			},
+		});
+		const tags = extractTags(config);
+		expect(tags.dnsServerTags).toEqual(['cloudflare', 'google']);
+	});
+
+	it('should extract rule set tags', () => {
+		const config = JSON.stringify({
+			route: {
+				rule_set: [
+					{ type: 'remote', tag: 'geosite-cn' },
+					{ type: 'local', tag: 'custom-rules' },
+				],
+			},
+		});
+		const tags = extractTags(config);
+		expect(tags.ruleSetTags).toEqual(['geosite-cn', 'custom-rules']);
+	});
+
+	it('should handle empty config', () => {
+		const tags = extractTags('{}');
+		expect(tags.inboundTags).toEqual([]);
+		expect(tags.outboundTags).toEqual([]);
+		expect(tags.dnsServerTags).toEqual([]);
+		expect(tags.ruleSetTags).toEqual([]);
+	});
+
+	it('should handle invalid JSON gracefully', () => {
+		const tags = extractTags('invalid json');
+		expect(tags.inboundTags).toEqual([]);
+		expect(tags.outboundTags).toEqual([]);
+		expect(tags.dnsServerTags).toEqual([]);
+		expect(tags.ruleSetTags).toEqual([]);
+	});
+
+	it('should handle missing tag property', () => {
+		const config = JSON.stringify({
+			inbounds: [{ type: 'mixed' }],
+			outbounds: [{ type: 'direct' }],
+		});
+		const tags = extractTags(config);
+		expect(tags.inboundTags).toEqual([]);
+		expect(tags.outboundTags).toEqual([]);
+	});
+});
+
+describe('getJsonPathContext', () => {
+	it('should identify root object', () => {
+		const text = '{ }';
+		const context = getJsonPathContext(text, 2);
+		expect(context.path).toEqual([]);
+		expect(context.inArray).toBe(false);
+	});
+
+	it('should identify nested object', () => {
+		const text = '{ "log": { "level": "" } }';
+		// Position after "level": "
+		const offset = text.indexOf('""') + 1;
+		const context = getJsonPathContext(text, offset);
+		expect(context.path).toContain('log');
+		expect(context.isValue).toBe(true);
+		expect(context.currentKey).toBe('level');
+	});
+
+	it('should identify array context', () => {
+		const text = '{ "inbounds": [ { "type": "" } ] }';
+		const offset = text.indexOf('type": "') + 8;
+		const context = getJsonPathContext(text, offset);
+		expect(context.path).toContain('inbounds');
+		expect(context.isValue).toBe(true);
+	});
+
+	it('should track current key after colon', () => {
+		const text = '{ "dns": { "final": "" } }';
+		const offset = text.indexOf('final": "') + 9;
+		const context = getJsonPathContext(text, offset);
+		expect(context.currentKey).toBe('final');
+		expect(context.isValue).toBe(true);
+	});
+});
+
+describe('getCompletions - reference completions only', () => {
+	function createDocument(content: string): TextDocument {
+		return TextDocument.create('file:///test.json', 'json', 1, content);
+	}
+
+	it('should provide DNS final completions with DNS server tags', () => {
+		const config = {
+			dns: {
+				servers: [
+					{ tag: 'cloudflare', address: '1.1.1.1' },
+					{ tag: 'google', address: '8.8.8.8' },
+				],
+				final: '',
+			},
+		};
+		const text = JSON.stringify(config, null, 2);
+		const doc = createDocument(text);
+		const offset = text.indexOf('"final": "') + 10;
+		const position = doc.positionAt(offset);
+		const completions = getCompletions(doc, position);
+
+		expect(completions.length).toBeGreaterThan(0);
+		const labels = completions.map((c) => c.label);
+		expect(labels).toContain('cloudflare');
+		expect(labels).toContain('google');
+	});
+
+	it('should provide route final completions with outbound tags', () => {
+		const config = {
+			outbounds: [
+				{ type: 'direct', tag: 'direct-out' },
+				{ type: 'vmess', tag: 'proxy' },
+			],
+			route: {
+				final: '',
+			},
+		};
+		const text = JSON.stringify(config, null, 2);
+		const doc = createDocument(text);
+		const offset = text.indexOf('"final": "') + 10;
+		const position = doc.positionAt(offset);
+		const completions = getCompletions(doc, position);
+
+		expect(completions.length).toBeGreaterThan(0);
+		const labels = completions.map((c) => c.label);
+		expect(labels).toContain('direct-out');
+		expect(labels).toContain('proxy');
+	});
+
+	it('should provide route rules outbound completions with outbound tags', () => {
+		const config = {
+			outbounds: [
+				{ type: 'direct', tag: 'direct-out' },
+				{ type: 'block', tag: 'block-out' },
+			],
+			route: {
+				rules: [{ outbound: '' }],
+			},
+		};
+		const text = JSON.stringify(config, null, 2);
+		const doc = createDocument(text);
+		const offset = text.indexOf('"outbound": "') + 13;
+		const position = doc.positionAt(offset);
+		const completions = getCompletions(doc, position);
+
+		expect(completions.length).toBeGreaterThan(0);
+		const labels = completions.map((c) => c.label);
+		expect(labels).toContain('direct-out');
+		expect(labels).toContain('block-out');
+	});
+
+	it('should provide selector default completions with outbound tags', () => {
+		const config = {
+			outbounds: [
+				{ type: 'vmess', tag: 'proxy-1' },
+				{ type: 'vmess', tag: 'proxy-2' },
+				{ type: 'selector', tag: 'select', default: '' },
+			],
+		};
+		const text = JSON.stringify(config, null, 2);
+		const doc = createDocument(text);
+		const offset = text.indexOf('"default": "') + 12;
+		const position = doc.positionAt(offset);
+		const completions = getCompletions(doc, position);
+
+		expect(completions.length).toBeGreaterThan(0);
+		const labels = completions.map((c) => c.label);
+		expect(labels).toContain('proxy-1');
+		expect(labels).toContain('proxy-2');
+	});
+
+	it('should provide rule set download_detour completions with outbound tags', () => {
+		const config = {
+			outbounds: [{ type: 'direct', tag: 'direct-out' }],
+			route: {
+				rule_set: [{ type: 'remote', tag: 'geosite', download_detour: '' }],
+			},
+		};
+		const text = JSON.stringify(config, null, 2);
+		const doc = createDocument(text);
+		const offset = text.indexOf('"download_detour": "') + 20;
+		const position = doc.positionAt(offset);
+		const completions = getCompletions(doc, position);
+
+		expect(completions.length).toBeGreaterThan(0);
+		const labels = completions.map((c) => c.label);
+		expect(labels).toContain('direct-out');
+	});
+
+	it('should NOT provide static enum completions (handled by JSON schema)', () => {
+		// These should return empty arrays since static completions are handled by VSCode JSON LSP
+		const doc = createDocument('{ "log": { "level": "" } }');
+		const offset = doc.getText().indexOf('level": "') + 9;
+		const position = doc.positionAt(offset);
+		const completions = getCompletions(doc, position);
+
+		// Static enum completions are now handled by JSON schema, not this LSP
+		expect(completions.length).toBe(0);
+	});
+});
+
+describe('resolveCompletionItem', () => {
+	it('should add documentation for tag references', () => {
+		const item = {
+			label: 'direct-out',
+			kind: CompletionItemKind.Reference,
+			detail: 'Outbound tag',
+		};
+		const resolved = resolveCompletionItem(item);
+
+		expect(resolved.documentation).toBeDefined();
+		expect(typeof resolved.documentation).toBe('object');
+		if (typeof resolved.documentation === 'object' && resolved.documentation) {
+			expect(resolved.documentation.kind).toBe('markdown');
+			expect(resolved.documentation.value).toContain('Reference');
+		}
+	});
+
+	it('should not add documentation for non-tag items', () => {
+		const item = {
+			label: 'debug',
+			kind: CompletionItemKind.EnumMember,
+			detail: 'Debug level logging',
+		};
+		const resolved = resolveCompletionItem(item);
+
+		expect(resolved.documentation).toBeUndefined();
+	});
+});
