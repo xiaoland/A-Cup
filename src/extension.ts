@@ -4,7 +4,7 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('A-Cup extension is now active');
 
 	// Register upload command
-	const uploadCmd = vscode.commands.registerCommand('a-cup.uploadToOSS', async () => {
+	const uploadToOSSCommand = vscode.commands.registerCommand('a-cup.uploadToOSS', async () => {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			vscode.window.showErrorMessage('No active editor');
@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	// Register download command
-	const downloadCmd = vscode.commands.registerCommand('a-cup.downloadFromOSS', async () => {
+	const downloadFromOSSCommand = vscode.commands.registerCommand('a-cup.downloadFromOSS', async () => {
 		const config = vscode.workspace.getConfiguration('a-cup.oss');
 		const endpoint = config.get<string>('endpoint');
 		const accessKeyId = config.get<string>('accessKeyId');
@@ -55,7 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage(`Download from OSS: ${fileName}`);
 	});
 
-	context.subscriptions.push(uploadCmd, downloadCmd);
+	context.subscriptions.push(uploadToOSSCommand, downloadFromOSSCommand);
 }
 
 export function deactivate() {}
