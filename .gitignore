@@ -27,3 +27,7 @@ pnpm-debug.log*
 
 # Editor
 *.sw?
+
+# Monorepo
+packages/*/dist/
+shared/dist/

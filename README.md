@@ -6,6 +6,7 @@ VSCode extension for sing-box profile editing with intellisense and OSS integrat
 
 - **Intellisense/Autocomplete**: JSON schema validation and autocompletion for sing-box configuration files
 - **OSS Integration**: Upload and download sing-box profiles from Object Storage Service (OSS)
+- **Language Server**: Dedicated LSP for advanced sing-box configuration support
 
 ## Supported File Patterns
 
@@ -27,30 +28,58 @@ This extension contributes the following settings:
 * `A-Cup: Upload Profile to OSS` - Upload the current file to configured OSS
 * `A-Cup: Download Profile from OSS` - Download a profile from configured OSS
 
+## Project Structure
+
+This is a pnpm monorepo with the following structure:
+
+```
+├── packages/
+│   ├── extension/     # VSCode extension main process
+│   ├── webview/       # Vite + Vue3 UI components
+│   └── lsp/           # Language Server Protocol implementation
+├── shared/            # Shared types, utils, and schemas
+├── .github/workflows/ # CI/CD workflows
+├── tsconfig.json      # Root TypeScript config
+├── package.json       # Workspace configuration
+└── pnpm-workspace.yaml
+```
+
 ## Development
 
 ### Prerequisites
 
 - Node.js 20+
-- pnpm
+- pnpm 8+
 
 ### Install & Build
 
 ```bash
 pnpm install
-pnpm run compile
+pnpm build
+```
+
+### Development Mode
+
+```bash
+pnpm dev
+```
+
+### Testing
+
+```bash
+pnpm test
 ```
 
 ### Type Check
 
 ```bash
-pnpm run check-types
+pnpm check-types
 ```
 
-### Watch Mode
+### Package Extension
 
 ```bash
-pnpm run watch
+pnpm vsce:package
 ```
 
 ## Resources

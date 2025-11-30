@@ -1,87 +1,25 @@
 {
-  "name": "a-cup",
-  "displayName": "A-Cup",
-  "description": "VSCode extension for sing-box profile editing with intellisense and OSS integration",
+  "name": "a-cup-monorepo",
+  "private": true,
   "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.106.1"
-  },
-  "categories": [
-    "Programming Languages",
-    "Linters"
-  ],
-  "activationEvents": [
-    "onLanguage:json"
-  ],
-  "main": "./dist/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "a-cup.uploadToOSS",
-        "title": "A-Cup: Upload Profile to OSS"
-      },
-      {
-        "command": "a-cup.downloadFromOSS",
-        "title": "A-Cup: Download Profile from OSS"
-      }
-    ],
-    "configuration": {
-      "title": "A-Cup",
-      "properties": {
-        "a-cup.oss.endpoint": {
-          "type": "string",
-          "default": "",
-          "description": "OSS endpoint URL"
-        },
-        "a-cup.oss.accessKeyId": {
-          "type": "string",
-          "default": "",
-          "description": "OSS access key ID"
-        },
-        "a-cup.oss.accessKeySecret": {
-          "type": "string",
-          "default": "",
-          "description": "OSS access key secret"
-        },
-        "a-cup.oss.bucket": {
-          "type": "string",
-          "default": "",
-          "description": "OSS bucket name"
-        }
-      }
-    },
-    "jsonValidation": [
-      {
-        "fileMatch": [
-          "*.sing-box.json",
-          "*sing-box*.json"
-        ],
-        "url": "./schemas/sing-box.schema.json"
-      }
-    ]
-  },
+  "description": "VSCode extension for sing-box profile editing with intellisense and OSS integration",
   "scripts": {
-    "vscode:prepublish": "pnpm run package",
-    "compile": "pnpm run check-types && pnpm run lint && vite build",
-    "watch": "vite build --watch",
-    "package": "pnpm run check-types && pnpm run lint && vite build --mode production",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
-    "check-types": "tsc --noEmit",
-    "lint": "biome check src",
-    "lint:fix": "biome check --write src",
-    "format": "biome format --write src",
-    "test": "vscode-test"
+    "build": "pnpm -r build",
+    "dev": "pnpm -r --parallel dev",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "pnpm -r test",
+    "check-types": "pnpm -r check-types",
+    "package": "pnpm --filter @a-cup/extension package",
+    "vsce:package": "pnpm --filter @a-cup/extension vsce:package"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.8",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "@types/vscode": "^1.106.1",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2",
-    "typescript": "^5.9.3",
-    "vite": "^7.2.4"
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   }
 }

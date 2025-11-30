@@ -1,0 +1,86 @@
+{
+  "name": "@a-cup/extension",
+  "displayName": "A-Cup",
+  "description": "VSCode extension for sing-box profile editing with intellisense and OSS integration",
+  "version": "0.0.1",
+  "publisher": "xiaoland",
+  "engines": {
+    "vscode": "^1.106.1"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:json"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "a-cup.uploadToOSS",
+        "title": "A-Cup: Upload Profile to OSS"
+      },
+      {
+        "command": "a-cup.downloadFromOSS",
+        "title": "A-Cup: Download Profile from OSS"
+      }
+    ],
+    "configuration": {
+      "title": "A-Cup",
+      "properties": {
+        "a-cup.oss.endpoint": {
+          "type": "string",
+          "default": "",
+          "description": "OSS endpoint URL"
+        },
+        "a-cup.oss.accessKeyId": {
+          "type": "string",
+          "default": "",
+          "description": "OSS access key ID"
+        },
+        "a-cup.oss.accessKeySecret": {
+          "type": "string",
+          "default": "",
+          "description": "OSS access key secret"
+        },
+        "a-cup.oss.bucket": {
+          "type": "string",
+          "default": "",
+          "description": "OSS bucket name"
+        }
+      }
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": [
+          "*.sing-box.json",
+          "*sing-box*.json"
+        ],
+        "url": "./schemas/sing-box.schema.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "package": "pnpm run check-types && vite build --mode production",
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "vsce:package": "vsce package --no-dependencies"
+  },
+  "dependencies": {
+    "@a-cup/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.x",
+    "@types/vscode": "^1.106.1",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.3.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4",
+    "vitest": "^3.2.4"
+  }
+}
