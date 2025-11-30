@@ -7,119 +7,10 @@ import {
 import type { TextDocument } from 'vscode-languageserver-textdocument';
 
 /**
- * Enum values for various sing-box configuration fields
+ * This LSP provides only reference completions (tags) and generation completions.
+ * Static key/value completions are handled by VSCode's JSON LSP with sing-box schema.
+ * See: https://github.com/BlackDuty/sing-box-schema
  */
-const ENUMS = {
-	logLevel: [
-		{ value: 'trace', description: 'Most verbose logging' },
-		{ value: 'debug', description: 'Debug level logging' },
-		{ value: 'info', description: 'Informational messages' },
-		{ value: 'warn', description: 'Warning messages' },
-		{ value: 'error', description: 'Error messages only' },
-		{ value: 'fatal', description: 'Fatal errors only' },
-		{ value: 'panic', description: 'Panic level only' },
-	],
-	dnsStrategy: [
-		{ value: 'prefer_ipv4', description: 'Prefer IPv4 addresses' },
-		{ value: 'prefer_ipv6', description: 'Prefer IPv6 addresses' },
-		{ value: 'ipv4_only', description: 'Only use IPv4 addresses' },
-		{ value: 'ipv6_only', description: 'Only use IPv6 addresses' },
-	],
-	inboundType: [
-		{ value: 'tun', description: 'TUN interface inbound' },
-		{ value: 'mixed', description: 'Mixed SOCKS/HTTP proxy inbound' },
-		{ value: 'socks', description: 'SOCKS proxy inbound' },
-		{ value: 'http', description: 'HTTP proxy inbound' },
-		{ value: 'redirect', description: 'Redirect inbound (Linux)' },
-		{ value: 'tproxy', description: 'TProxy inbound (Linux)' },
-		{ value: 'direct', description: 'Direct inbound' },
-		{ value: 'shadowsocks', description: 'Shadowsocks server' },
-		{ value: 'vmess', description: 'VMess server' },
-		{ value: 'trojan', description: 'Trojan server' },
-		{ value: 'naive', description: 'NaiveProxy server' },
-		{ value: 'hysteria', description: 'Hysteria server' },
-		{ value: 'shadowtls', description: 'ShadowTLS server' },
-		{ value: 'vless', description: 'VLESS server' },
-		{ value: 'tuic', description: 'TUIC server' },
-		{ value: 'hysteria2', description: 'Hysteria2 server' },
-		{ value: 'anytls', description: 'AnyTLS server' },
-	],
-	outboundType: [
-		{ value: 'direct', description: 'Direct connection' },
-		{ value: 'block', description: 'Block connection' },
-		{ value: 'dns', description: 'DNS outbound' },
-		{ value: 'socks', description: 'SOCKS proxy client' },
-		{ value: 'http', description: 'HTTP proxy client' },
-		{ value: 'shadowsocks', description: 'Shadowsocks client' },
-		{ value: 'vmess', description: 'VMess client' },
-		{ value: 'vless', description: 'VLESS client' },
-		{ value: 'trojan', description: 'Trojan client' },
-		{ value: 'wireguard', description: 'WireGuard client' },
-		{ value: 'hysteria', description: 'Hysteria client' },
-		{ value: 'shadowtls', description: 'ShadowTLS client' },
-		{ value: 'tuic', description: 'TUIC client' },
-		{ value: 'hysteria2', description: 'Hysteria2 client' },
-		{ value: 'anytls', description: 'AnyTLS client' },
-		{ value: 'tor', description: 'Tor client' },
-		{ value: 'ssh', description: 'SSH client' },
-		{ value: 'selector', description: 'Manual selector' },
-		{ value: 'urltest', description: 'URL test auto-selector' },
-	],
-	ruleSetType: [
-		{ value: 'local', description: 'Local rule set file' },
-		{ value: 'remote', description: 'Remote rule set URL' },
-	],
-	ruleSetFormat: [
-		{ value: 'source', description: 'Source JSON format' },
-		{ value: 'binary', description: 'Binary compiled format' },
-	],
-	tunStack: [
-		{ value: 'system', description: 'System network stack' },
-		{ value: 'gvisor', description: 'gVisor user-space stack' },
-		{ value: 'mixed', description: 'Mixed stack mode' },
-	],
-	network: [
-		{ value: 'tcp', description: 'TCP only' },
-		{ value: 'udp', description: 'UDP only' },
-	],
-	transportType: [
-		{ value: 'http', description: 'HTTP transport' },
-		{ value: 'ws', description: 'WebSocket transport' },
-		{ value: 'quic', description: 'QUIC transport' },
-		{ value: 'grpc', description: 'gRPC transport' },
-		{ value: 'httpupgrade', description: 'HTTP Upgrade transport' },
-	],
-	shadowsocksMethod: [
-		{ value: 'none', description: 'No encryption' },
-		{ value: 'aes-128-gcm', description: 'AES-128-GCM' },
-		{ value: 'aes-192-gcm', description: 'AES-192-GCM' },
-		{ value: 'aes-256-gcm', description: 'AES-256-GCM' },
-		{ value: 'chacha20-ietf-poly1305', description: 'ChaCha20-IETF-Poly1305' },
-		{
-			value: 'xchacha20-ietf-poly1305',
-			description: 'XChaCha20-IETF-Poly1305',
-		},
-		{
-			value: '2022-blake3-aes-128-gcm',
-			description: 'Shadowsocks 2022 AES-128',
-		},
-		{
-			value: '2022-blake3-aes-256-gcm',
-			description: 'Shadowsocks 2022 AES-256',
-		},
-		{
-			value: '2022-blake3-chacha20-poly1305',
-			description: 'Shadowsocks 2022 ChaCha20',
-		},
-	],
-	routeAction: [
-		{ value: 'route', description: 'Route to specified outbound' },
-		{ value: 'reject', description: 'Reject the connection' },
-		{ value: 'hijack-dns', description: 'Hijack DNS to internal resolver' },
-		{ value: 'sniff', description: 'Sniff protocol' },
-		{ value: 'resolve', description: 'Resolve domain to IP' },
-	],
-};
 
 /**
  * Represents location context within a JSON document
@@ -363,22 +254,6 @@ export function getJsonPathContext(
 }
 
 /**
- * Create completion items from enum values
- */
-function createEnumCompletions(
-	enumValues: Array<{ value: string; description: string }>,
-	kind: CompletionItemKind = CompletionItemKind.EnumMember,
-): CompletionItem[] {
-	return enumValues.map((item, index) => ({
-		label: item.value,
-		kind,
-		detail: item.description,
-		insertText: item.value,
-		sortText: String(index).padStart(3, '0'),
-	}));
-}
-
-/**
  * Create completion items from tag references
  */
 function createTagCompletions(
@@ -396,7 +271,9 @@ function createTagCompletions(
 }
 
 /**
- * Get completions for a specific JSON path and context
+ * Get completions for a specific JSON path and context.
+ * Only provides reference completions (tags).
+ * Static value completions are handled by VSCode's JSON LSP with sing-box schema.
  */
 export function getCompletions(
 	document: TextDocument,
@@ -407,25 +284,11 @@ export function getCompletions(
 	const context = getJsonPathContext(text, offset);
 	const tags = extractTags(text);
 
-	const items: CompletionItem[] = [];
 	const pathStr = context.path.join('.');
 
-	// If we're editing a value
+	// Only provide reference completions (tags)
 	if (context.isValue && context.currentKey) {
 		const key = context.currentKey;
-
-		// Log level
-		if (pathStr === 'log' && key === 'level') {
-			return createEnumCompletions(ENUMS.logLevel);
-		}
-
-		// DNS strategy
-		if (
-			(pathStr === 'dns' && key === 'strategy') ||
-			(pathStr.startsWith('dns.servers') && key === 'address_strategy')
-		) {
-			return createEnumCompletions(ENUMS.dnsStrategy);
-		}
 
 		// DNS final - suggest DNS server tags
 		if (pathStr === 'dns' && key === 'final') {
@@ -461,39 +324,6 @@ export function getCompletions(
 				'DNS server tag',
 				CompletionItemKind.Reference,
 			);
-		}
-
-		// Inbound type
-		if (pathStr === 'inbounds' && key === 'type') {
-			return createEnumCompletions(ENUMS.inboundType, CompletionItemKind.Class);
-		}
-
-		// Inbound stack (TUN)
-		if (pathStr === 'inbounds' && key === 'stack') {
-			return createEnumCompletions(ENUMS.tunStack);
-		}
-
-		// Outbound type
-		if (pathStr === 'outbounds' && key === 'type') {
-			return createEnumCompletions(
-				ENUMS.outboundType,
-				CompletionItemKind.Class,
-			);
-		}
-
-		// Shadowsocks method
-		if (pathStr === 'outbounds' && key === 'method') {
-			return createEnumCompletions(ENUMS.shadowsocksMethod);
-		}
-
-		// Transport type
-		if (pathStr === 'outbounds.transport' && key === 'type') {
-			return createEnumCompletions(ENUMS.transportType);
-		}
-
-		// Network field
-		if (key === 'network') {
-			return createEnumCompletions(ENUMS.network);
 		}
 
 		// Selector/URLTest outbounds array - suggest outbound tags
@@ -541,11 +371,6 @@ export function getCompletions(
 			);
 		}
 
-		// Route rules action
-		if (pathStr.startsWith('route.rules') && key === 'action') {
-			return createEnumCompletions(ENUMS.routeAction);
-		}
-
 		// Route rules rule_set array - suggest rule set tags
 		if (pathStr === 'route.rules.rule_set' && context.inArray) {
 			return createTagCompletions(
@@ -553,16 +378,6 @@ export function getCompletions(
 				'Rule set tag',
 				CompletionItemKind.Reference,
 			);
-		}
-
-		// Rule set type
-		if (pathStr === 'route.rule_set' && key === 'type') {
-			return createEnumCompletions(ENUMS.ruleSetType, CompletionItemKind.Class);
-		}
-
-		// Rule set format
-		if (pathStr === 'route.rule_set' && key === 'format') {
-			return createEnumCompletions(ENUMS.ruleSetFormat);
 		}
 
 		// Rule set download_detour - suggest outbound tags
@@ -575,7 +390,7 @@ export function getCompletions(
 		}
 	}
 
-	return items;
+	return [];
 }
 
 /**

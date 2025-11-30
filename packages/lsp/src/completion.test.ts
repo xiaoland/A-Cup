@@ -120,67 +120,10 @@ describe('getJsonPathContext', () => {
 	});
 });
 
-describe('getCompletions', () => {
+describe('getCompletions - reference completions only', () => {
 	function createDocument(content: string): TextDocument {
 		return TextDocument.create('file:///test.json', 'json', 1, content);
 	}
-
-	it('should provide log level completions', () => {
-		const doc = createDocument('{ "log": { "level": "" } }');
-		const offset = doc.getText().indexOf('level": "') + 9;
-		const position = doc.positionAt(offset);
-		const completions = getCompletions(doc, position);
-
-		expect(completions.length).toBeGreaterThan(0);
-		const labels = completions.map((c) => c.label);
-		expect(labels).toContain('debug');
-		expect(labels).toContain('info');
-		expect(labels).toContain('warn');
-		expect(labels).toContain('error');
-	});
-
-	it('should provide DNS strategy completions', () => {
-		const doc = createDocument('{ "dns": { "strategy": "" } }');
-		const offset = doc.getText().indexOf('strategy": "') + 12;
-		const position = doc.positionAt(offset);
-		const completions = getCompletions(doc, position);
-
-		expect(completions.length).toBeGreaterThan(0);
-		const labels = completions.map((c) => c.label);
-		expect(labels).toContain('prefer_ipv4');
-		expect(labels).toContain('prefer_ipv6');
-		expect(labels).toContain('ipv4_only');
-		expect(labels).toContain('ipv6_only');
-	});
-
-	it('should provide inbound type completions', () => {
-		const doc = createDocument('{ "inbounds": [ { "type": "" } ] }');
-		const offset = doc.getText().indexOf('type": "') + 8;
-		const position = doc.positionAt(offset);
-		const completions = getCompletions(doc, position);
-
-		expect(completions.length).toBeGreaterThan(0);
-		const labels = completions.map((c) => c.label);
-		expect(labels).toContain('tun');
-		expect(labels).toContain('mixed');
-		expect(labels).toContain('socks');
-		expect(labels).toContain('http');
-	});
-
-	it('should provide outbound type completions', () => {
-		const doc = createDocument('{ "outbounds": [ { "type": "" } ] }');
-		const offset = doc.getText().indexOf('type": "') + 8;
-		const position = doc.positionAt(offset);
-		const completions = getCompletions(doc, position);
-
-		expect(completions.length).toBeGreaterThan(0);
-		const labels = completions.map((c) => c.label);
-		expect(labels).toContain('direct');
-		expect(labels).toContain('block');
-		expect(labels).toContain('selector');
-		expect(labels).toContain('vmess');
-		expect(labels).toContain('vless');
-	});
 
 	it('should provide DNS final completions with DNS server tags', () => {
 		const config = {
@@ -226,43 +169,75 @@ describe('getCompletions', () => {
 		expect(labels).toContain('proxy');
 	});
 
-	it('should provide rule set type completions', () => {
-		const doc = createDocument(
-			'{ "route": { "rule_set": [ { "type": "" } ] } }',
-		);
-		const offset = doc.getText().indexOf('type": "') + 8;
+	it('should provide route rules outbound completions with outbound tags', () => {
+		const config = {
+			outbounds: [
+				{ type: 'direct', tag: 'direct-out' },
+				{ type: 'block', tag: 'block-out' },
+			],
+			route: {
+				rules: [{ outbound: '' }],
+			},
+		};
+		const text = JSON.stringify(config, null, 2);
+		const doc = createDocument(text);
+		const offset = text.indexOf('"outbound": "') + 13;
 		const position = doc.positionAt(offset);
 		const completions = getCompletions(doc, position);
 
 		expect(completions.length).toBeGreaterThan(0);
 		const labels = completions.map((c) => c.label);
-		expect(labels).toContain('local');
-		expect(labels).toContain('remote');
+		expect(labels).toContain('direct-out');
+		expect(labels).toContain('block-out');
 	});
 
-	it('should provide shadowsocks method completions', () => {
-		const doc = createDocument('{ "outbounds": [ { "method": "" } ] }');
-		const offset = doc.getText().indexOf('method": "') + 10;
+	it('should provide selector default completions with outbound tags', () => {
+		const config = {
+			outbounds: [
+				{ type: 'vmess', tag: 'proxy-1' },
+				{ type: 'vmess', tag: 'proxy-2' },
+				{ type: 'selector', tag: 'select', default: '' },
+			],
+		};
+		const text = JSON.stringify(config, null, 2);
+		const doc = createDocument(text);
+		const offset = text.indexOf('"default": "') + 12;
 		const position = doc.positionAt(offset);
 		const completions = getCompletions(doc, position);
 
 		expect(completions.length).toBeGreaterThan(0);
 		const labels = completions.map((c) => c.label);
-		expect(labels).toContain('aes-128-gcm');
-		expect(labels).toContain('chacha20-ietf-poly1305');
-		expect(labels).toContain('2022-blake3-aes-128-gcm');
+		expect(labels).toContain('proxy-1');
+		expect(labels).toContain('proxy-2');
 	});
 
-	it('should provide network completions', () => {
-		const doc = createDocument('{ "inbounds": [ { "network": "" } ] }');
-		const offset = doc.getText().indexOf('network": "') + 11;
+	it('should provide rule set download_detour completions with outbound tags', () => {
+		const config = {
+			outbounds: [{ type: 'direct', tag: 'direct-out' }],
+			route: {
+				rule_set: [{ type: 'remote', tag: 'geosite', download_detour: '' }],
+			},
+		};
+		const text = JSON.stringify(config, null, 2);
+		const doc = createDocument(text);
+		const offset = text.indexOf('"download_detour": "') + 20;
 		const position = doc.positionAt(offset);
 		const completions = getCompletions(doc, position);
 
 		expect(completions.length).toBeGreaterThan(0);
 		const labels = completions.map((c) => c.label);
-		expect(labels).toContain('tcp');
-		expect(labels).toContain('udp');
+		expect(labels).toContain('direct-out');
+	});
+
+	it('should NOT provide static enum completions (handled by JSON schema)', () => {
+		// These should return empty arrays since static completions are handled by VSCode JSON LSP
+		const doc = createDocument('{ "log": { "level": "" } }');
+		const offset = doc.getText().indexOf('level": "') + 9;
+		const position = doc.positionAt(offset);
+		const completions = getCompletions(doc, position);
+
+		// Static enum completions are now handled by JSON schema, not this LSP
+		expect(completions.length).toBe(0);
 	});
 });
 
