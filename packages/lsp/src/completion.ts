@@ -119,10 +119,6 @@ const ENUMS = {
 		{ value: 'sniff', description: 'Sniff protocol' },
 		{ value: 'resolve', description: 'Resolve domain to IP' },
 	],
-	rejectMethod: [
-		{ value: 'default', description: 'Default reject method' },
-		{ value: 'drop', description: 'Drop packets silently' },
-	],
 };
 
 /**
