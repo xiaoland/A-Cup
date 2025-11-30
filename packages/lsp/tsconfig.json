@@ -6,13 +6,11 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
     "resolveJsonModule": true
   },
-  "references": [
-    { "path": "./shared" },
-    { "path": "./packages/extension" },
-    { "path": "./packages/webview" },
-    { "path": "./packages/lsp" }
-  ],
-  "exclude": ["node_modules", "**/dist", "**/out"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

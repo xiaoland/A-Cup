@@ -1,0 +1,529 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sing-box.sagernet.org/configuration",
+  "title": "Sing-Box Configuration",
+  "description": "JSON schema for sing-box proxy configuration",
+  "type": "object",
+  "properties": {
+    "log": {
+      "type": "object",
+      "description": "Log configuration",
+      "properties": {
+        "disabled": {
+          "type": "boolean",
+          "description": "Disable logging"
+        },
+        "level": {
+          "type": "string",
+          "enum": ["trace", "debug", "info", "warn", "error", "fatal", "panic"],
+          "description": "Log level"
+        },
+        "output": {
+          "type": "string",
+          "description": "Log output path"
+        },
+        "timestamp": {
+          "type": "boolean",
+          "description": "Add timestamp to log"
+        }
+      }
+    },
+    "dns": {
+      "type": "object",
+      "description": "DNS configuration",
+      "properties": {
+        "servers": {
+          "type": "array",
+          "description": "DNS servers",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tag": {
+                "type": "string",
+                "description": "Server tag"
+              },
+              "address": {
+                "type": "string",
+                "description": "DNS server address"
+              },
+              "address_resolver": {
+                "type": "string",
+                "description": "Tag of DNS server to resolve address"
+              },
+              "address_strategy": {
+                "type": "string",
+                "enum": ["prefer_ipv4", "prefer_ipv6", "ipv4_only", "ipv6_only"],
+                "description": "Address resolution strategy"
+              },
+              "detour": {
+                "type": "string",
+                "description": "Outbound tag to use for DNS query"
+              }
+            },
+            "required": ["tag", "address"]
+          }
+        },
+        "rules": {
+          "type": "array",
+          "description": "DNS rules",
+          "items": {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match domain"
+              },
+              "domain_suffix": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match domain suffix"
+              },
+              "domain_keyword": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match domain keyword"
+              },
+              "domain_regex": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match domain regex"
+              },
+              "geosite": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match geosite"
+              },
+              "rule_set": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match rule set"
+              },
+              "server": {
+                "type": "string",
+                "description": "DNS server tag to use"
+              }
+            }
+          }
+        },
+        "final": {
+          "type": "string",
+          "description": "Default DNS server tag"
+        },
+        "strategy": {
+          "type": "string",
+          "enum": ["prefer_ipv4", "prefer_ipv6", "ipv4_only", "ipv6_only"],
+          "description": "Default address resolution strategy"
+        }
+      }
+    },
+    "inbounds": {
+      "type": "array",
+      "description": "Inbound configurations",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["tun", "mixed", "socks", "http", "redirect", "tproxy", "direct"],
+            "description": "Inbound type"
+          },
+          "tag": {
+            "type": "string",
+            "description": "Inbound tag"
+          },
+          "listen": {
+            "type": "string",
+            "description": "Listen address"
+          },
+          "listen_port": {
+            "type": "integer",
+            "description": "Listen port"
+          },
+          "interface_name": {
+            "type": "string",
+            "description": "TUN interface name"
+          },
+          "inet4_address": {
+            "type": "string",
+            "description": "TUN IPv4 address"
+          },
+          "inet6_address": {
+            "type": "string",
+            "description": "TUN IPv6 address"
+          },
+          "mtu": {
+            "type": "integer",
+            "description": "TUN MTU"
+          },
+          "auto_route": {
+            "type": "boolean",
+            "description": "Auto configure route"
+          },
+          "strict_route": {
+            "type": "boolean",
+            "description": "Strict route mode"
+          },
+          "stack": {
+            "type": "string",
+            "enum": ["system", "gvisor", "mixed"],
+            "description": "TUN stack"
+          },
+          "sniff": {
+            "type": "boolean",
+            "description": "Enable protocol sniffing"
+          },
+          "sniff_override_destination": {
+            "type": "boolean",
+            "description": "Override destination with sniffed domain"
+          }
+        },
+        "required": ["type", "tag"]
+      }
+    },
+    "outbounds": {
+      "type": "array",
+      "description": "Outbound configurations",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["direct", "block", "dns", "socks", "http", "shadowsocks", "vmess", "vless", "trojan", "hysteria", "hysteria2", "shadowtls", "wireguard", "tor", "ssh", "selector", "urltest"],
+            "description": "Outbound type"
+          },
+          "tag": {
+            "type": "string",
+            "description": "Outbound tag"
+          },
+          "server": {
+            "type": "string",
+            "description": "Server address"
+          },
+          "server_port": {
+            "type": "integer",
+            "description": "Server port"
+          },
+          "uuid": {
+            "type": "string",
+            "description": "User UUID (vmess/vless)"
+          },
+          "security": {
+            "type": "string",
+            "description": "Security type"
+          },
+          "alter_id": {
+            "type": "integer",
+            "description": "VMess alter ID"
+          },
+          "method": {
+            "type": "string",
+            "description": "Encryption method"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password"
+          },
+          "flow": {
+            "type": "string",
+            "description": "VLESS flow control"
+          },
+          "network": {
+            "type": "string",
+            "enum": ["tcp", "udp"],
+            "description": "Network type"
+          },
+          "tls": {
+            "type": "object",
+            "description": "TLS configuration",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "server_name": {
+                "type": "string"
+              },
+              "insecure": {
+                "type": "boolean"
+              },
+              "alpn": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "utls": {
+                "type": "object",
+                "properties": {
+                  "enabled": { "type": "boolean" },
+                  "fingerprint": { "type": "string" }
+                }
+              },
+              "reality": {
+                "type": "object",
+                "properties": {
+                  "enabled": { "type": "boolean" },
+                  "public_key": { "type": "string" },
+                  "short_id": { "type": "string" }
+                }
+              }
+            }
+          },
+          "transport": {
+            "type": "object",
+            "description": "Transport configuration",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["http", "ws", "quic", "grpc", "httpupgrade"]
+              },
+              "path": {
+                "type": "string"
+              },
+              "headers": {
+                "type": "object"
+              },
+              "service_name": {
+                "type": "string"
+              }
+            }
+          },
+          "outbounds": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Outbound tags for selector/urltest"
+          },
+          "default": {
+            "type": "string",
+            "description": "Default outbound for selector"
+          },
+          "url": {
+            "type": "string",
+            "description": "Test URL for urltest"
+          },
+          "interval": {
+            "type": "string",
+            "description": "Test interval for urltest"
+          },
+          "tolerance": {
+            "type": "integer",
+            "description": "Tolerance for urltest"
+          }
+        },
+        "required": ["type", "tag"]
+      }
+    },
+    "route": {
+      "type": "object",
+      "description": "Route configuration",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "description": "Route rules",
+          "items": {
+            "type": "object",
+            "properties": {
+              "inbound": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match inbound tags"
+              },
+              "ip_version": {
+                "type": "integer",
+                "enum": [4, 6],
+                "description": "Match IP version"
+              },
+              "network": {
+                "type": "array",
+                "items": { "type": "string", "enum": ["tcp", "udp"] },
+                "description": "Match network type"
+              },
+              "protocol": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match protocol"
+              },
+              "domain": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match domain"
+              },
+              "domain_suffix": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match domain suffix"
+              },
+              "domain_keyword": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match domain keyword"
+              },
+              "domain_regex": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match domain regex"
+              },
+              "geosite": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match geosite"
+              },
+              "source_geoip": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match source geoip"
+              },
+              "geoip": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match geoip"
+              },
+              "source_ip_cidr": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match source IP CIDR"
+              },
+              "ip_cidr": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match IP CIDR"
+              },
+              "source_port": {
+                "type": "array",
+                "items": { "type": "integer" },
+                "description": "Match source port"
+              },
+              "source_port_range": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match source port range"
+              },
+              "port": {
+                "type": "array",
+                "items": { "type": "integer" },
+                "description": "Match port"
+              },
+              "port_range": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match port range"
+              },
+              "process_name": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match process name"
+              },
+              "process_path": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match process path"
+              },
+              "package_name": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match package name"
+              },
+              "user": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match user"
+              },
+              "user_id": {
+                "type": "array",
+                "items": { "type": "integer" },
+                "description": "Match user ID"
+              },
+              "rule_set": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Match rule set"
+              },
+              "invert": {
+                "type": "boolean",
+                "description": "Invert match result"
+              },
+              "outbound": {
+                "type": "string",
+                "description": "Outbound tag"
+              }
+            }
+          }
+        },
+        "rule_set": {
+          "type": "array",
+          "description": "Rule sets",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["local", "remote"],
+                "description": "Rule set type"
+              },
+              "tag": {
+                "type": "string",
+                "description": "Rule set tag"
+              },
+              "format": {
+                "type": "string",
+                "enum": ["source", "binary"],
+                "description": "Rule set format"
+              },
+              "path": {
+                "type": "string",
+                "description": "Local rule set path"
+              },
+              "url": {
+                "type": "string",
+                "description": "Remote rule set URL"
+              },
+              "download_detour": {
+                "type": "string",
+                "description": "Outbound for downloading"
+              },
+              "update_interval": {
+                "type": "string",
+                "description": "Update interval"
+              }
+            },
+            "required": ["type", "tag"]
+          }
+        },
+        "final": {
+          "type": "string",
+          "description": "Default outbound"
+        },
+        "auto_detect_interface": {
+          "type": "boolean",
+          "description": "Auto detect outbound interface"
+        },
+        "default_interface": {
+          "type": "string",
+          "description": "Default outbound interface"
+        }
+      }
+    },
+    "experimental": {
+      "type": "object",
+      "description": "Experimental features",
+      "properties": {
+        "cache_file": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "path": { "type": "string" },
+            "cache_id": { "type": "string" },
+            "store_fakeip": { "type": "boolean" }
+          }
+        },
+        "clash_api": {
+          "type": "object",
+          "properties": {
+            "external_controller": { "type": "string" },
+            "external_ui": { "type": "string" },
+            "secret": { "type": "string" },
+            "default_mode": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

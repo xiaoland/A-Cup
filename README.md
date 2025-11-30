@@ -1,64 +1,91 @@
-# A-Cup | A罩杯
+# A-Cup
 
-服务小型机场的代理配置管理平台。
-
-小型机场指的是非经营目的的，几个人一起A钱自建的机场。
-
-[体验demo](https://a-cup.lanzhijiang.workers.dev)，账号admin，密码admin
+VSCode extension for sing-box profile editing with intellisense and OSS integration.
 
 ## Features
-- 多用户
-- 导出与托管配置文件
-  - 托管到D2 OSS
-  - 导出为Sing-Box
-- 编辑配置文件（所有选项都可以被复用）
-  - 入站
-    - TUN
-    - Mixed System Proxy
-  - 出站
-    - VLESS
-    - VMESS
-    - Shadowsocks
-    - 手动选择器
-    - URLTest自动选择器
-  - 端点
-    - Wireguard
-  - 路由规则与规则集
-  - DNS服务器以及DNS规则
-    - UDP
-    - TLS, HTTPS, HTTP3, QUIC
-- 共享、复用配置项
-- 自动命名tag
-- 深色自适应
-- 响应式布局
 
-## Installation
+- **Intellisense/Autocomplete**: JSON schema validation and autocompletion for sing-box configuration files
+- **OSS Integration**: Upload and download sing-box profiles from Object Storage Service (OSS)
+- **Language Server**: Dedicated LSP for advanced sing-box configuration support
 
-[直接部署到Cloudflare](https://deploy.workers.cloudflare.com/?url=https://github.com/xiaoland/a-cup)
+## Supported File Patterns
 
-1. `git clone https://github.com/xiaoland/a-cup`
-2. `git checkout -b my-deploy`
-3. 修改 `wrangler.jsonc` ，配置为你自己的值
-   - d1_databases[0].database_name
-   - d1_databases[0].database_id
-   - r2_buckets[0].bucket_name
-   - vars.JWT_SECRET
-   - vars.OSS_PUBLIC_DOMAIN
-4. `pnpm install`
-5. `wrangler d1 migrations apply YOUR_DB_NAME --remote`
-6. `pnpm run deploy`
+The extension automatically provides intellisense for files matching:
+- `*.sing-box.json`
+- `*sing-box*.json`
 
-目前初始化没有配置用户，你可以到查询台运行：
+## Extension Settings
 
+This extension contributes the following settings:
 
-```sql
-INSERT INTO users (username, password, roles) VALUES ('admin', '21232f297a57a5a743894a0e4a801fc3', '["admin"]');
+* `a-cup.oss.endpoint`: OSS endpoint URL
+* `a-cup.oss.accessKeyId`: OSS access key ID
+* `a-cup.oss.accessKeySecret`: OSS access key secret
+* `a-cup.oss.bucket`: OSS bucket name
+
+## Commands
+
+* `A-Cup: Upload Profile to OSS` - Upload the current file to configured OSS
+* `A-Cup: Download Profile from OSS` - Download a profile from configured OSS
+
+## Project Structure
+
+This is a pnpm monorepo with the following structure:
+
+```
+├── packages/
+│   ├── extension/     # VSCode extension main process
+│   ├── webview/       # Vite + Vue3 UI components
+│   └── lsp/           # Language Server Protocol implementation
+├── shared/            # Shared types, utils, and schemas
+├── .github/workflows/ # CI/CD workflows
+├── tsconfig.json      # Root TypeScript config
+├── package.json       # Workspace configuration
+└── pnpm-workspace.yaml
 ```
 
-这样就有admin权限的用户admin，密码admin
+## Development
 
-## Developer Manual
+### Prerequisites
 
-### Tech Stacks
-- 后端：手搓Router + DrizzleORM + Zod
-- 前端：Vue3 + TS + Vite + Vuetify
+- Node.js 20+
+- pnpm 8+
+
+### Install & Build
+
+```bash
+pnpm install
+pnpm build
+```
+
+### Development Mode
+
+```bash
+pnpm dev
+```
+
+### Testing
+
+```bash
+pnpm test
+```
+
+### Type Check
+
+```bash
+pnpm check-types
+```
+
+### Package Extension
+
+```bash
+pnpm vsce:package
+```
+
+## Resources
+
+- [Sing-Box Configuration Documentation](https://sing-box.sagernet.org/configuration)
+
+## License
+
+MIT
