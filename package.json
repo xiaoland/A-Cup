@@ -1,48 +1,86 @@
 {
   "name": "a-cup",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "pnpm run build && wrangler dev",
-    "build-only": "vite build",
-    "type-check": "vue-tsc --build",
-    "deploy": "pnpm run build && wrangler deploy && wrangler d1 migrations apply a-cup --remote",
-    "cf-typegen": "wrangler types",
-    "orm-mig-gen": "drizzle-kit generate",
-    "prepare": "husky"
+  "displayName": "A-Cup",
+  "description": "VSCode extension for sing-box profile editing with intellisense and OSS integration",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.106.1"
   },
-  "dependencies": {
-    "ajv": "^8.17.1",
-    "ajv-formats": "^2.1.1",
-    "drizzle-orm": "^0.44.2",
-    "jsonwebtoken": "^9.0.2",
-    "pinia": "^3.0.3",
-    "vue": "^3.5.17",
-    "vue-router": "^4.5.1",
-    "vuetify": "^3.9.2",
-    "zod": "^4.0.5"
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:json"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "a-cup.uploadToOSS",
+        "title": "A-Cup: Upload Profile to OSS"
+      },
+      {
+        "command": "a-cup.downloadFromOSS",
+        "title": "A-Cup: Download Profile from OSS"
+      }
+    ],
+    "configuration": {
+      "title": "A-Cup",
+      "properties": {
+        "a-cup.oss.endpoint": {
+          "type": "string",
+          "default": "",
+          "description": "OSS endpoint URL"
+        },
+        "a-cup.oss.accessKeyId": {
+          "type": "string",
+          "default": "",
+          "description": "OSS access key ID"
+        },
+        "a-cup.oss.accessKeySecret": {
+          "type": "string",
+          "default": "",
+          "description": "OSS access key secret"
+        },
+        "a-cup.oss.bucket": {
+          "type": "string",
+          "default": "",
+          "description": "OSS bucket name"
+        }
+      }
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": ["*.sing-box.json", "*sing-box*.json"],
+        "url": "./schemas/sing-box.schema.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "pnpm run check-types && pnpm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.9.4",
-    "@mdi/font": "^7.4.47",
-    "@tsconfig/node22": "^22.0.2",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^22.15.32",
-    "@vitejs/plugin-vue": "^6.0.0",
-    "@vue/tsconfig": "^0.7.0",
-    "drizzle-kit": "^0.31.4",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.4",
-    "npm-run-all2": "^8.0.4",
-    "prettier": "^3.6.2",
-    "sass-embedded": "^1.89.2",
-    "typescript": "~5.8.0",
-    "vite": "^7.0.0",
-    "vite-plugin-vue-devtools": "^7.7.7",
-    "vue-tsc": "^2.2.10",
-    "wrangler": "^4.24.3"
+    "@types/vscode": "^1.106.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "typescript-eslint": "^8.46.3",
+    "eslint": "^9.39.1",
+    "esbuild": "^0.27.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
   }
 }
